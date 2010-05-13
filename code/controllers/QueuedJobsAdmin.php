@@ -63,7 +63,8 @@ class QueuedJobsAdmin extends LeftAndMain
 		);
 
 		// QueuedJobListField
-		$table = new QueuedJobListField('QueuedJobs', 'QueuedJobDescriptor', $columns, $this->queuedJobsService->getJobListFilter());
+		$filter = $this->queuedJobsService->getJobListFilter(null, 300);
+		$table = new QueuedJobListField('QueuedJobs', 'QueuedJobDescriptor', $columns, $filter);
 
 //		$jobs = $this->queuedJobsService->getJobList();
 //		if (!$jobs) {
