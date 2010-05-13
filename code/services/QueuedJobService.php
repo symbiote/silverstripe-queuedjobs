@@ -28,10 +28,11 @@ OF SUCH DAMAGE.
  * When the queues are scanned, a job is reloaded and processed. Ignoring the persistence and reloading, it looks
  * something like
  *
- * job->init();
+ 
  * job->getJobType();
  * job->getJobData();
  * data->write();
+ * job->setup();
  * while !job->isComplete
  *	job->process();
  *	job->getJobData();
@@ -180,7 +181,7 @@ class QueuedJobService
 
 		// make sure the data is there
 		$this->copyDescriptorToJob($jobDescriptor, $job);
-		$job->init();
+		$job->setup();
 
 		// make sure the descriptor is up to date with anything changed
 		$this->copyJobToDescriptor($job, $jobDescriptor);
@@ -220,7 +221,7 @@ class QueuedJobService
 			$jobDescriptor = DataObject::get_by_id('QueuedJobDescriptor', (int) $jobId);
 			if ($jobDescriptor->JobStatus != QueuedJob::STATUS_RUN) {
 				// we've been paused by something, so we'll just exit
-				$job->addMessage("NOTICE: Job paused at ".date('Y-m-d H:i:s'));
+				$job->addMessage("Job paused at ".date('Y-m-d H:i:s'));
 				$broken = true;
 			}
 
@@ -229,7 +230,7 @@ class QueuedJobService
 					$job->process();
 				} catch (Exception $e) {
 					// okay, we'll just catch this exception for now
-					$job->addMessage("ERROR: Job caused exception ".$e->getMessage());
+					$job->addMessage("Job caused exception ".$e->getMessage(), 'ERROR');
 					SS_Log::log($e, SS_Log::ERR);
 				}
 
@@ -241,7 +242,7 @@ class QueuedJobService
 
 				if ($stallCount > self::$stall_threshold) {
 					$broken = true;
-					$job->addMessage("ERROR: Job stalled after $stallCount attempts - please check");
+					$job->addMessage("Job stalled after $stallCount attempts - please check", 'ERROR');
 					$jobDescriptor->JobStatus =  QueuedJob::STATUS_BROKEN;
 				}
 
@@ -249,7 +250,7 @@ class QueuedJobService
 				// now we'll be good and check our memory usage. If it is too high, we'll set the job to
 				// a 'Waiting' state, and let the next processing run pick up the job.
 				if ($this->isMemoryTooHigh()) {
-					$job->addMessage("NOTICE: Job releasing memory and waiting");
+					$job->addMessage("Job releasing memory and waiting");
 					$jobDescriptor->JobStatus = QueuedJob::STATUS_WAIT;
 					$broken = true;
 				}

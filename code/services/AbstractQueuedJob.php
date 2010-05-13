@@ -92,8 +92,9 @@ abstract class AbstractQueuedJob implements QueuedJob
 		$this->messages = $messages;
 	}
 
-	public function addMessage($message) {
-		$this->messages[] = $message;
+	public function addMessage($message, $severity='INFO') {
+		$severity = strtoupper($severity);
+		$this->messages[] = '['.date('Y-m-d H:i:s')."][$severity] $message";
 	}
 
 	/**

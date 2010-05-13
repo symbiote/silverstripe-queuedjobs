@@ -51,7 +51,7 @@ interface QueuedJob {
 	/**
 	 * Setup this queued job
 	 */
-	public function init();
+	public function setup();
 
 	/**
 	 * What type of job is this? Options are
