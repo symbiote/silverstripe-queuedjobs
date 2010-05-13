@@ -5,6 +5,9 @@
 		<ul id="sitetree" class="tree unformatted">
 			<li id="$ID" class="Root"><a><strong><% _t('QUEUED_JOBS', 'Queued Jobs') %></strong></a>
 				<ul>
+					<li id="0">
+						<a href="{$BaseHref}admin/_queued-jobs/showqueue/0" title="">All</a>
+					</li>
 					<li id="1">
 						<a href="{$BaseHref}admin/_queued-jobs/showqueue/1" title="">Immediate</a>
 					</li>

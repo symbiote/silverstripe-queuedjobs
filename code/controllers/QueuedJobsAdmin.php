@@ -33,6 +33,13 @@ class QueuedJobsAdmin extends LeftAndMain
 
 	static $menu_title = 'Jobs';
 
+	public static $allowed_actions = array(
+		'EditForm',
+		'showqueue',
+	);
+
+	protected $selectedQueue;
+
 	/**
 	 * @var QueuedJobsService
 	 */
@@ -63,15 +70,8 @@ class QueuedJobsAdmin extends LeftAndMain
 		);
 
 		// QueuedJobListField
-		$filter = $this->queuedJobsService->getJobListFilter(null, 300);
+		$filter = $this->queuedJobsService->getJobListFilter($this->selectedQueue, 300);
 		$table = new QueuedJobListField('QueuedJobs', 'QueuedJobDescriptor', $columns, $filter);
-
-//		$jobs = $this->queuedJobsService->getJobList();
-//		if (!$jobs) {
-//			$jobs = new DataObjectSet();
-//		}
-//
-//		$table->setCustomSourceItems($jobs);
 
 		$table->actions['pause'] = array(
 			'label' => 'Pause',
@@ -92,6 +92,14 @@ class QueuedJobsAdmin extends LeftAndMain
 		$fields->push($table);
 
 		return new Form($this, 'EditForm', $fields, $actions);
+	}
+
+	public function showqueue($request) {
+		if ($request->param('ID')) {
+			$this->selectedQueue = $request->param('ID');
+		}
+		
+		return $this->renderWith('QueuedJobsAdmin_right');
 	}
 }
 
