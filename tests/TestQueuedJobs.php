@@ -30,7 +30,7 @@ class TestQueuedJobs extends SapphireTest
 	public function testQueueJob() {
 		$svc = singleton("QueuedJobService");
 
-		// lets create a new job and add it to the queue
+		// lets create a new job and add it tio the queue
 		$job = new TestQueuedJob();
 		$jobId = $svc->queueJob($job);
 		$list = $svc->getJobList();
@@ -44,7 +44,7 @@ class TestQueuedJobs extends SapphireTest
 
 	public function testProcessJob() {
 		$job = new TestQueuedJob();
-		$job->init();
+		$job->setup();
 		$job->process();
 		// we should now have some  data
 		$data = $job->getJobData();
@@ -60,7 +60,7 @@ class TestQueuedJobs extends SapphireTest
 
 	public function testResumeJob() {
 		$job = new TestQueuedJob();
-		$job->init();
+		$job->setup();
 		$job->process();
 		// we should now have some  data
 		$data = $job->getJobData();
@@ -68,7 +68,7 @@ class TestQueuedJobs extends SapphireTest
 		// so create a new job and restore it from this data
 
 		$job = new TestQueuedJob();
-		$job->init();
+		$job->setup();
 
 		$job->setJobData($data->totalSteps, $data->currentStep, $data->isComplete, $data->jobData, $data->messages);
 		$job->process();
@@ -157,7 +157,7 @@ class TestQueuedJob extends AbstractQueuedJob implements QueuedJob {
 		return "A Test job";
 	}
 
-	public function init() {
+	public function setup() {
 		$this->totalSteps = 5;
 		$this->times = array();
 	}

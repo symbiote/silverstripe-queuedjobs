@@ -28,6 +28,7 @@ OF SUCH DAMAGE.
 class ProcessJobQueueTask extends BuildTask {
     public function run($request) {
 		$service = singleton('QueuedJobService');
+		/* @var $service QueuedJobService */
 
 		$queue = $request->getVar('queue');
 		if (!$queue) {
@@ -44,8 +45,20 @@ class ProcessJobQueueTask extends BuildTask {
 				break;
 			}
 			default: {
-				$queue = 2;
+				if (!is_numeric($queue)) {
+					$queue = 2;
+				}
 			}
+		}
+
+		if ($request->getVar('list')) {
+			for ($i = 1; $i  <= 3; $i++) {
+				$jobs = $service->getJobList($i);
+				$num = $jobs ? $jobs->Count() : 0;
+				echo "Found $num jobs for mode $i\n";
+			}
+
+			return;
 		}
 
 		/* @var $service QueuedJobService */
