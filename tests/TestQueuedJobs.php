@@ -42,6 +42,26 @@ class TestQueuedJobs extends SapphireTest
 		$this->assertNotNull($myJob->SavedJobData);
 	}
 
+	public function testJobRunAs() {
+		$svc = singleton("QueuedJobService");
+		$list = $svc->getJobList();
+		foreach ($list as $job) {
+			$job->delete();
+		}
+
+		$this->logInWithPermission('DUMMY');
+
+		// lets create a new job and add it tio the queue
+		$job = new TestQueuedJob();
+		$job->runningAs = "DUMMY";
+		$jobId = $svc->queueJob($job);
+		$list = $svc->getJobList();
+
+		$myJob = $list->First();
+
+		$this->assertEquals("DUMMY@example.org", $myJob->RunAs()->Email);
+	}
+
 	public function testQueueSignature() {
 		$svc = singleton("QueuedJobService");
 
@@ -120,10 +140,18 @@ class TestQueuedJobs extends SapphireTest
 		// okay, lets test it out on the actual service
 		$svc = singleton("QueuedJobService");
 		// lets create a new job and add it to the queue
+
+		$this->logInWithPermission('DUMMYUSER');
+		
 		$job = new TestQueuedJob();
+		$job->testingStartJob = true;
 		$id = $svc->queueJob($job);
+
+		$this->logInWithPermission('ADMIN');
+
 		$svc->runJob($id);
 
+		// we want to make sure that the current user is the runas user of the job
 		$descriptor = DataObject::get_by_id('QueuedJobDescriptor', $id);
 		$this->assertEquals('Complete', $descriptor->JobStatus);
 	}

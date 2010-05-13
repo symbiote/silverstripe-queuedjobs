@@ -81,7 +81,7 @@ class QueuedJobService
 		$jobDescriptor->Implementation = get_class($job);
 		$jobDescriptor->StartAfter = $startAfter;
 
-		$jobDescriptor->RunAs = Member::currentUser();
+		$jobDescriptor->RunAsID = Member::currentUserID();
 
 		// copy data
 		$this->copyJobToDescriptor($job, $jobDescriptor);
@@ -219,6 +219,25 @@ class QueuedJobService
 			throw new Exception("$jobId is invalid");
 		}
 
+		// now lets see whether we have a current user to run as. Typically, if the job is executing via the CLI,
+		// we want it to actually execute as the RunAs user - however, if running via the web (which is rare...), we
+		// want to ensure that the current user has admin privileges before switching. Otherwise, we just run it
+		// as the currently logged in user and hope for the best
+		$originalUser = Member::currentUser();
+		$runAsUser = null;
+		if (strtolower(php_sapi_name()) == 'cli' || Member::currentUser()->isAdmin()) {
+			$runAsUser = $jobDescriptor->RunAs();
+			if ($runAsUser && $runAsUser->exists()) {
+				// if we're on the CLI, just set the session flag - it chucks an error doing a full login due
+				// to cookie manipulation etc
+				if (strtolower(php_sapi_name() == 'cli')) {
+					Session::set("loggedInAs", $runAsUser->ID);
+				} else {
+					$runAsUser->logIn();
+				}
+			}
+		}
+
 		$job = $this->initialiseJob($jobDescriptor);
 
 		// get the job ready to begin.
@@ -261,7 +280,6 @@ class QueuedJobService
 					$jobDescriptor->JobStatus =  QueuedJob::STATUS_BROKEN;
 				}
 
-
 				// now we'll be good and check our memory usage. If it is too high, we'll set the job to
 				// a 'Waiting' state, and let the next processing run pick up the job.
 				if ($this->isMemoryTooHigh()) {
@@ -269,12 +287,18 @@ class QueuedJobService
 					$jobDescriptor->JobStatus = QueuedJob::STATUS_WAIT;
 					$broken = true;
 				}
-
-				
 			}
 
 			$this->copyJobToDescriptor($job, $jobDescriptor);
 			$jobDescriptor->write();
+		}
+
+		// okay lets reset our user if we've got an original
+		if ($runAsUser && $originalUser) {
+			$runAsUser->logOut();
+			if ($originalUser) {
+				$originalUser->logIn();
+			}
 		}
 	}
 
