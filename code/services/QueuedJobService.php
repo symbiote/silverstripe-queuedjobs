@@ -60,9 +60,24 @@ class QueuedJobService
 	 */
 	public function queueJob(QueuedJob $job, $startAfter = null) {
 
+		$signature = $job->getSignature();
+
+		// see if we already have this job in a queue
+		$filter = array(
+			'Signature =' => $signature,
+			'JobStatus =' => QueuedJob::STATUS_NEW,
+		);
+
+		$existing = DataObject::get('QueuedJobDescriptor', db_quote($filter));
+
+		if ($existing && $existing->Count()) {
+			return $existing->First()->ID;
+		}
+
 		$jobDescriptor = new QueuedJobDescriptor();
 		$jobDescriptor->JobTitle = $job->getTitle();
 		$jobDescriptor->JobType = $job->getJobType();
+		$jobDescriptor->Signature = $signature;
 		$jobDescriptor->Implementation = get_class($job);
 		$jobDescriptor->StartAfter = $startAfter;
 

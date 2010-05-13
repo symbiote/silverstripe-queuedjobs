@@ -34,6 +34,7 @@ class QueuedJobDescriptor extends DataObject
 {
     public static $db = array(
 		'JobTitle' => 'Varchar(255)',
+		'Signature' => 'Varchar(64)',
 		'Implementation' => 'Varchar(64)',
 		'StartAfter' => 'SS_Datetime',
 		'JobStarted' => 'SS_Datetime',

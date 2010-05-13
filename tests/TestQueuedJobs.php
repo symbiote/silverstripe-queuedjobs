@@ -42,6 +42,26 @@ class TestQueuedJobs extends SapphireTest
 		$this->assertNotNull($myJob->SavedJobData);
 	}
 
+	public function testQueueSignature() {
+		$svc = singleton("QueuedJobService");
+
+		// lets create a new job and add it tio the queue
+		$job = new TestQueuedJob();
+		$jobId = $svc->queueJob($job);
+
+		$newJob = new TestQueuedJob();
+		$newId = $svc->queueJob($newJob);
+
+		$this->assertEquals($jobId, $newId);
+
+		// now try another, but with different params
+		$newJob = new TestQueuedJob();
+		$newJob->randomParam = 'stuff';
+		$newId = $svc->queueJob($newJob);
+
+		$this->assertNotEquals($jobId, $newId);
+	}
+
 	public function testProcessJob() {
 		$job = new TestQueuedJob();
 		$job->setup();
@@ -123,9 +143,13 @@ class TestQueuedJobs extends SapphireTest
 		$id1 = $svc->queueJob($job);
 
 		$job = new TestQueuedJob();
+		// to get around the signature checks
+		$job->randomParam = 'me';
 		$id2 = $svc->queueJob($job);
 
 		$job = new TestQueuedJob();
+		// to get around the signature checks
+		$job->randomParam = 'mo';
 		$id3 = $svc->queueJob($job);
 
 		$this->assertEquals(2, $id3 - $id1);
@@ -153,13 +177,17 @@ class TestQJService extends QueuedJobService {
 }
 
 class TestQueuedJob extends AbstractQueuedJob implements QueuedJob {
+
+	public function __construct() {
+		$this->times = array();
+	}
+
 	public function getTitle() {
 		return "A Test job";
 	}
 
 	public function setup() {
 		$this->totalSteps = 5;
-		$this->times = array();
 	}
 
 	public function process() {

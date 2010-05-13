@@ -23,6 +23,10 @@ OF SUCH DAMAGE.
 /**
  * A base implementation of a queued job that provides some convenience for implementations
  *
+ * This implementation assumes that when you created your job class, you initialised the
+ * jobData with relevant variables needed to process() your job later on in execution. If you do not,
+ * please ensure you do before you queueJob() the job, to ensure the signature that is generated is 'correct'. 
+ *
  * @author Marcus Nyeholt <marcus@silverstripe.com.au>
  */
 abstract class AbstractQueuedJob implements QueuedJob
@@ -40,6 +44,24 @@ abstract class AbstractQueuedJob implements QueuedJob
 
 	public function getTitle() {
 		return "This needs a title!";
+	}
+
+	/**
+	 * Return a signature for this queued job
+	 *
+	 * @return String
+	 */
+	public function getSignature() {
+		return md5(get_class($this).serialize($this->jobData));
+	}
+
+	/**
+	 * Generate a somewhat random signature
+	 *
+	 * useful if you're want to make sure something is always added
+	 */
+	protected function randomSignature() {
+		return md5(get_class($this) . time() . mt_rand(0, 100000));
 	}
 
 	/**

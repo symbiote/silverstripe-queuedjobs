@@ -49,6 +49,19 @@ interface QueuedJob {
 	public function getTitle();
 
 	/**
+	 * Gets a unique signature for this job and its current parameters.
+	 *
+	 * This is used so that a job isn't added to a queue multiple times - this for example, an indexing job
+	 * might be added every time an item is saved, but it isn't processed immediately. We dont NEED to do the indexing
+	 * more than once (ie the first indexing will still catch any subsequent changes), so we don't need to have
+	 * it in the queue more than once.
+	 *
+	 * If you have a job that absolutely must run multiple times, the AbstractQueuedJob class provides a time sensitive
+	 * randomSignature() method that can be used for returning a random signature each time
+	 */
+	public function getSignature();
+
+	/**
 	 * Setup this queued job
 	 */
 	public function setup();
