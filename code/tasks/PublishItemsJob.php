@@ -27,7 +27,7 @@ OF SUCH DAMAGE.
  *
  * @author Marcus Nyeholt <marcus@silverstripe.com.au>
  */
-class PublishItemsTask extends AbstractQueuedJob implements QueuedJob {
+class PublishItemsJob extends AbstractQueuedJob implements QueuedJob {
     public function __construct($rootNode) {
 		// this value is automatically persisted between processing requests for
 		// this job
