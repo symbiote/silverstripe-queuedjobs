@@ -67,7 +67,7 @@ abstract class AbstractQueuedJob implements QueuedJob
 	/**
 	 * Implement yourself!
 	 */
-	public function init() {
+	public function setup() {
 
 	}
 
