@@ -59,6 +59,8 @@ if (!function_exists('db_quote')) {
 					$insep = ',';
 				}
 				$value = '('.$ins.')';
+			} else if (is_null($value)) {
+				$value = 'NULL';
 			} else if (is_string($field)) {
 				$value = "'" . Convert::raw2sql($value) . "'";
 			} 

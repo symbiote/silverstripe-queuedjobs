@@ -163,7 +163,7 @@ class QueuedJobService
 			'JobType =' => $type ? $type : QueuedJob::QUEUED,
 		);
 
-		$filter = db_quote($filter) . ' AND ('. db_quote(array('StartAfter <' => date('Y-m-d H:i:s'), 'StartAfter IS NULL'), ' OR ').')';
+		$filter = db_quote($filter) . ' AND ('. db_quote(array('StartAfter <' => date('Y-m-d H:i:s'), 'StartAfter IS' => null), ' OR ').')';
 
 		$jobs = DataObject::get('QueuedJobDescriptor', $filter, 'ID ASC');
 
