@@ -56,7 +56,7 @@ class QueuedJobsAdmin extends LeftAndMain
 	}
 
 	public function EditForm() {
-		$fields = new FieldSet();
+		$fields = new FieldSet(new TabSet("Root"));
 		$actions = new FieldSet();
 
 		$columns = array(
@@ -65,8 +65,8 @@ class QueuedJobsAdmin extends LeftAndMain
 			'JobStarted' => 'Started',
 			'JobStatus' => 'Status',
 			'Messages' => 'Messages',
+			'StepsProcessed' => 'Number Processed',
 			'TotalSteps' => 'Total',
-			'StepsProcessed' => 'Number Processed'
 		);
 
 		// QueuedJobListField
@@ -89,7 +89,7 @@ class QueuedJobsAdmin extends LeftAndMain
 
 		$table->setPermissions(array('delete', 'pause', 'resume'));
 
-		$fields->push($table);
+		$fields->addFieldToTab('Root.Main', $table);
 
 		return new Form($this, 'EditForm', $fields, $actions);
 	}
