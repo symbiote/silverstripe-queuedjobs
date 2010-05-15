@@ -28,10 +28,13 @@ OF SUCH DAMAGE.
  * @author Marcus Nyeholt <marcus@silverstripe.com.au>
  */
 class PublishItemsJob extends AbstractQueuedJob implements QueuedJob {
-    public function __construct($rootNode) {
+	
+    public function __construct($rootNode = null) {
 		// this value is automatically persisted between processing requests for
 		// this job
-		$this->rootID = $rootNode->ID;
+		if ($rootNode) {
+			$this->rootID = $rootNode->ID;
+		}
 	}
 
 	protected function getRoot() {
@@ -52,31 +55,8 @@ class PublishItemsJob extends AbstractQueuedJob implements QueuedJob {
 	 *
 	 */
 	public function getJobType() {
-		$children = $this->getRoot()->Children();
-		if (!$children || !$children->Count()) {
-			return QueuedJob::QUEUED;
-		}
-
-		foreach ($children as $child) {
-			$count ++;
-			if ($count > 100) {
-				$this->totalSteps = '>100';
-				return QueuedJob::LARGE;
-			}
-
-			$subChildren = $child->Children();
-			if ($subChildren) {
-				foreach ($subChildren as $sub) {
-					$count ++;
-					if ($count > 100) {
-						$this->totalSteps = '>100';
-						return QueuedJob::LARGE;
-					}
-				}
-			}
-		}
-
-		$this->totalSteps = $count;
+		
+		$this->totalSteps = 'Lots';
 		return QueuedJob::QUEUED;
 	}
 
@@ -92,7 +72,7 @@ class PublishItemsJob extends AbstractQueuedJob implements QueuedJob {
 	 */
 	public function setup() {
 		$remainingChildren = array();
-		$remainingChildren[] = array($this->getRoot()->ID);
+		$remainingChildren[] = $this->getRoot()->ID;
 		$this->remainingChildren = $remainingChildren;
 
 		// we reset this to 1; this is because we only know for sure about 1 item remaining
@@ -121,11 +101,13 @@ class PublishItemsJob extends AbstractQueuedJob implements QueuedJob {
 
 		// get the page
 		$page = DataObject::get_by_id('Page', $ID);
-		if ($page && $page->Status != 'Published') {
-			// publish it
-			$page->doPublish();
-			$page->destroy();
-			unset($page);
+		if ($page) {
+			if ($page->Status != 'Published') {
+				// publish it
+				$page->doPublish();
+
+			}
+			
 			// and add its children to the list to be published
 			foreach ($page->Children() as $child) {
 				$remainingChildren[] = $child->ID;
@@ -133,6 +115,8 @@ class PublishItemsJob extends AbstractQueuedJob implements QueuedJob {
 				// but it gives users an idea of exactly how many more we know about
 				$this->totalSteps++;
 			}
+			$page->destroy();
+			unset($page);
 		}
 
 		// and now we store the new list of remaining children

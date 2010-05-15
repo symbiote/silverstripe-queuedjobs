@@ -72,7 +72,7 @@ class ProcessJobQueueTask extends BuildTask {
 			echo "No new jobs\n";
 		}
 		if ($nextJob === false) {
-			echo "Job is still running";
+			echo "Job is still running\n";
 		}
 	}
 }
