@@ -64,7 +64,7 @@ class QueuedJobDescriptor extends DataObject
 	}
 
 	public function resume() {
-		if ($this->JobStatus == QueuedJob::STATUS_PAUSED) {
+		if ($this->JobStatus == QueuedJob::STATUS_PAUSED || $this->JobStatus == QueuedJob::STATUS_BROKEN) {
 			$this->JobStatus = QueuedJob::STATUS_WAIT;
 			$this->write();
 		}
