@@ -228,13 +228,9 @@ class QueuedJobService
 		if (strtolower(php_sapi_name()) == 'cli' || Member::currentUser()->isAdmin()) {
 			$runAsUser = $jobDescriptor->RunAs();
 			if ($runAsUser && $runAsUser->exists()) {
-				// if we're on the CLI, just set the session flag - it chucks an error doing a full login due
-				// to cookie manipulation etc
-				if (strtolower(php_sapi_name() == 'cli')) {
-					Session::set("loggedInAs", $runAsUser->ID);
-				} else {
-					$runAsUser->logIn();
-				}
+				// the job runner outputs content way early in the piece, meaning there'll be cooking errors
+				// if we try and do a normal login, and we only want it temporarily...
+				Session::set("loggedInAs", $runAsUser->ID);
 			}
 		}
 
@@ -249,6 +245,9 @@ class QueuedJobService
 		// have we stalled at all?
 		$stallCount = 0;
 		$broken = false;
+
+		$errorHandler = new JobErrorHandler();
+
 		// while not finished
 		while (!$job->jobFinished() && !$broken) {
 			// see that we haven't been set to 'paused' or otherwise by another process
@@ -261,11 +260,13 @@ class QueuedJobService
 
 			if (!$broken) {
 				try {
+					// set up a custom error handler for this processing
 					$job->process();
 				} catch (Exception $e) {
 					// okay, we'll just catch this exception for now
 					$job->addMessage("Job caused exception ".$e->getMessage(), 'ERROR');
 					SS_Log::log($e, SS_Log::ERR);
+					$jobDescriptor->JobStatus =  QueuedJob::STATUS_BROKEN;
 				}
 
 				// now check the job state
@@ -293,11 +294,13 @@ class QueuedJobService
 			$jobDescriptor->write();
 		}
 
+		$errorHandler->clear();
+
 		// okay lets reset our user if we've got an original
 		if ($runAsUser && $originalUser) {
-			$runAsUser->logOut();
+			Session::clear("loggedInAs");
 			if ($originalUser) {
-				$originalUser->logIn();
+				Session::set("loggedInAs", $originalUser->ID);
 			}
 		}
 	}
@@ -327,6 +330,16 @@ class QueuedJobService
 		return $jobs;
 	}
 
+	/**
+	 * Return the SQL filter used to get the job list - this is used by the UI for displaying the job list...
+	 *
+	 * @param string $type
+	 *			if we're after a particular job list
+	 * @param int $includeUpUntil
+	 *			The number of seconds to include jobs that have just finished, allowing a job list to be built that
+	 *			includes recently finished jobs
+	 * @return String
+	 */
 	public function getJobListFilter($type = null, $includeUpUntil = 0) {
 		$filter = array('JobStatus <>' => QueuedJob::STATUS_COMPLETE);
 		if ($includeUpUntil) {
@@ -340,6 +353,33 @@ class QueuedJobService
 		}
 
 		return $filter;
+	}
+}
+
+/**
+ * Class used to handle errors for a single job
+ */
+class JobErrorHandler {
+	public function __construct() {
+		set_error_handler(array($this, 'handleError'));
+	}
+
+	public function clear() {
+		restore_error_handler();
+	}
+
+	public function handleError($errno, $errstr, $errfile, $errline) {
+		switch ($errno) {
+			case E_NOTICE: 
+			case E_USER_NOTICE:
+			case E_STRICT: {
+				break;
+			}
+			default: {
+				throw new Exception($errstr, $errno);
+				break;
+			}
+		}
 	}
 }
 ?>
