@@ -68,7 +68,7 @@ class QueuedJobService
 			'JobStatus =' => QueuedJob::STATUS_NEW,
 		);
 
-		$existing = DataObject::get('QueuedJobDescriptor', db_quote($filter));
+		$existing = DataObject::get('QueuedJobDescriptor', singleton('QJUtils')->quote($filter));
 
 		if ($existing && $existing->Count()) {
 			return $existing->First()->ID;
@@ -138,16 +138,16 @@ class QueuedJobService
 		$type = $type ? $type : QueuedJob::QUEUED;
 
 		// see if there's any blocked jobs that need to be resumed
-		$filter = db_quote(array('JobStatus =' => QueuedJob::STATUS_WAIT, 'JobType =' => $type));
+		$filter = singleton('QJUtils')->quote(array('JobStatus =' => QueuedJob::STATUS_WAIT, 'JobType =' => $type));
 		$existingJob = DataObject::get_one('QueuedJobDescriptor', $filter);
 		if ($existingJob && $existingJob->exists()) {
 			return $existingJob;
 		}
 
 		// lets see if we have a currently running job
-		$filter = db_quote(array('JobStatus =' => QueuedJob::STATUS_INIT)) .' OR '. db_quote(array('JobStatus =' => QueuedJob::STATUS_RUN));
+		$filter = singleton('QJUtils')->quote(array('JobStatus =' => QueuedJob::STATUS_INIT)) .' OR '. singleton('QJUtils')->quote(array('JobStatus =' => QueuedJob::STATUS_RUN));
 
-		$filter = '('.$filter.') AND '.db_quote(array('JobType =' => $type));
+		$filter = '('.$filter.') AND '.singleton('QJUtils')->quote(array('JobType =' => $type));
 
 		$existingJob = DataObject::get_one('QueuedJobDescriptor', $filter);
 
@@ -163,7 +163,7 @@ class QueuedJobService
 			'JobType =' => $type ? $type : QueuedJob::QUEUED,
 		);
 
-		$filter = db_quote($filter) . ' AND ('. db_quote(array('StartAfter <' => date('Y-m-d H:i:s'), 'StartAfter IS' => null), ' OR ').')';
+		$filter = singleton('QJUtils')->quote($filter) . ' AND ('. singleton('QJUtils')->quote(array('StartAfter <' => date('Y-m-d H:i:s'), 'StartAfter IS' => null), ' OR ').')';
 
 		$jobs = DataObject::get('QueuedJobDescriptor', $filter, 'ID ASC');
 
@@ -346,10 +346,10 @@ class QueuedJobService
 			$filter['JobFinished > '] = date('Y-m-d H:i:s', time() - $includeUpUntil);
 		}
 
-		$filter = db_quote($filter, ' OR ');
+		$filter = singleton('QJUtils')->quote($filter, ' OR ');
 
 		if ($type) {
-			$filter = db_quote(array('JobType =' => $type)) . ' AND ('.$filter.')';
+			$filter = singleton('QJUtils')->quote(array('JobType =' => $type)) . ' AND ('.$filter.')';
 		}
 
 		return $filter;
