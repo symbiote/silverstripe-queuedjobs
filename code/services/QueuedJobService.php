@@ -369,15 +369,17 @@ class JobErrorHandler {
 	}
 
 	public function handleError($errno, $errstr, $errfile, $errline) {
-		switch ($errno) {
-			case E_NOTICE: 
-			case E_USER_NOTICE:
-			case E_STRICT: {
-				break;
-			}
-			default: {
-				throw new Exception($errstr, $errno);
-				break;
+		if (error_reporting()) {
+			switch ($errno) {
+				case E_NOTICE:
+				case E_USER_NOTICE:
+				case E_STRICT: {
+					break;
+				}
+				default: {
+					throw new Exception($errstr . " in $errfile at line $errline", $errno);
+					break;
+				}
 			}
 		}
 	}
