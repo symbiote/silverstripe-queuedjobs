@@ -264,7 +264,7 @@ class QueuedJobService
 					$job->process();
 				} catch (Exception $e) {
 					// okay, we'll just catch this exception for now
-					$job->addMessage("Job caused exception ".$e->getMessage(), 'ERROR');
+					$job->addMessage("Job caused exception ".$e->getMessage() . ' in '.$e->getFile() . ' at line '.$e->getLine(), 'ERROR');
 					SS_Log::log($e, SS_Log::ERR);
 					$jobDescriptor->JobStatus =  QueuedJob::STATUS_BROKEN;
 				}
