@@ -25,6 +25,9 @@ OF SUCH DAMAGE.
  * A set of utility functions used by the queued jobs module
  */
 class QJUtils {
+	public function __construct() {}
+
+
 	/**
 	 * Quote up a filter of the form
 	 *
