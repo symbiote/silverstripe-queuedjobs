@@ -234,64 +234,74 @@ class QueuedJobService
 			}
 		}
 
-		$job = $this->initialiseJob($jobDescriptor);
-
-		// get the job ready to begin.
-		$jobDescriptor->JobStarted = date('Y-m-d H:i:s');
-		$jobDescriptor->JobStatus = QueuedJob::STATUS_RUN;
-		$jobDescriptor->write();
-
-		$lastStepProcessed = 0;
-		// have we stalled at all?
-		$stallCount = 0;
-		$broken = false;
-
+		// set up a custom error handler for this processing
 		$errorHandler = new JobErrorHandler();
 
-		// while not finished
-		while (!$job->jobFinished() && !$broken) {
-			// see that we haven't been set to 'paused' or otherwise by another process
-			$jobDescriptor = DataObject::get_by_id('QueuedJobDescriptor', (int) $jobId);
-			if ($jobDescriptor->JobStatus != QueuedJob::STATUS_RUN) {
-				// we've been paused by something, so we'll just exit
-				$job->addMessage("Job paused at ".date('Y-m-d H:i:s'));
-				$broken = true;
-			}
+		$job = null;
 
-			if (!$broken) {
-				try {
-					// set up a custom error handler for this processing
-					$job->process();
-				} catch (Exception $e) {
-					// okay, we'll just catch this exception for now
-					$job->addMessage("Job caused exception ".$e->getMessage() . ' in '.$e->getFile() . ' at line '.$e->getLine(), 'ERROR');
-					SS_Log::log($e, SS_Log::ERR);
-					$jobDescriptor->JobStatus =  QueuedJob::STATUS_BROKEN;
-				}
+		try {
+			$job = $this->initialiseJob($jobDescriptor);
 
-				// now check the job state
-				$data = $job->getJobData();
-				if ($data->currentStep == $lastStepProcessed) {
-					$stallCount++;
-				}
-
-				if ($stallCount > self::$stall_threshold) {
-					$broken = true;
-					$job->addMessage("Job stalled after $stallCount attempts - please check", 'ERROR');
-					$jobDescriptor->JobStatus =  QueuedJob::STATUS_BROKEN;
-				}
-
-				// now we'll be good and check our memory usage. If it is too high, we'll set the job to
-				// a 'Waiting' state, and let the next processing run pick up the job.
-				if ($this->isMemoryTooHigh()) {
-					$job->addMessage("Job releasing memory and waiting");
-					$jobDescriptor->JobStatus = QueuedJob::STATUS_WAIT;
-					$broken = true;
-				}
-			}
-
-			$this->copyJobToDescriptor($job, $jobDescriptor);
+			// get the job ready to begin.
+			$jobDescriptor->JobStarted = date('Y-m-d H:i:s');
+			$jobDescriptor->JobStatus = QueuedJob::STATUS_RUN;
 			$jobDescriptor->write();
+
+			$lastStepProcessed = 0;
+			// have we stalled at all?
+			$stallCount = 0;
+			$broken = false;
+
+			// while not finished
+			while (!$job->jobFinished() && !$broken) {
+				// see that we haven't been set to 'paused' or otherwise by another process
+				$jobDescriptor = DataObject::get_by_id('QueuedJobDescriptor', (int) $jobId);
+				if ($jobDescriptor->JobStatus != QueuedJob::STATUS_RUN) {
+					// we've been paused by something, so we'll just exit
+					$job->addMessage("Job paused at ".date('Y-m-d H:i:s'));
+					$broken = true;
+				}
+
+				if (!$broken) {
+					try {
+						$job->process();
+					} catch (Exception $e) {
+						// okay, we'll just catch this exception for now
+						$job->addMessage("Job caused exception ".$e->getMessage() . ' in '.$e->getFile() . ' at line '.$e->getLine(), 'ERROR');
+						SS_Log::log($e, SS_Log::ERR);
+						$jobDescriptor->JobStatus =  QueuedJob::STATUS_BROKEN;
+					}
+
+					// now check the job state
+					$data = $job->getJobData();
+					if ($data->currentStep == $lastStepProcessed) {
+						$stallCount++;
+					}
+
+					if ($stallCount > self::$stall_threshold) {
+						$broken = true;
+						$job->addMessage("Job stalled after $stallCount attempts - please check", 'ERROR');
+						$jobDescriptor->JobStatus =  QueuedJob::STATUS_BROKEN;
+					}
+
+					// now we'll be good and check our memory usage. If it is too high, we'll set the job to
+					// a 'Waiting' state, and let the next processing run pick up the job.
+					if ($this->isMemoryTooHigh()) {
+						$job->addMessage("Job releasing memory and waiting");
+						$jobDescriptor->JobStatus = QueuedJob::STATUS_WAIT;
+						$broken = true;
+					}
+				}
+
+				$this->copyJobToDescriptor($job, $jobDescriptor);
+				$jobDescriptor->write();
+			}
+			// a last final save
+			$jobDescriptor->write();
+		} catch (Exception $e) {
+			// okay, we'll just catch this exception for now
+			SS_Log::log($e, SS_Log::ERR);
+			$jobDescriptor->JobStatus =  QueuedJob::STATUS_BROKEN;
 		}
 
 		$errorHandler->clear();

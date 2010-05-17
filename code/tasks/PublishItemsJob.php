@@ -71,6 +71,12 @@ class PublishItemsJob extends AbstractQueuedJob implements QueuedJob {
 	 * we never overload it with content
 	 */
 	public function setup() {
+		if (!$this->getRoot()) {
+			// we're missing for some reason!
+			$this->isComplete = true;
+			$this->remainingChildren = array();
+			return;
+		}
 		$remainingChildren = array();
 		$remainingChildren[] = $this->getRoot()->ID;
 		$this->remainingChildren = $remainingChildren;
