@@ -48,7 +48,12 @@ class QueuedJobService
 	// how many meg of ram will we allow before clearing?
 	public static $memory_limit = 256000000;
 
-	public function __construct() { }
+	/**
+	 * Register our shutdown handler
+	 */
+	public function __construct() {
+		register_shutdown_function(array($this, 'onShutdown'));
+	}
 	
     /**
 	 * Adds a job to the queue to be started
@@ -363,6 +368,22 @@ class QueuedJobService
 		}
 
 		return $filter;
+	}
+
+	/**
+	 * When PHP shuts down, we want to process all of the immediate queue items
+	 *
+	 * We use the 'getNextPendingJob' method, instead of just iterating the queue, to ensure
+	 * we ignore paused or stalled jobs. 
+	 */
+	public function onShutdown() {
+		$job = $this->getNextPendingJob(QueuedJob::IMMEDIATE);
+		do {
+			$job = $this->getNextPendingJob(QueuedJob::IMMEDIATE);
+			if ($job) {
+				$this->runJob($job->ID);
+			}
+		} while($job);
 	}
 }
 

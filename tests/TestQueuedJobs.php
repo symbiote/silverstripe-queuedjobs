@@ -156,6 +156,29 @@ class TestQueuedJobs extends SapphireTest
 		$this->assertEquals('Complete', $descriptor->JobStatus);
 	}
 
+	public function testImmediateQueuedJob() {
+		// okay, lets test it out on the actual service
+		$svc = singleton("QueuedJobService");
+		// lets create a new job and add it to the queue
+
+		$job = new TestQueuedJob(QueuedJob::IMMEDIATE);
+		$job->firstJob = true;
+		$id = $svc->queueJob($job);
+
+		$job = new TestQueuedJob(QueuedJob::IMMEDIATE);
+		$job->secondJob = true;
+		$id = $svc->queueJob($job);
+
+		$jobs = $svc->getJobList(QueuedJob::IMMEDIATE);
+		$this->assertEquals(2, $jobs->Count());
+
+		// now fake a shutdown
+		$svc->onShutdown();
+
+		$jobs = $svc->getJobList(QueuedJob::IMMEDIATE);
+		$this->assertNull($jobs);
+	}
+
 	public function testNextJob() {
 		$svc = singleton("TestQJService");
 		$list = $svc->getJobList();
@@ -205,9 +228,17 @@ class TestQJService extends QueuedJobService {
 }
 
 class TestQueuedJob extends AbstractQueuedJob implements QueuedJob {
+	private $type = QueuedJob::QUEUED;
 
-	public function __construct() {
+	public function __construct($type=null) {
+		if ($type) {
+			$this->type = $type;
+		}
 		$this->times = array();
+	}
+
+	public function getJobType() {
+		return $this->type;
 	}
 
 	public function getTitle() {
