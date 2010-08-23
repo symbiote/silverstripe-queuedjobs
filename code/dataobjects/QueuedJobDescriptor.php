@@ -38,6 +38,7 @@ class QueuedJobDescriptor extends DataObject
 		'Implementation' => 'Varchar(64)',
 		'StartAfter' => 'SS_Datetime',
 		'JobStarted' => 'SS_Datetime',
+		'JobRestarted' => 'SS_Datetime',
 		'JobFinished' => 'SS_Datetime',
 		'TotalSteps' => 'Int',
 		'StepsProcessed' => 'Int',
