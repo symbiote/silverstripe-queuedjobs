@@ -1,5 +1,15 @@
+Version 0.1.0
+-------------
+
+* Added better support for jobs that should be executed after a particular
+  time delay. 
+
 Version 0.1.0 RC1
 -----------------
 2010-05-15
 
 * Initital release
+* Cron based initiation of a single task that manages the processing of jobs
+  that take more processing than what is feasible to achieve in a single
+  HTTP request. Manages the queueing, state and continuation of jobs over
+  time to ensure load doesn't become too high on the server.

@@ -61,7 +61,9 @@ class QueuedJobService
 	 * Relevant data about the job will be persisted using a QueuedJobDescriptor
 	 *
 	 * @param QueuedJob $job 
-	 *			The job to start. 
+	 *			The job to start.
+	 * @param $startAfter
+	 *			The date (in Y-m-d H:i:s format) to start execution after
 	 */
 	public function queueJob(QueuedJob $job, $startAfter = null) {
 
@@ -179,7 +181,11 @@ class QueuedJobService
 	
 	/**
 	 * Prepares the given jobDescriptor for execution. Returns the job that
-	 * will actually be run in a state ready for executing
+	 * will actually be run in a state ready for executing.
+	 *
+	 * Note that this is called each time a job is picked up to be executed from the cron
+	 * job - meaning that jobs that are paused and restarted will have 'setup()' called on them again,
+	 * so your job MUST detect that and act accordingly. 
 	 *
 	 * @param QueuedJobDescriptor $jobDescriptor
 	 *			The Job descriptor of a job to prepare for execution
@@ -248,7 +254,12 @@ class QueuedJobService
 			$job = $this->initialiseJob($jobDescriptor);
 
 			// get the job ready to begin.
-			$jobDescriptor->JobStarted = date('Y-m-d H:i:s');
+			if (!$jobDescriptor->JobStarted) {
+				$jobDescriptor->JobStarted = date('Y-m-d H:i:s');
+			} else {
+				$jobDescriptor->JobRestarted = date('Y-m-d H:i:s');
+			}
+			
 			$jobDescriptor->JobStatus = QueuedJob::STATUS_RUN;
 			$jobDescriptor->write();
 

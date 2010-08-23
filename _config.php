@@ -11,4 +11,4 @@
  * approach to solving a very similar problem. The messagequeue module is a lot more generalised than this approach,
  * and while this module solves a specific problem, it may in fact be better working in with the messagequeue module
  */
-?>
+

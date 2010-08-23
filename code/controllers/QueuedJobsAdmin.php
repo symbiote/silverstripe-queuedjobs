@@ -63,6 +63,7 @@ class QueuedJobsAdmin extends LeftAndMain
 			'JobTitle' => 'Title',
 			'Created' => 'Added',
 			'JobStarted' => 'Started',
+			'JobRestarted' => 'Re Started',
 			'StartAfter' => 'Start After',
 			'JobStatus' => 'Status',
 			'Messages' => 'Messages',
