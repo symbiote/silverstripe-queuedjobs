@@ -1,9 +1,8 @@
-###############################################
-Module
-###############################################
+SilverStripe Queued Jobs Module
+------------------
 
 Maintainer Contact
------------------------------------------------
+------------------
 Marcus Nyeholt
 
 <marcus (at) silverstripe (dot) com (dot) au>
