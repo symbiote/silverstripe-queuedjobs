@@ -1,3 +1,9 @@
+Version 0.1.1
+-------------
+
+* Changed admin URL param (seriously, why on earth did I put _queued-jobs?)
+* Added more memory information
+
 Version 0.1.0
 -------------
 

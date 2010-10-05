@@ -45,8 +45,15 @@ class QueuedJobService
 {
 	public static $stall_threshold = 3;
 
-	// how many meg of ram will we allow before clearing?
-	public static $memory_limit = 256000000;
+	/**
+	 * how many meg of ram will we allow before pausing and releasing the memory?
+	 *
+	 * This is set to a somewhat low default as some people may not be able to run
+	 * on systems with a lot of ram (128MB by default)
+	 *
+	 * @var int
+	 */
+	public static $memory_limit = 134217728;
 
 	/**
 	 * Register our shutdown handler
@@ -274,7 +281,7 @@ class QueuedJobService
 				$jobDescriptor = DataObject::get_by_id('QueuedJobDescriptor', (int) $jobId);
 				if ($jobDescriptor->JobStatus != QueuedJob::STATUS_RUN) {
 					// we've been paused by something, so we'll just exit
-					$job->addMessage("Job paused at ".date('Y-m-d H:i:s'));
+					$job->addMessage(sprintf(_t('QueuedJobs.JOB_PAUSED', "Job paused at %s"), date('Y-m-d H:i:s')));
 					$broken = true;
 				}
 
@@ -283,7 +290,7 @@ class QueuedJobService
 						$job->process();
 					} catch (Exception $e) {
 						// okay, we'll just catch this exception for now
-						$job->addMessage("Job caused exception ".$e->getMessage() . ' in '.$e->getFile() . ' at line '.$e->getLine(), 'ERROR');
+						$job->addMessage(sprintf(_t('QueuedJobs.JOB_EXCEPT', 'Job caused exception %s in %s at line %s'), $e->getMessage(), $e->getFile(), $e->getLine()), 'ERROR');
 						SS_Log::log($e, SS_Log::ERR);
 						$jobDescriptor->JobStatus =  QueuedJob::STATUS_BROKEN;
 					}
@@ -296,14 +303,14 @@ class QueuedJobService
 
 					if ($stallCount > self::$stall_threshold) {
 						$broken = true;
-						$job->addMessage("Job stalled after $stallCount attempts - please check", 'ERROR');
+						$job->addMessage(sprintf(_t('QueuedJobs.JOB_STALLED', "Job stalled after %s attempts - please check"), $stallCount), 'ERROR');
 						$jobDescriptor->JobStatus =  QueuedJob::STATUS_BROKEN;
 					}
 
 					// now we'll be good and check our memory usage. If it is too high, we'll set the job to
 					// a 'Waiting' state, and let the next processing run pick up the job.
 					if ($this->isMemoryTooHigh()) {
-						$job->addMessage("Job releasing memory and waiting");
+						$job->addMessage(sprintf(_t('QueuedJobs.MEMORY_RELEASE', 'Job releasing memory and waiting (%s used)'), $this->humanReadable(memory_get_usage())));
 						$jobDescriptor->JobStatus = QueuedJob::STATUS_WAIT;
 						$broken = true;
 					}
@@ -339,6 +346,11 @@ class QueuedJobService
 			$memory = memory_get_usage();
 			return memory_get_usage() > self::$memory_limit;
 		}
+	}
+
+	protected function humanReadable($size) {
+		$filesizename = array(" Bytes", " KB", " MB", " GB", " TB", " PB", " EB", " ZB", " YB");
+		return $size ? round($size/pow(1024, ($i = floor(log($size, 1024)))), 2) . $filesizename[$i] : '0 Bytes';
 	}
 
 

@@ -27,7 +27,7 @@ OF SUCH DAMAGE.
  */
 class QueuedJobsAdmin extends LeftAndMain
 {
-    static $url_segment = '_queued-jobs';
+    static $url_segment = 'queuedjobs';
 
 	static $url_rule = '$Action//$ID';
 
@@ -60,15 +60,15 @@ class QueuedJobsAdmin extends LeftAndMain
 		$actions = new FieldSet();
 
 		$columns = array(
-			'JobTitle' => 'Title',
-			'Created' => 'Added',
-			'JobStarted' => 'Started',
-			'JobRestarted' => 'Re Started',
-			'StartAfter' => 'Start After',
-			'JobStatus' => 'Status',
-			'Messages' => 'Messages',
-			'StepsProcessed' => 'Number Processed',
-			'TotalSteps' => 'Total',
+			'JobTitle' => _t('QueuedJobs.TABLE_TITLE', 'Title'),
+			'Created' => _t('QueuedJobs.TABLE_ADDE', 'Added'),
+			'JobStarted' => _t('QueuedJobs.TABLE_STARTED', 'Started'),
+			'JobRestarted' => _t('QueuedJobs.TABLE_RESUMED', 'Resumed'),
+			'StartAfter' => _t('QueuedJobs.TABLE_START_AFTER', 'Start After'),
+			'JobStatus' => _t('QueuedJobs.TABLE_STATUS', 'Status'),
+			'Messages' => _t('QueuedJobs.TABLE_MESSAGES', 'Message'),
+			'StepsProcessed' => _t('QueuedJobs.TABLE_NUM_PROCESSED', 'Number Processed'),
+			'TotalSteps' => _t('QueuedJobs.TABLE_TOTAL', 'Total'),
 		);
 
 		// QueuedJobListField
@@ -76,14 +76,14 @@ class QueuedJobsAdmin extends LeftAndMain
 		$table = new QueuedJobListField('QueuedJobs', 'QueuedJobDescriptor', $columns, $filter);
 
 		$table->actions['pause'] = array(
-			'label' => 'Pause',
+			'label' => _t('QueuedJobs.PAUSE_LABEL', 'Pause'),
 			'icon' => 'queuedjobs/images/control_pause_blue.png',
 			'icon_disabled' => 'queuedjobs/images/control_pause_blue.png',
 			'class' => 'pauselink'
 		);
 
 		$table->actions['resume'] = array(
-			'label' => 'Resume',
+			'label' => _t('QueuedJobs.RESUME_LABEL', 'Resume'),
 			'icon' => 'queuedjobs/images/control_play_blue.png',
 			'icon_disabled' => 'queuedjobs/images/control_play_blue.png',
 			'class' => 'resumelink'
