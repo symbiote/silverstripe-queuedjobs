@@ -66,8 +66,20 @@ abstract class AbstractQueuedJob implements QueuedJob
 
 	/**
 	 * Implement yourself!
+	 *
+	 * Be aware that this is only executed ONCE for every job
+	 *
+	 * If you want to do some checking on every restart, look into using the prepareForRestart method
 	 */
 	public function setup() {
+
+	}
+
+	/**
+	 * This is called when you want to perform some form of initialisation on a restart of a
+	 * job. 
+	 */
+	public function prepareForRestart() {
 
 	}
 

@@ -62,9 +62,18 @@ interface QueuedJob {
 	public function getSignature();
 
 	/**
-	 * Setup this queued job
+	 * Setup this queued job. This is only called the first time this job is executed
+	 * (ie when currentStep is 0)
+	 *
 	 */
 	public function setup();
+
+	/**
+	 * Called whenever a job is restarted for whatever reason.
+	 *
+	 * This is a separate method so that broken jobs can do some fixup before restarting. 
+	 */
+	public function prepareForRestart();
 
 	/**
 	 * What type of job is this? Options are

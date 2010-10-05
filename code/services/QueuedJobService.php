@@ -214,7 +214,14 @@ class QueuedJobService
 
 		// make sure the data is there
 		$this->copyDescriptorToJob($jobDescriptor, $job);
-		$job->setup();
+
+		// see if it needs 'setup' or 'restart' called
+		if (!$jobDescriptor->StepsProcessed) {
+			$job->setup();
+		} else {
+			$job->prepareForRestart();
+		}
+		
 
 		// make sure the descriptor is up to date with anything changed
 		$this->copyJobToDescriptor($job, $jobDescriptor);
