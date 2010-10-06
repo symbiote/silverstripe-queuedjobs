@@ -147,6 +147,8 @@ class QueuedJobService
 	/**
 	 * Check the current job queues and see if any of the jobs currently in there should be started. If so,
 	 * return the next job that should be executed
+	 *
+	 * @return QueuedJobDescriptor
 	 */
 	public function getNextPendingJob($type=null) {
 		$type = $type ? $type : QueuedJob::QUEUED;

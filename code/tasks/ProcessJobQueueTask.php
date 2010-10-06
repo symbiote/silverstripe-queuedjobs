@@ -30,6 +30,7 @@ class ProcessJobQueueTask extends BuildTask {
 		$service = singleton('QueuedJobService');
 		/* @var $service QueuedJobService */
 
+		$datestamp = '['.date('Y-m-d H:i:s').']';
 		$queue = $request->getVar('queue');
 		if (!$queue) {
 			$queue = 'Queued';
@@ -51,11 +52,13 @@ class ProcessJobQueueTask extends BuildTask {
 			}
 		}
 
+		echo "$datestamp Processing queue $queue\n";
+
 		if ($request->getVar('list')) {
 			for ($i = 1; $i  <= 3; $i++) {
 				$jobs = $service->getJobList($i);
 				$num = $jobs ? $jobs->Count() : 0;
-				echo "Found $num jobs for mode $i\n";
+				echo "$datestamp Found $num jobs for mode $i\n";
 			}
 
 			return;
@@ -65,15 +68,15 @@ class ProcessJobQueueTask extends BuildTask {
 		$nextJob = $service->getNextPendingJob($queue);
 
 		if ($nextJob) {
+			echo "$datestamp Running $nextJob->JobTitle \n";
 			$service->runJob($nextJob->ID);
 		}
 
 		if (is_null($nextJob)) {
-			echo "No new jobs\n";
+			echo "$datestamp No new jobs\n";
 		}
 		if ($nextJob === false) {
-			echo "Job is still running\n";
+			echo "$datestamp Job is still running\n";
 		}
 	}
 }
-?>
