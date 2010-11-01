@@ -171,10 +171,15 @@ class QueuedJobService
 
 	/**
 	 * Runs an explicit check on all currently running jobs to make sure their "processed" count is incrementing
-	 * between each run. If it's not, then we need to flag it as paused due to an error. 
+	 * between each run. If it's not, then we need to flag it as paused due to an error.
+	 *
+	 * This typically happens when a PHP fatal error is thrown, which can't be picked up by the error
+	 * handler or exception checker; in this case, we detect these stalled jobs later and fix (try) to
+	 * fix them
 	 */
 	public function checkJobHealth() {
-		// first off, we want to find jobs that haven't changed since they were last checked
+		// first off, we want to find jobs that haven't changed since they were last checked (assuming they've actually
+		// processed a few steps...)
 		$filter = singleton('QJUtils')->quote(array('JobStatus =' => QueuedJob::STATUS_RUN, 'StepsProcessed >' => 0));
 		$filter = $filter . ' AND "StepsProcessed"="LastProcessedCount"';
 
@@ -182,6 +187,7 @@ class QueuedJobService
 		if ($stalledJobs) {
 			foreach ($stalledJobs as $stalledJob) {
 				if ($stalledJob->ResumeCount <= self::$stall_threshold) {
+					$stalledJob->ResumeCount++;
 					$stalledJob->pause();
 					$stalledJob->resume();
 					$msg = sprintf(_t('QueuedJobs.STALLED_JOB_MSG', 'A job named %s appears to have stalled. It will be stopped and restarted, please login to make sure it has continued'), $stalledJob->JobTitle);
@@ -198,7 +204,7 @@ class QueuedJobService
 		// now, find those that need to be marked before the next check
 		$filter = singleton('QJUtils')->quote(array('JobStatus =' => QueuedJob::STATUS_RUN));
 		$runningJobs = DataObject::get('QueuedJobDescriptor', $filter);
-
+		
 		if ($runningJobs) {
 			// foreach job, mark it as having been incremented
 			foreach ($runningJobs as $job) {
