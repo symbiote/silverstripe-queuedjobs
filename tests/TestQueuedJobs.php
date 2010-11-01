@@ -267,4 +267,3 @@ class TestQueuedJob extends AbstractQueuedJob implements QueuedJob {
 		}
 	}
 }
-?>

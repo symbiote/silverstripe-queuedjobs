@@ -1,24 +1,4 @@
 <?php
-/*
-
-Copyright (c) 2009, SilverStripe Australia PTY LTD - www.silverstripe.com.au
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the
-      documentation and/or other materials provided with the distribution.
-    * Neither the name of SilverStripe nor the names of its contributors may be used to endorse or promote products derived from this software
-      without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
-GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
-OF SUCH DAMAGE.
-*/
 
 /**
  * A service that can be used for starting, stopping and listing queued jobs.
@@ -40,6 +20,7 @@ OF SUCH DAMAGE.
  * 
  *
  * @author Marcus Nyeholt <marcus@silverstripe.com.au>
+ * @license BSD http://silverstripe.org/bsd-license/
  */
 class QueuedJobService
 {
@@ -187,7 +168,46 @@ class QueuedJobService
 			return $jobs->First();
 		}
 	}
-	
+
+	/**
+	 * Runs an explicit check on all currently running jobs to make sure their "processed" count is incrementing
+	 * between each run. If it's not, then we need to flag it as paused due to an error. 
+	 */
+	public function checkJobHealth() {
+		// first off, we want to find jobs that haven't changed since they were last checked
+		$filter = singleton('QJUtils')->quote(array('JobStatus =' => QueuedJob::STATUS_RUN, 'StepsProcessed >' => 0));
+		$filter = $filter . ' AND "StepsProcessed"="LastProcessedCount"';
+
+		$stalledJobs = DataObject::get('QueuedJobDescriptor', $filter);
+		if ($stalledJobs) {
+			foreach ($stalledJobs as $stalledJob) {
+				if ($stalledJob->ResumeCount <= self::$stall_threshold) {
+					$stalledJob->pause();
+					$stalledJob->resume();
+					$msg = sprintf(_t('QueuedJobs.STALLED_JOB_MSG', 'A job named %s appears to have stalled. It will be stopped and restarted, please login to make sure it has continued'), $stalledJob->JobTitle);
+				} else {
+					$stalledJob->pause();
+					$msg = sprintf(_t('QueuedJobs.STALLED_JOB_MSG', 'A job named %s appears to have stalled. It has been paused, please login to check it'), $stalledJob->JobTitle);
+				}
+
+				$mail = new Email(Email::getAdminEmail(), Email::getAdminEmail(), _t('QueuedJobs.STALLED_JOB', 'Stalled job'), $msg);
+				$mail->send();
+			}
+		}
+		
+		// now, find those that need to be marked before the next check
+		$filter = singleton('QJUtils')->quote(array('JobStatus =' => QueuedJob::STATUS_RUN));
+		$runningJobs = DataObject::get('QueuedJobDescriptor', $filter);
+
+		if ($runningJobs) {
+			// foreach job, mark it as having been incremented
+			foreach ($runningJobs as $job) {
+				$job->LastProcessedCount = $job->StepsProcessed;
+				$job->write();
+			}
+		}
+	}
+
 	/**
 	 * Prepares the given jobDescriptor for execution. Returns the job that
 	 * will actually be run in a state ready for executing.
@@ -447,4 +467,3 @@ class JobErrorHandler {
 		}
 	}
 }
-?>

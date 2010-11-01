@@ -1,24 +1,30 @@
-Version 0.1.2
+
+2010-11-01 v1.0.0
+-----------------
+
+* Helper to double check the status of any 'running' job that may have stalled.
+
+v0.1.2
 -------------
 
 * Added additional method prepareForRestart that is called on QueuedJobs
   whenever a job is restarted
 
-Version 0.1.1
+v0.1.1
 -------------
 
 * Changed admin URL param (seriously, why on earth did I put _queued-jobs?)
 * Added more memory information
 
-Version 0.1.0
+2010-06-20 v0.1.0
 -------------
 
 * Added better support for jobs that should be executed after a particular
   time delay. 
 
-Version 0.1.0 RC1
+2010-05-15 v0.1.0 RC1
 -----------------
-2010-05-15
+
 
 * Initital release
 * Cron based initiation of a single task that manages the processing of jobs
