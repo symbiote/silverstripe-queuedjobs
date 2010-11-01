@@ -3,6 +3,8 @@
 -----------------
 
 * Helper to double check the status of any 'running' job that may have stalled.
+* Added example job that generates a google sitemap in the background
+  (instead of each request). Handy for large sites.
 
 v0.1.2
 -------------
