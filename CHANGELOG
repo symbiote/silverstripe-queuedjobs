@@ -1,3 +1,8 @@
+2010-11-11 v1.0.2
+-----------------
+
+* Added ability to specify a RunAs user when creating the job
+
 2010-11-06 v1.0.1
 -----------------
 
