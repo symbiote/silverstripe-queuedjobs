@@ -22,8 +22,5 @@ class PublishItemsTask extends BuildTask
 			$job = new PublishItemsJob($item);
 			singleton('QueuedJobService')->queueJob($job);
 		}
-
-
 	}
 }
-?>

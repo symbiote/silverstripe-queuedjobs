@@ -52,8 +52,10 @@ class QueuedJobService
 	 *			The job to start.
 	 * @param $startAfter
 	 *			The date (in Y-m-d H:i:s format) to start execution after
+	 * @param int $userId
+	 *			The ID of a user to execute the job as. Defaults to the current user
 	 */
-	public function queueJob(QueuedJob $job, $startAfter = null) {
+	public function queueJob(QueuedJob $job, $startAfter = null, $userId = null) {
 
 		$signature = $job->getSignature();
 
@@ -76,7 +78,7 @@ class QueuedJobService
 		$jobDescriptor->Implementation = get_class($job);
 		$jobDescriptor->StartAfter = $startAfter;
 
-		$jobDescriptor->RunAsID = Member::currentUserID();
+		$jobDescriptor->RunAsID = $userId ? $userId : Member::currentUserID();
 
 		// copy data
 		$this->copyJobToDescriptor($job, $jobDescriptor);
