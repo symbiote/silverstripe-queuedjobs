@@ -71,6 +71,9 @@ class QueuedJobListField_Item extends TableListField_Item
 					if (!($this->item->JobStatus == QueuedJob::STATUS_NEW || $this->item->JobStatus == QueuedJob::STATUS_WAIT || $this->item->JobStatus == QueuedJob::STATUS_PAUSED)) {
 						$can = false;
 					}
+					if ($this->item->RunAsID != Member::currentUserID() || !Permission::check('ADMIN')) {
+						$can = false;
+					}
 					break;
 				}
 			}
