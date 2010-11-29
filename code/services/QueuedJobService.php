@@ -280,7 +280,7 @@ class QueuedJobService
 		// as the currently logged in user and hope for the best
 		$originalUser = Member::currentUser();
 		$runAsUser = null;
-		if (strtolower(php_sapi_name()) == 'cli' || Member::currentUser()->isAdmin()) {
+		if (Director::is_cli() || !Member::currentUser() || Member::currentUser()->isAdmin()) {
 			$runAsUser = $jobDescriptor->RunAs();
 			if ($runAsUser && $runAsUser->exists()) {
 				// the job runner outputs content way early in the piece, meaning there'll be cooking errors
