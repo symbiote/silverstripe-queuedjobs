@@ -16,6 +16,10 @@ QueuedJobListField.prototype = {
 		rules['#'+this.id+' table.data a.resumelink'] = {
 			onclick: this.resume.bind(this)
 		};
+		
+		rules['#'+this.id+' table.data a.executelink'] = {
+			onclick: this.execute.bind(this)
+		};
 
 		rules['#'+this.id+' th a'] = {
 			onclick: this.refresh.bind(this)
@@ -92,6 +96,17 @@ QueuedJobListField.prototype = {
 	},
 
 	resume: function (e) {
+		var link = Event.findElement(e,"a");
+		Event.stop(e);
+		ajaxLink(link.href);
+		var el = $(this.id);
+		var newLink = link.href.substr(0, link.href.indexOf('/item/'));
+		el.setAttribute('href', newLink);
+		this.refresh();
+		return false;
+	},
+	
+	execute: function (e) {
 		var link = Event.findElement(e,"a");
 		Event.stop(e);
 		ajaxLink(link.href);

@@ -53,6 +53,7 @@ class PublishItemsJob extends AbstractQueuedJob implements QueuedJob {
 	 * we never overload it with content
 	 */
 	public function setup() {
+		
 		if (!$this->getRoot()) {
 			// we're missing for some reason!
 			$this->isComplete = true;
@@ -80,6 +81,7 @@ class PublishItemsJob extends AbstractQueuedJob implements QueuedJob {
 			return;
 		}
 
+		
 		// we need to always increment! This is important, because if we don't then our container
 		// that executes around us thinks that the job has died, and will stop it running. 
 		$this->currentStep++;

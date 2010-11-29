@@ -32,6 +32,10 @@ class QueuedJobListField_Item extends TableListField_Item
 	function ResumeLink() {
 		return Controller::join_links($this->Link(), "resume");
 	}
+	
+	function ExecuteLink() {
+		return Controller::join_links($this->Link(), 'execute');
+	}
 
 	/**
 	 * Returns all row-based actions not disallowed through permissions.
@@ -59,6 +63,12 @@ class QueuedJobListField_Item extends TableListField_Item
 				}
 				case 'delete': {
 					if (!($this->item->JobStatus == QueuedJob::STATUS_NEW || $this->item->JobStatus == QueuedJob::STATUS_BROKEN)) {
+						$can = false;
+					}
+					break;
+				}
+				case 'execute': {
+					if (!($this->item->JobStatus == QueuedJob::STATUS_NEW || $this->item->JobStatus == QueuedJob::STATUS_WAIT || $this->item->JobStatus == QueuedJob::STATUS_PAUSED)) {
 						$can = false;
 					}
 					break;
@@ -91,5 +101,11 @@ class QueuedJobListField_ItemRequest extends TableListField_ItemRequest {
 	public function resume() {
 		$this->dataObj()->resume();
 	}
+	
+	/**
+	 * Immediately executes the given job
+	 */
+	public function execute() {
+		$this->dataObj()->execute();
+	}
 }
-?>

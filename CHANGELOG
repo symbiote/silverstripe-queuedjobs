@@ -1,3 +1,8 @@
+2010-11-29 v1.0.3
+-----------------
+
+* FEATURE: Added abiltity to directly execute a job from the queue without needing the background process running. Job executes immediately in browser as the user running the job
+
 2010-11-11 v1.0.2
 -----------------
 

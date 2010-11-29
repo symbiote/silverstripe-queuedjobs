@@ -55,6 +55,11 @@ class QueuedJobDescriptor extends DataObject
 			$this->write();
 		}
 	}
+	
+	public function execute() {
+		$service = singleton('QueuedJobService');
+		$service->runJob($this->ID);
+	}
 
 	public function getMessages() {
 		if (strlen($this->SavedJobMessages)) {

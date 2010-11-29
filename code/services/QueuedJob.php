@@ -106,4 +106,3 @@ interface QueuedJob {
 	 */
 	public function addMessage($message);
 }
-?>

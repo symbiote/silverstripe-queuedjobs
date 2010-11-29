@@ -69,8 +69,15 @@ class QueuedJobsAdmin extends LeftAndMain
 			'icon_disabled' => 'queuedjobs/images/control_play_blue.png',
 			'class' => 'resumelink'
 		);
+		
+		$table->actions['execute'] = array(
+			'label' => _t('QueuedJobs.EXECUTE_LABEL', 'Execute'),
+			'icon' => 'queuedjobs/images/cog_go.png',
+			'icon_disabled' => 'queuedjobs/images/cog_go.png',
+			'class' => 'executelink'
+		);
 
-		$table->setPermissions(array('delete', 'pause', 'resume'));
+		$table->setPermissions(array('delete', 'pause', 'resume', 'execute'));
 
 		$fields->addFieldToTab('Root.Main', $table);
 
@@ -84,6 +91,5 @@ class QueuedJobsAdmin extends LeftAndMain
 		
 		return $this->renderWith('QueuedJobsAdmin_right');
 	}
+	
 }
-
-?>
