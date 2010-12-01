@@ -1,3 +1,7 @@
+2010-01-12 v1.0.5
+-----------------
+* Fixed E_DEPRECATED notices in PHP 5.3 causing an exception during job processing.
+
 2010-11-30 v1.0.4
 -----------------
 

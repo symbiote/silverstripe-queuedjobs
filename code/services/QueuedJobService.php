@@ -461,6 +461,13 @@ class JobErrorHandler {
 
 	public function handleError($errno, $errstr, $errfile, $errline) {
 		if (error_reporting()) {
+			// Don't throw E_DEPRECATED in PHP 5.3+
+			if (defined('E_DEPRECATED')) {
+				if ($errno == E_DEPRECATED || $errno = E_USER_DEPRECATED) {
+					return;
+				}
+			}
+
 			switch ($errno) {
 				case E_NOTICE:
 				case E_USER_NOTICE:
