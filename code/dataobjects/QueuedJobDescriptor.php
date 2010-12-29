@@ -63,8 +63,8 @@ class QueuedJobDescriptor extends DataObject
 
 	public function getMessages() {
 		if (strlen($this->SavedJobMessages)) {
-			$msgs = json_decode($this->SavedJobMessages);
-			return '<ul><li>'.implode('</li><li>', $msgs).'</li></ul>';
+			$msgs = @unserialize($this->SavedJobMessages);
+			return is_array($msgs) ? '<ul><li>'.implode('</li><li>', $msgs).'</li></ul>' : '';
 		}
 	}
 }

@@ -1,8 +1,16 @@
-2010-01-24 v1.0.6
+2010-12-29 v1.1.0
+-----------------
+
+* Use php's serialise instead of JSON serialisation (what was I thinking!).
+  We're not going to be doing JS distribution just yet...
+* Version bump as the serialisation change may have some weird effects
+  on existing scheduled jobs that have complex data serialised
+
+2010-12-24 v1.0.6
 -----------------
 * Fix bug where admins couldn't execute other users' jobs via the UI
 
-2010-01-12 v1.0.5
+2010-12-12 v1.0.5
 -----------------
 * Fixed E_DEPRECATED notices in PHP 5.3 causing an exception during job processing.
 

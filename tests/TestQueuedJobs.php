@@ -35,8 +35,17 @@ class TestQueuedJobs extends SapphireTest
 		$jobId = $svc->queueJob($job);
 		$list = $svc->getJobList();
 		
-		$myJob = $list->First();
+		$this->assertTrue($list->Count() > 0);
 
+		$myJob = null;
+		foreach ($list as $job) {
+			if ($job->Implementation == 'TestQueuedJob') {
+				$myJob = $job;
+				break;
+			}
+		}
+		
+		$this->assertNotNull($myJob);
 		$this->assertTrue($jobId > 0);
 		$this->assertEquals('TestQueuedJob', $myJob->Implementation);
 		$this->assertNotNull($myJob->SavedJobData);

@@ -103,26 +103,35 @@ class QueuedJobService
 			$jobDescriptor->JobStatus = QueuedJob::STATUS_COMPLETE;
 			$jobDescriptor->JobFinished = date('Y-m-d H:i:s');
 		}
-		$jobDescriptor->SavedJobData = Convert::raw2json($data->jobData);
-		$jobDescriptor->SavedJobMessages = Convert::raw2json($data->messages);
+
+		$jobDescriptor->SavedJobData = serialize($data->jobData);
+		$jobDescriptor->SavedJobMessages = serialize($data->messages);
 	}
 
 	/**
-	 *
 	 * @param QueuedJobDescriptor $jobDescriptor
 	 * @param QueuedJob $job
 	 */
 	protected function copyDescriptorToJob($jobDescriptor, $job) {
 		$jobData = null;
 		$messages = null;
-		// SS's convert:: function doesn't do this detection for us!!
-		if (function_exists('json_decode')) {
-			$jobData = json_decode($jobDescriptor->SavedJobData);
-			$messages = json_decode($jobDescriptor->SavedJobMessages);
-		} else {
-			$jobData = Convert::json2obj($jobDescriptor->SavedJobData);
-			$messages = Convert::json2obj($jobDescriptor->SavedJobMessages);
+		
+		// switching to php's serialize methods... not sure why this wasn't done from the start!
+		$jobData = @unserialize($jobDescriptor->SavedJobData);
+		$messages = @unserialize($jobDescriptor->SavedJobMessages);
+		
+		if (!$jobData) {
+			// SS's convert:: function doesn't do this detection for us!!
+			if (function_exists('json_decode')) {
+				$jobData = json_decode($jobDescriptor->SavedJobData);
+				$messages = json_decode($jobDescriptor->SavedJobMessages);
+			} else {
+				$jobData = Convert::json2obj($jobDescriptor->SavedJobData);
+				$messages = Convert::json2obj($jobDescriptor->SavedJobMessages);
+			}
 		}
+		
+		
 
 		$job->setJobData($jobDescriptor->TotalSteps, $jobDescriptor->StepsProcessed, $jobDescriptor->JobStatus == QueuedJob::STATUS_COMPLETE, $jobData, $messages);
 	}
