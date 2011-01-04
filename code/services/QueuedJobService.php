@@ -261,7 +261,6 @@ class QueuedJobService
 			$job->prepareForRestart();
 		}
 		
-
 		// make sure the descriptor is up to date with anything changed
 		$this->copyJobToDescriptor($job, $jobDescriptor);
 
@@ -371,6 +370,7 @@ class QueuedJobService
 			// okay, we'll just catch this exception for now
 			SS_Log::log($e, SS_Log::ERR);
 			$jobDescriptor->JobStatus =  QueuedJob::STATUS_BROKEN;
+			$jobDescriptor->write();
 		}
 
 		$errorHandler->clear();
