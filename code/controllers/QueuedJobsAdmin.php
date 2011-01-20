@@ -54,7 +54,7 @@ class QueuedJobsAdmin extends LeftAndMain
 
 		// QueuedJobListField
 		$filter = $this->queuedJobsService->getJobListFilter($this->selectedQueue, 300);
-		$table = new QueuedJobListField('QueuedJobs', 'QueuedJobDescriptor', $columns, $filter);
+		$table = new QueuedJobListField('QueuedJobs', 'QueuedJobDescriptor', $columns, $filter, 'StartAfter ASC, Created DESC');
 
 		$table->actions['pause'] = array(
 			'label' => _t('QueuedJobs.PAUSE_LABEL', 'Pause'),
