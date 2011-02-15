@@ -1,3 +1,9 @@
+2011-02-15 v1.2.0
+-----------------
+
+* Added a generic scheduled execution job that can be added to any
+  data object and it will automatically get scheduled execution support. 
+
 2011-01-20 v1.1.1
 -----------------
 
