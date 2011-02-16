@@ -39,7 +39,7 @@ class TestScheduledExecution extends SapphireTest {
 		// reload the test object and make sure its job has now changed
 		$test = DataObject::get_by_id('TestScheduledDataObject', $test->ID);
 		
-		$this->assertNotEquals($test->ID, $jobId);
+		$this->assertNotEquals($test->ScheduledJobID, $jobId);
 		$this->assertEquals('EXECUTED', $test->Message);
 	}
 }
