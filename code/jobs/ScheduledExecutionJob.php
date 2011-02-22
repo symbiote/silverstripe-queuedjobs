@@ -45,11 +45,15 @@ class ScheduledExecutionJob extends AbstractQueuedJob {
 				$timeStr = '+1 ' . $object->ExecuteEvery;
 			}
 			
+			$next = strtotime($timeStr);
+			if ($next > time()) {
+				// in the future
+				$nextGen = date('Y-m-d H:i:s', strtotime($timeStr));
+				$nextId = singleton('QueuedJobService')->queueJob(new ScheduledExecutionJob($object, $this->timesExecuted + 1), $nextGen);
+				$object->ScheduledJobID = $nextId;
+				$object->write();
+			}
 			
-			$nextGen = date('Y-m-d H:i:s', strtotime($timeStr));
-			$nextId = singleton('QueuedJobService')->queueJob(new ScheduledExecutionJob($object, $this->timesExecuted + 1), $nextGen);
-			$object->ScheduledJobID = $nextId;
-			$object->write();
 		}
 
 		$this->currentStep++;
