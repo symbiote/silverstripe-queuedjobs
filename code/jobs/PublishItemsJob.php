@@ -10,12 +10,12 @@
  * @license BSD http://silverstripe.org/bsd-license/
  */
 class PublishItemsJob extends AbstractQueuedJob implements QueuedJob {
-	
-    public function __construct($rootNode = null) {
+
+    public function __construct($rootNodeID = null) {
 		// this value is automatically persisted between processing requests for
 		// this job
 		if ($rootNode) {
-			$this->rootID = $rootNode->ID;
+			$this->rootID = $rootNodeID;
 		}
 	}
 
@@ -37,7 +37,7 @@ class PublishItemsJob extends AbstractQueuedJob implements QueuedJob {
 	 *
 	 */
 	public function getJobType() {
-		
+
 		$this->totalSteps = 'Lots';
 		return QueuedJob::QUEUED;
 	}
@@ -53,7 +53,7 @@ class PublishItemsJob extends AbstractQueuedJob implements QueuedJob {
 	 * we never overload it with content
 	 */
 	public function setup() {
-		
+
 		if (!$this->getRoot()) {
 			// we're missing for some reason!
 			$this->isComplete = true;
@@ -81,9 +81,9 @@ class PublishItemsJob extends AbstractQueuedJob implements QueuedJob {
 			return;
 		}
 
-		
+
 		// we need to always increment! This is important, because if we don't then our container
-		// that executes around us thinks that the job has died, and will stop it running. 
+		// that executes around us thinks that the job has died, and will stop it running.
 		$this->currentStep++;
 
 		// lets process our first item - note that we take it off the list of things left to do
@@ -94,7 +94,7 @@ class PublishItemsJob extends AbstractQueuedJob implements QueuedJob {
 		if ($page) {
 			// publish it
 			$page->doPublish();
-			
+
 			// and add its children to the list to be published
 			foreach ($page->Children() as $child) {
 				$remainingChildren[] = $child->ID;
