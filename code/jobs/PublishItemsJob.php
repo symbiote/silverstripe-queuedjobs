@@ -1,6 +1,5 @@
 <?php
 
-
 /**
  * An example queued job
  *
@@ -11,10 +10,10 @@
  */
 class PublishItemsJob extends AbstractQueuedJob implements QueuedJob {
 
-    public function __construct($rootNodeID = null) {
+	public function __construct($rootNodeID = null) {
 		// this value is automatically persisted between processing requests for
 		// this job
-		if ($rootNode) {
+		if ($rootNodeID) {
 			$this->rootID = $rootNodeID;
 		}
 	}
@@ -24,7 +23,7 @@ class PublishItemsJob extends AbstractQueuedJob implements QueuedJob {
 	}
 
 	public function getTitle() {
-		return "Publish items beneath ".$this->getRoot()->Title;
+		return "Publish items beneath " . $this->getRoot()->Title;
 	}
 
 	/**
@@ -114,5 +113,5 @@ class PublishItemsJob extends AbstractQueuedJob implements QueuedJob {
 			return;
 		}
 	}
+
 }
-?>
