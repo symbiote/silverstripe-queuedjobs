@@ -1,3 +1,10 @@
+2011-04-12 v1.2.2
+-----------------
+
+* Minor update of the publish items job to be consistent with README.md
+  https://github.com/nyeholt/silverstripe-queuedjobs/pull/1
+* Renamed CreateDummyJob task to CreateQueuedJobTask to be a bit clearer. 
+
 2011-02-16 v1.2.1
 -----------------
 
