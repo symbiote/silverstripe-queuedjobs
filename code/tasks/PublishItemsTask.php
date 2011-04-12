@@ -18,8 +18,8 @@ class PublishItemsTask extends BuildTask
 
 		$item = DataObject::get_by_id('Page', $root);
 		
-		if ($item) {
-			$job = new PublishItemsJob($item);
+		if ($item && $item->exists()) {
+			$job = new PublishItemsJob($root);
 			singleton('QueuedJobService')->queueJob($job);
 		}
 	}
