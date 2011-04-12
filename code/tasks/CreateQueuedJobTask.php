@@ -1,10 +1,21 @@
 <?php
 
 /**
+ * 
+ * A task that can be used to create a queued job.
+ * 
+ * Useful to hook a queued job in to place that needs to exist if it doesn't already.
+ * 
+ * If no name is given, it creates a demo dummy job to help test that things
+ * are set up and working
+ * 
  * @author Marcus Nyeholt <marcus@silverstripe.com.au>
  * @license BSD http://silverstripe.org/bsd-license/
  */
-class CreateDummyJob extends BuildTask {
+class CreateQueuedJobTask extends BuildTask {
+	
+	protected $description = 'A task used to create a queued job. Pass the queued job class name as the "name" parameter';
+	
     public function run($request) {
 		if (isset($request['name']) && ClassInfo::exists($request['name'])) {
 			$clz = $request['name'];
