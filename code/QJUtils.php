@@ -2,7 +2,9 @@
 
 /**
  * A set of utility functions used by the queued jobs module
- * @license BSD http://silverstripe.org/bsd-license/
+ *
+ * @license http://silverstripe.org/bsd-license
+ * @author Marcus Nyeholt <marcus@silverstripe.com.au> 
  */
 class QJUtils {
 	public function __construct() {}
@@ -18,7 +20,7 @@ class QJUtils {
 	 * @param unknown_type $filter
 	 * @return unknown_type
 	 */
-	function quote($filter = array(), $join = " AND ") {
+	function dbQuote($filter = array(), $join = " AND ") {
 		$QUOTE_CHAR = defined('DB::USE_ANSI_SQL') ? '"' : '';
 
 		$string = '';
@@ -31,20 +33,7 @@ class QJUtils {
 				list($field, $operator) = explode(' ', trim($field));
 			}
 
-			if (is_array($value)) {
-				// quote each individual one into a string
-				$ins = '';
-				$insep = '';
-				foreach ($value as $v) {
-					$ins .= $insep . Convert::raw2sql($v);
-					$insep = ',';
-				}
-				$value = '('.$ins.')';
-			} else if (is_null($value)) {
-				$value = 'NULL';
-			} else if (is_string($field)) {
-				$value = "'" . Convert::raw2sql($value) . "'";
-			}
+			$value = $this->recursiveQuote($value);
 
 			if (strpos($field, '.')) {
 				list($tb, $fl) = explode('.', $field);
@@ -63,6 +52,29 @@ class QJUtils {
 		return $string;
 	}
 
+	protected function recursiveQuote($val) {
+		if (is_array($val)) {
+			$return = array();
+			foreach ($val as $v) {
+				$return[] = $this->recursiveQuote($v);
+			}
+
+			return '('.implode(',', $return).')';
+		} else if (is_null($val)) {
+			$val = 'NULL';
+		} else if (is_int($val)) {
+			$val = (int) $val;
+		} else if (is_double($val)) {
+			$val = (double) $val;
+		} else if (is_float($val)) {
+			$val = (float) $val;
+		} else {
+			$val = "'" . Convert::raw2sql($val) . "'";
+		}
+
+		return $val;
+	}
+
 	function log($message, $level=null) {
 		if (!$level) {
 			$level = SS_Log::NOTICE;
@@ -78,5 +90,11 @@ class QJUtils {
 		SS_Log::log($message, $level);
 	}
 
+	public function ajaxResponse($message, $status) {
+		return Convert::raw2json(array(
+			'message' => $message,
+			'status' => $status,
+		));
+	}
 }
 ?>

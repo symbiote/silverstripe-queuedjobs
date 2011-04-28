@@ -65,7 +65,7 @@ class QueuedJobService
 			'JobStatus =' => QueuedJob::STATUS_NEW,
 		);
 
-		$existing = DataObject::get('QueuedJobDescriptor', singleton('QJUtils')->quote($filter));
+		$existing = DataObject::get('QueuedJobDescriptor', singleton('QJUtils')->dbQuote($filter));
 
 		if ($existing && $existing->Count()) {
 			return $existing->First()->ID;
@@ -146,16 +146,16 @@ class QueuedJobService
 		$type = $type ? $type : QueuedJob::QUEUED;
 
 		// see if there's any blocked jobs that need to be resumed
-		$filter = singleton('QJUtils')->quote(array('JobStatus =' => QueuedJob::STATUS_WAIT, 'JobType =' => $type));
+		$filter = singleton('QJUtils')->dbQuote(array('JobStatus =' => QueuedJob::STATUS_WAIT, 'JobType =' => $type));
 		$existingJob = DataObject::get_one('QueuedJobDescriptor', $filter);
 		if ($existingJob && $existingJob->exists()) {
 			return $existingJob;
 		}
 
 		// lets see if we have a currently running job
-		$filter = singleton('QJUtils')->quote(array('JobStatus =' => QueuedJob::STATUS_INIT)) .' OR '. singleton('QJUtils')->quote(array('JobStatus =' => QueuedJob::STATUS_RUN));
+		$filter = singleton('QJUtils')->dbQuote(array('JobStatus =' => QueuedJob::STATUS_INIT)) .' OR '. singleton('QJUtils')->dbQuote(array('JobStatus =' => QueuedJob::STATUS_RUN));
 
-		$filter = '('.$filter.') AND '.singleton('QJUtils')->quote(array('JobType =' => $type));
+		$filter = '('.$filter.') AND '.singleton('QJUtils')->dbQuote(array('JobType =' => $type));
 
 		$existingJob = DataObject::get_one('QueuedJobDescriptor', $filter);
 
@@ -171,7 +171,7 @@ class QueuedJobService
 			'JobType =' => $type ? $type : QueuedJob::QUEUED,
 		);
 
-		$filter = singleton('QJUtils')->quote($filter) . ' AND ('. singleton('QJUtils')->quote(array('StartAfter <' => date('Y-m-d H:i:s'), 'StartAfter IS' => null), ' OR ').')';
+		$filter = singleton('QJUtils')->dbQuote($filter) . ' AND ('. singleton('QJUtils')->dbQuote(array('StartAfter <' => date('Y-m-d H:i:s'), 'StartAfter IS' => null), ' OR ').')';
 
 		$jobs = DataObject::get('QueuedJobDescriptor', $filter, 'ID ASC');
 
@@ -191,7 +191,7 @@ class QueuedJobService
 	public function checkJobHealth() {
 		// first off, we want to find jobs that haven't changed since they were last checked (assuming they've actually
 		// processed a few steps...)
-		$filter = singleton('QJUtils')->quote(array('JobStatus =' => QueuedJob::STATUS_RUN, 'StepsProcessed >' => 0));
+		$filter = singleton('QJUtils')->dbQuote(array('JobStatus =' => QueuedJob::STATUS_RUN, 'StepsProcessed >' => 0));
 		$filter = $filter . ' AND "StepsProcessed"="LastProcessedCount"';
 
 		$stalledJobs = DataObject::get('QueuedJobDescriptor', $filter);
@@ -213,7 +213,7 @@ class QueuedJobService
 		}
 		
 		// now, find those that need to be marked before the next check
-		$filter = singleton('QJUtils')->quote(array('JobStatus =' => QueuedJob::STATUS_RUN));
+		$filter = singleton('QJUtils')->dbQuote(array('JobStatus =' => QueuedJob::STATUS_RUN));
 		$runningJobs = DataObject::get('QueuedJobDescriptor', $filter);
 		
 		if ($runningJobs) {
@@ -430,10 +430,10 @@ class QueuedJobService
 			$filter['JobFinished > '] = date('Y-m-d H:i:s', time() - $includeUpUntil);
 		}
 
-		$filter = singleton('QJUtils')->quote($filter, ' OR ');
+		$filter = singleton('QJUtils')->dbQuote($filter, ' OR ');
 
 		if ($type) {
-			$filter = singleton('QJUtils')->quote(array('JobType =' => $type)) . ' AND ('.$filter.')';
+			$filter = singleton('QJUtils')->dbQuote(array('JobType =' => $type)) . ' AND ('.$filter.')';
 		}
 
 		return $filter;
