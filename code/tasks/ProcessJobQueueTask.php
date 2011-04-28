@@ -44,7 +44,6 @@ class ProcessJobQueueTask extends BuildTask {
 				$num = $jobs ? $jobs->Count() : 0;
 				echo "$datestamp Found $num jobs for mode $i\n";
 			}
-
 			return;
 		}
 

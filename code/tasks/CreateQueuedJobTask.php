@@ -41,6 +41,8 @@ class DummyQueuedJob extends AbstractQueuedJob implements QueuedJob {
 	}
 
 	public function getJobType() {
+		return QueuedJob::IMMEDIATE;
+		
 		return $this->jobData->startNumber > 50 ? QueuedJob::LARGE : QueuedJob::QUEUED;
 	}
 
@@ -57,7 +59,7 @@ class DummyQueuedJob extends AbstractQueuedJob implements QueuedJob {
 		$this->times = $times;
 
 		$this->addMessage("Updated time to " . date('Y-m-d H:i:s'));
-		sleep(1);
+		usleep(100);
 
 		// make sure we're incrementing
 		$this->currentStep++;

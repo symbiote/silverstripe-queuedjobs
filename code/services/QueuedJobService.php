@@ -35,13 +35,35 @@ class QueuedJobService
 	 * @var int
 	 */
 	public static $memory_limit = 134217728;
+	
+	/**
+	 * Should "immediate" jobs be managed using the shutdown function? 
+	 * 
+	 * It is recommended you set up an inotify watch and use that for 
+	 * triggering immediate jobs. See the wiki for more information
+	 *
+	 * @var boolean
+	 */
+	public static $use_shutdown_function = false;
+	
+	/**
+	 * The location for immediate jobs to be stored in
+	 *
+	 * @var String
+	 */
+	public static $cache_dir = 'queuedjobs';
 
 	/**
 	 * Register our shutdown handler
 	 */
 	public function __construct() {
-		register_shutdown_function(array($this, 'onShutdown'));
+		if (self::$use_shutdown_function) {
+			register_shutdown_function(array($this, 'onShutdown'));
+		} else {
+			
+		}
 	}
+	
 	
     /**
 	 * Adds a job to the queue to be started
@@ -85,7 +107,24 @@ class QueuedJobService
 
 		$jobDescriptor->write();
 		
+		// now, if it's an immediate job, lets cache it to disk to be picked up
+		if ($job->getJobType() == QueuedJob::IMMEDIATE && !self::$use_shutdown_function) {
+			touch($this->getJobDir() . '/' . 'queuedjob-' . $jobDescriptor->ID);
+		}
+		
 		return $jobDescriptor->ID;
+	}
+	
+	/**
+	 * Gets the path to the queuedjob directory
+	 */
+	protected function getJobDir() {
+		// make sure our temp dir is in place. This is what will be inotify watched
+		$jobDir = getTempFolder() . '/' . self::$cache_dir;
+		if (!is_dir($jobDir)) {
+			mkdir($jobDir);
+		}
+		return $jobDir;
 	}
 
 	/**
@@ -441,9 +480,11 @@ class QueuedJobService
 
 	/**
 	 * When PHP shuts down, we want to process all of the immediate queue items
-	 *
+	 * 
 	 * We use the 'getNextPendingJob' method, instead of just iterating the queue, to ensure
 	 * we ignore paused or stalled jobs. 
+	 * 
+	 * @deprecated
 	 */
 	public function onShutdown() {
 		$job = $this->getNextPendingJob(QueuedJob::IMMEDIATE);
