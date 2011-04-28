@@ -1,3 +1,8 @@
+2011-04-28 v1.2.3
+-----------------
+
+* Added a queued job to schedule deletions
+
 2011-04-12 v1.2.2
 -----------------
 
