@@ -53,13 +53,50 @@ class QueuedJobDescriptor extends DataObject
 			$this->JobStatus = QueuedJob::STATUS_WAIT;
 			$this->ResumeCounts++;
 			$this->write();
+			$this->activateOnQueue();
 		}
+	}
+	
+	/**
+	 * Called to indicate that the job is ready to be run on the queue. This is done either as the result of
+	 * creating the job and adding it, or when resuming. 
+	 */
+	public function activateOnQueue() {
+		// if it's an immediate job, lets cache it to disk to be picked up later
+		if ($this->JobType == QueuedJob::IMMEDIATE && !QueuedJobService::$use_shutdown_function) {
+			touch($this->getJobDir() . '/' . 'queuedjob-' . $this->ID);
+		}
+	}
+
+	/**
+	 * Gets the path to the queuedjob cache directory
+	 */
+	protected function getJobDir() {
+		// make sure our temp dir is in place. This is what will be inotify watched
+		$jobDir = getTempFolder() . '/' . QueuedJobService::$cache_dir;
+		if (!is_dir($jobDir)) {
+			mkdir($jobDir);
+		}
+		return $jobDir;
 	}
 	
 	public function execute() {
 		$service = singleton('QueuedJobService');
 		$service->runJob($this->ID);
 	}
+	
+	/**
+	 * Called when the job has completed and we want to cleanup anything the descriptor has lying around
+	 * in caches or the like. 
+	 */
+	public function cleanupJob() {
+		// remove the job's temp file if it exists
+		$tmpFile = $this->getJobDir() . '/' . 'queuedjob-' . $this->ID;
+		if (file_exists($tmpFile)) {
+			unlink($tmpFile);
+		}
+	}
+
 
 	public function getMessages() {
 		if (strlen($this->SavedJobMessages)) {

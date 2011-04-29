@@ -106,26 +106,11 @@ class QueuedJobService
 		$this->copyJobToDescriptor($job, $jobDescriptor);
 
 		$jobDescriptor->write();
-		
-		// now, if it's an immediate job, lets cache it to disk to be picked up
-		if ($job->getJobType() == QueuedJob::IMMEDIATE && !self::$use_shutdown_function) {
-			touch($this->getJobDir() . '/' . 'queuedjob-' . $jobDescriptor->ID);
-		}
+		$jobDescriptor->activateOnQueue();
 		
 		return $jobDescriptor->ID;
 	}
 	
-	/**
-	 * Gets the path to the queuedjob directory
-	 */
-	protected function getJobDir() {
-		// make sure our temp dir is in place. This is what will be inotify watched
-		$jobDir = getTempFolder() . '/' . self::$cache_dir;
-		if (!is_dir($jobDir)) {
-			mkdir($jobDir);
-		}
-		return $jobDir;
-	}
 
 	/**
 	 * Copies data from a job into a descriptor for persisting
@@ -403,8 +388,12 @@ class QueuedJobService
 				$this->copyJobToDescriptor($job, $jobDescriptor);
 				$jobDescriptor->write();
 			}
-			// a last final save
+			
+			// a last final save. The job is complete by now
 			$jobDescriptor->write();
+			if (!$broken) {
+				$jobDescriptor->cleanupJob();
+			}
 		} catch (Exception $e) {
 			// okay, we'll just catch this exception for now
 			SS_Log::log($e, SS_Log::ERR);

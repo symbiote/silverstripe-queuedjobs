@@ -59,7 +59,7 @@ class DummyQueuedJob extends AbstractQueuedJob implements QueuedJob {
 		$this->times = $times;
 
 		$this->addMessage("Updated time to " . date('Y-m-d H:i:s'));
-		usleep(100);
+		sleep(1);
 
 		// make sure we're incrementing
 		$this->currentStep++;

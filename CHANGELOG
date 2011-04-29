@@ -1,3 +1,10 @@
+2011-04-29 v1.3.0
+-----------------
+
+* Added ability for immediate jobs to be processed by a file based queue 
+  mechanism using something like inotifywait. Means that immediatemode 
+  jobs are still executed asynchronously, but are still processed immediately
+
 2011-04-28 v1.2.3
 -----------------
 

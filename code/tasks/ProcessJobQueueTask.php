@@ -46,9 +46,17 @@ class ProcessJobQueueTask extends BuildTask {
 			}
 			return;
 		}
-
+		
 		/* @var $service QueuedJobService */
-		$nextJob = $service->getNextPendingJob($queue);
+		$nextJob = null;
+		
+		// see if we've got an explicit job ID, otherwise we'll just check the queue directly
+		if ($request->getVar('job') && strpos($request->getVar('job'), '-')) {
+			list($junk, $jobId) = split('-', $request->getVar('job'));
+			$nextJob = DataObject::get_by_id('QueuedJobDescriptor', $jobId);
+		} else {
+			$nextJob = $service->getNextPendingJob($queue);
+		}
 
 		$service->checkJobHealth();
 
@@ -63,6 +71,5 @@ class ProcessJobQueueTask extends BuildTask {
 		if ($nextJob === false) {
 			echo "$datestamp Job is still running\n";
 		}
-
 	}
 }

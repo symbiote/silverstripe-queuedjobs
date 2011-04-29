@@ -52,6 +52,17 @@ The following will run the publish job in 1 day's time from now.
 	$publish = new PublishItemsJob(21);
 	singleton('QueuedJobService')->queueJob($publish, date('Y-m-d H:i:s', time() + 86400));
 
+## Using QueuedJob::IMMEDIATE jobs
+
+Queued jobs can be executed immediately (instead of being limited by cron's 1 minute interval) by using
+a file based notification system. This relies on something like inotifywait to monitor a folder (by
+default this is SILVERSTRIPE_CACHE_DIR/queuedjobs) and triggering the ProcessJobQueueTask as above
+but passing job=$filename as the argument. An example script is in queuedjobs/scripts that will run
+inotifywait and then call the ProcessJobQueueTask when a new job is ready to run. 
+
+Note - if you do NOT have this running, make sure to set `QueuedJobService::$use_shutdown_function = true;`
+so that immediate mode jobs don't stall. By setting this to true, immediate jobs will be executed after
+the request finishes as the php script ends. 
 
 
 ## Troubleshooting
