@@ -1,3 +1,9 @@
+2011-05-24 v1.3.1
+-----------------
+
+* Added example script for managing immediate jobs using the inotifywait
+  functionality 
+
 2011-04-29 v1.3.0
 -----------------
 
