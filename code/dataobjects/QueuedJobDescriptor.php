@@ -97,6 +97,10 @@ class QueuedJobDescriptor extends DataObject
 		}
 	}
 
+	public function onBeforeDelete() {
+		parent::onBeforeDelete();
+		$this->cleanupJob();
+	}
 
 	public function getMessages() {
 		if (strlen($this->SavedJobMessages)) {
