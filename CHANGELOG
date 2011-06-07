@@ -1,3 +1,10 @@
+2011-06-07 v1.3.3
+-----------------
+
+* Small fix to ensure that the queued job cache folder is created on
+  the disk whenever dev/build is run. This is so that watchers can
+  bind to the folder immediately...
+
 2011-05-24 v1.3.2
 -----------------
 
