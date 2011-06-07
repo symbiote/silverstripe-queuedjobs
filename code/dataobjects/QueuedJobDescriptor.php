@@ -39,6 +39,11 @@ class QueuedJobDescriptor extends DataObject
 		'JobStatus' => 'New',
 		'ResumeCounts' => 0,
 	);
+	
+	public function requireDefaultRecords() {
+		parent::requireDefaultRecords();
+		$this->getJobDir();
+	}
 
 	public function pause() {
 		if ($this->JobStatus == QueuedJob::STATUS_WAIT || $this->JobStatus == QueuedJob::STATUS_RUN) {
