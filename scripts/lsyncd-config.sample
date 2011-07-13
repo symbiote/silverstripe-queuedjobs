@@ -1,0 +1,20 @@
+-- Queue Processor configuration, typically placed in /etc/lsyncd.conf 
+
+settings = {
+	logfile    = "/var/log/lsyncd/lsyncd.log",
+	statusFile = "/var/run/lsyncd.status",
+	nodaemon   = true,
+}
+
+-- Define the command and path for the each system being monitored here, where webuser is the user your webserver
+-- runs as
+runcmd = "/sbin/runuser webuser -c \"/usr/bin/php /var/www/sitepath/sapphire/cli-script.php dev/tasks/ProcessJobQueueTask job=\"$1\" /var/www/sitepath/sapphire/silverstripe-cache/queuedjobs\""
+
+site_processor = {
+	onCreate = function(event)
+        log("Normal", "got an onCreate Event")
+           spawnShell(event, runcmd, event.basename)
+    end,
+}
+
+sync{site_processor, source="/var/www/sitepath/silverstripe-cache/queuedjobs"}
