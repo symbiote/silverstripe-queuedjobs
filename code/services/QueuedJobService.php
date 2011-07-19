@@ -44,7 +44,7 @@ class QueuedJobService
 	 *
 	 * @var boolean
 	 */
-	public static $use_shutdown_function = false;
+	public static $use_shutdown_function = true;
 	
 	/**
 	 * The location for immediate jobs to be stored in
