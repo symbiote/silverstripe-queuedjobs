@@ -22,10 +22,6 @@ class GenerateGoogleSitemapJob extends AbstractQueuedJob {
 	 * Sitemap job is going to run for a while...
 	 */
 	public function getJobType() {
-		if ($this->totalSteps > 100) {
-			return QueuedJob::LARGE;
-		}
-
 		return QueuedJob::QUEUED;
 	}
 
