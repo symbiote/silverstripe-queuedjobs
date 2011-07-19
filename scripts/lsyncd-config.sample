@@ -1,4 +1,5 @@
 -- Queue Processor configuration, typically placed in /etc/lsyncd.conf 
+-- Remember to set QueuedJobService::$use_shutdown_function = false; in local.conf.php
 
 settings = {
 	logfile    = "/var/log/lsyncd/lsyncd.log",
