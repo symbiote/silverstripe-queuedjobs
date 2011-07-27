@@ -1,3 +1,10 @@
+2011-07-27 v1.3.5
+-----------------
+
+* Jobs track the subsite ID if available so that offline execution executes
+  in the correct 'subsite' context
+* The delete job now processes in 'immediate' mode
+
 2011-07-20 v1.3.4
 -----------------
 
