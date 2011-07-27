@@ -46,6 +46,15 @@ abstract class AbstractQueuedJob implements QueuedJob
 	}
 
 	/**
+	 * By default jobs should just go into the default processing queue
+	 *
+	 * @return String
+	 */
+	public function getJobType() {
+		return QueuedJob::QUEUED;
+	}
+	
+	/**
 	 * Implement yourself!
 	 *
 	 * Be aware that this is only executed ONCE for every job
@@ -64,14 +73,6 @@ abstract class AbstractQueuedJob implements QueuedJob
 
 	}
 
-	/**
-	 * By default jobs should just go into the default processing queue
-	 *
-	 * @return String
-	 */
-	public function getJobType() {
-		return QueuedJob::QUEUED;
-	}
 
 	/**
 	 * Do some processing yourself!
@@ -89,6 +90,11 @@ abstract class AbstractQueuedJob implements QueuedJob
 	}
 
 	public function getJobData() {
+		// okay, we NEED to store the subsite ID if there's one available
+		if (!$this->SubsiteID && class_exists('Subsite')) {
+			$this->SubsiteID = Subsite::currentSubsiteID();
+		}
+
 		$data = new stdClass();
 		$data->totalSteps = $this->totalSteps;
 		$data->currentStep = $this->currentStep;
@@ -105,6 +111,17 @@ abstract class AbstractQueuedJob implements QueuedJob
 		$this->isComplete = $isComplete;
 		$this->jobData = $jobData;
 		$this->messages = $messages;
+
+		if ($this->SubsiteID && class_exists('Subsite')) {
+			Subsite::changeSubsite($this->SubsiteID);
+			
+			// lets set the base URL as far as Director is concerned so that our URLs are correct
+			$subsite = DataObject::get_by_id('Subsite', $this->SubsiteID);
+			if ($subsite && $subsite->exists()) {
+				$domain = $subsite->domain();
+				Director::setbaseURL(Director::protocol() . $domain);
+			}
+		}
 	}
 
 	public function addMessage($message, $severity='INFO') {
@@ -135,4 +152,3 @@ abstract class AbstractQueuedJob implements QueuedJob
 		return isset($this->jobData->$name) ? $this->jobData->$name : null;
 	}
 }
-?>
