@@ -23,6 +23,10 @@ class DeleteObjectJob extends AbstractQueuedJob {
 		return DataObject::get_by_id($this->TargetClass, $this->TargetID);
 	}
 	
+	public function getJobType() {
+		return QueuedJob::IMMEDIATE;
+	}
+	
 	/**
 	 * @return string
 	 */
