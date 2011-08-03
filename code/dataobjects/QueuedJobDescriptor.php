@@ -78,9 +78,13 @@ class QueuedJobDescriptor extends DataObject
 	 */
 	protected function getJobDir() {
 		// make sure our temp dir is in place. This is what will be inotify watched
-		$jobDir = getTempFolder() . '/' . QueuedJobService::$cache_dir;
+		$jobDir = QueuedJobService::$cache_dir;
+		if ($jobDir{0} != '/') {
+			$jobDir = getTempFolder() . '/' . $jobDir;
+		}
+
 		if (!is_dir($jobDir)) {
-			mkdir($jobDir);
+			Filesystem::makeFolder($jobDir);
 		}
 		return $jobDir;
 	}
@@ -89,7 +93,7 @@ class QueuedJobDescriptor extends DataObject
 		$service = singleton('QueuedJobService');
 		$service->runJob($this->ID);
 	}
-	
+
 	/**
 	 * Called when the job has completed and we want to cleanup anything the descriptor has lying around
 	 * in caches or the like. 

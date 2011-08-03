@@ -310,14 +310,18 @@ class QueuedJobService
 		// we want it to actually execute as the RunAs user - however, if running via the web (which is rare...), we
 		// want to ensure that the current user has admin privileges before switching. Otherwise, we just run it
 		// as the currently logged in user and hope for the best
-		$originalUser = Member::currentUser();
+		
+		// We need to use $_SESSION directly because SS ties the session to a controller that no longer exists at
+		// this point of execution in some circumstances
+		$originalUserID = isset($_SESSION['loggedInAs']) ? $_SESSION['loggedInAs'] : 0;
+		$originalUser = $originalUserID ? DataObject::get_by_id('Member', $originalUserID) : null;
 		$runAsUser = null;
-		if (Director::is_cli() || !Member::currentUser() || Member::currentUser()->isAdmin()) {
+		if (Director::is_cli() || !$originalUser || $originalUser->isAdmin()) {
 			$runAsUser = $jobDescriptor->RunAs();
 			if ($runAsUser && $runAsUser->exists()) {
 				// the job runner outputs content way early in the piece, meaning there'll be cooking errors
 				// if we try and do a normal login, and we only want it temporarily...
-				Session::set("loggedInAs", $runAsUser->ID);
+				$_SESSION['loggedInAs'] = $runAsUser->ID;
 			}
 		}
 
