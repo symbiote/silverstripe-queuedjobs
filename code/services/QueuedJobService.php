@@ -167,7 +167,7 @@ class QueuedJobService
 	 * @return QueuedJobDescriptor
 	 */
 	public function getNextPendingJob($type=null) {
-		$type = $type ? $type : QueuedJob::QUEUED;
+		$type = $type ? (string)  $type : QueuedJob::QUEUED;
 
 		// see if there's any blocked jobs that need to be resumed
 		$filter = singleton('QJUtils')->dbQuote(array('JobStatus =' => QueuedJob::STATUS_WAIT, 'JobType =' => $type));
@@ -192,7 +192,7 @@ class QueuedJobService
 		// otherwise, lets find any 'new' jobs that are waiting to execute
 		$filter = array(
 			'JobStatus =' => 'New',
-			'JobType =' => $type ? $type : QueuedJob::QUEUED,
+			'JobType =' => $type ? (string) $type : QueuedJob::QUEUED,
 		);
 
 		$filter = singleton('QJUtils')->dbQuote($filter) . ' AND ('. singleton('QJUtils')->dbQuote(array('StartAfter <' => date('Y-m-d H:i:s'), 'StartAfter IS' => null), ' OR ').')';
@@ -465,7 +465,7 @@ class QueuedJobService
 		$filter = singleton('QJUtils')->dbQuote($filter, ' OR ');
 
 		if ($type) {
-			$filter = singleton('QJUtils')->dbQuote(array('JobType =' => $type)) . ' AND ('.$filter.')';
+			$filter = singleton('QJUtils')->dbQuote(array('JobType =' => (string) $type)) . ' AND ('.$filter.')';
 		}
 
 		return $filter;

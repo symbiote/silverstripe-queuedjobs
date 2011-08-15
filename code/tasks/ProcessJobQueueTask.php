@@ -22,16 +22,16 @@ class ProcessJobQueueTask extends BuildTask {
 
 		switch (strtolower($queue)) {
 			case 'immediate': {
-				$queue = 1;
+				$queue = '1';
 				break;
 			}
 			case 'large': {
-				$queue = 3;
+				$queue = '3';
 				break;
 			}
 			default: {
 				if (!is_numeric($queue)) {
-					$queue = 2;
+					$queue = '2';
 				}
 			}
 		}
