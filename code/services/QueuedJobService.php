@@ -316,12 +316,24 @@ class QueuedJobService
 		$originalUserID = isset($_SESSION['loggedInAs']) ? $_SESSION['loggedInAs'] : 0;
 		$originalUser = $originalUserID ? DataObject::get_by_id('Member', $originalUserID) : null;
 		$runAsUser = null;
+
 		if (Director::is_cli() || !$originalUser || $originalUser->isAdmin()) {
 			$runAsUser = $jobDescriptor->RunAs();
 			if ($runAsUser && $runAsUser->exists()) {
-				// the job runner outputs content way early in the piece, meaning there'll be cooking errors
+				// the job runner outputs content way early in the piece, meaning there'll be cookie errors
 				// if we try and do a normal login, and we only want it temporarily...
-				$_SESSION['loggedInAs'] = $runAsUser->ID;
+				if (Controller::has_curr()) {
+					Session::set('loggedInAs', $runAsUser->ID);
+				} else {
+					$_SESSION['loggedInAs'] = $runAsUser->ID;
+				}
+
+				// this is an explicit coupling brought about by SS not having
+				// a nice way of mocking a user, as it requires session 
+				// nastiness
+				if (class_exists('SecurityContext')) {
+					singleton('SecurityContext')->setMember($runAsUser);
+				}
 			}
 		}
 
