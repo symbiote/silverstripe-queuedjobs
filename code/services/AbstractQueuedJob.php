@@ -26,6 +26,29 @@ abstract class AbstractQueuedJob implements QueuedJob
 	public function getTitle() {
 		return "This needs a title!";
 	}
+	
+	/**
+	 * Sets a data object for persisting by adding its id and type to the serialised vars
+	 *
+	 * @param DataObject $object 
+	 * @param string $name
+	 *				A name to give it, if you want to store more than one
+	 */
+	protected function setObject(DataObject $object, $name = 'Object') {
+		$this->{$name . 'ID'} = $object->ID;
+		$this->{$name . 'Type'} = $object->ClassName;
+	}
+	
+	/**
+	 * @param string $name 
+	 */
+	protected function getObject($name = 'Object') {
+		$id = $this->{$name . 'ID'};
+		$type = $this->{$name . 'Type'};
+		if ($id) {
+			return DataObject::get_by_id($type, $id);
+		}
+	}
 
 	/**
 	 * Return a signature for this queued job
