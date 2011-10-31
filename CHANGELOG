@@ -1,3 +1,9 @@
+2011-10-31 v1.4.1
+-----------------
+
+* Broken jobs on the queue will now cause an ERR to be logged each hour,
+  allowing emails to be hooked and sent alerting admins of the issue
+
 2011-10-20 v1.4.0
 -----------------
 
