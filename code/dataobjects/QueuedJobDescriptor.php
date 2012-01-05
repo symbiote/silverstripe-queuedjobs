@@ -50,7 +50,6 @@ class QueuedJobDescriptor extends DataObject
 			$this->JobStatus = QueuedJob::STATUS_PAUSED;
 			$this->write();
 		}
-		
 	}
 
 	public function resume() {

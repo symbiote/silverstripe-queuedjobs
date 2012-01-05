@@ -62,7 +62,11 @@ class QueuedJobListField_Item extends TableListField_Item
 					break;
 				}
 				case 'delete': {
-					if (!($this->item->JobStatus == QueuedJob::STATUS_NEW || $this->item->JobStatus == QueuedJob::STATUS_BROKEN || $this->item->JobStatus == QueuedJob::STATUS_PAUSED)) {
+					if (!($this->item->JobStatus == QueuedJob::STATUS_NEW || 
+							$this->item->JobStatus == QueuedJob::STATUS_BROKEN || 
+							$this->item->JobStatus == QueuedJob::STATUS_PAUSED ||
+							$this->item->JobStatus == QueuedJob::STATUS_INIT
+							)) {
 						$can = false;
 					}
 					break;

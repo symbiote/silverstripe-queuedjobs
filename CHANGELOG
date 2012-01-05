@@ -1,3 +1,8 @@
+2012-01-05 v1.4.2
+-----------------
+
+* Allow deletion of jobs that fail to initialise properly
+
 2011-10-31 v1.4.1
 -----------------
 
