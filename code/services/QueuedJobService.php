@@ -424,6 +424,7 @@ class QueuedJobService
 			// a last final save. The job is complete by now
 			$jobDescriptor->write();
 			if (!$broken) {
+				$job->afterComplete();
 				$jobDescriptor->cleanupJob();
 			}
 		} catch (Exception $e) {

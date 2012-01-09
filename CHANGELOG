@@ -1,3 +1,9 @@
+2012-01-09 v1.4.3
+-----------------
+
+* Added 'afterComplete' method to handle stuff after a job finishes 
+  successfully
+
 2012-01-05 v1.4.2
 -----------------
 

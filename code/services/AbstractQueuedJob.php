@@ -111,6 +111,13 @@ abstract class AbstractQueuedJob implements QueuedJob
 	public function jobFinished() {
 		return $this->isComplete;
 	}
+	
+	/**
+	 * Called when the job is determined to be 'complete'
+	 */
+	public function afterComplete() {
+		
+	}
 
 	public function getJobData() {
 		// okay, we NEED to store the subsite ID if there's one available
