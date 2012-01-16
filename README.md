@@ -9,8 +9,9 @@ Marcus Nyeholt
 
 ## Requirements
 
-SilverStripe 2.4.x
-Access to create cron jobs
+*SilverStripe 2.4.x
+*Access to create cron jobs
+*https://github.com/nyeholt/silverstripe-multivaluefield
 
 ## Documentation
 
