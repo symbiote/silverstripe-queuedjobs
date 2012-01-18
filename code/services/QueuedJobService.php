@@ -22,8 +22,7 @@
  * @author Marcus Nyeholt <marcus@silverstripe.com.au>
  * @license BSD http://silverstripe.org/bsd-license/
  */
-class QueuedJobService
-{
+class QueuedJobService {
 	public static $stall_threshold = 3;
 
 	/**
@@ -64,7 +63,6 @@ class QueuedJobService
 		}
 	}
 	
-	
     /**
 	 * Adds a job to the queue to be started
 	 * 
@@ -77,7 +75,7 @@ class QueuedJobService
 	 * @param int $userId
 	 *			The ID of a user to execute the job as. Defaults to the current user
 	 */
-	public function queueJob(QueuedJob $job, $startAfter = null, $userId = null) {
+	public function queueJob(QueuedJob $job, $startAfter = null, $userId = null, $queueName = null) {
 
 		$signature = $job->getSignature();
 
@@ -95,7 +93,7 @@ class QueuedJobService
 
 		$jobDescriptor = new QueuedJobDescriptor();
 		$jobDescriptor->JobTitle = $job->getTitle();
-		$jobDescriptor->JobType = $job->getJobType();
+		$jobDescriptor->JobType = $queueName ? $queueName : $job->getJobType();
 		$jobDescriptor->Signature = $signature;
 		$jobDescriptor->Implementation = get_class($job);
 		$jobDescriptor->StartAfter = $startAfter;
@@ -155,8 +153,6 @@ class QueuedJobService
 			}
 		}
 		
-		
-
 		$job->setJobData($jobDescriptor->TotalSteps, $jobDescriptor->StepsProcessed, $jobDescriptor->JobStatus == QueuedJob::STATUS_COMPLETE, $jobData, $messages);
 	}
 

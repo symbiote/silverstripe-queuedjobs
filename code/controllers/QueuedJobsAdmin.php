@@ -46,6 +46,7 @@ class QueuedJobsAdmin extends LeftAndMain
 			'JobStarted' => _t('QueuedJobs.TABLE_STARTED', 'Started'),
 			'JobRestarted' => _t('QueuedJobs.TABLE_RESUMED', 'Resumed'),
 			'StartAfter' => _t('QueuedJobs.TABLE_START_AFTER', 'Start After'),
+			'JobType'	=> _t('QueuedJobs.JOB_TYPE', 'Job Type'),
 			'JobStatus' => _t('QueuedJobs.TABLE_STATUS', 'Status'),
 			'Messages' => _t('QueuedJobs.TABLE_MESSAGES', 'Message'),
 			'StepsProcessed' => _t('QueuedJobs.TABLE_NUM_PROCESSED', 'Number Processed'),

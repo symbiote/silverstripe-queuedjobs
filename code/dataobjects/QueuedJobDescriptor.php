@@ -11,8 +11,7 @@
  * @author Marcus Nyeholt <marcus@silverstripe.com.au>
  * @license BSD http://silverstripe.org/bsd-license/
  */
-class QueuedJobDescriptor extends DataObject
-{
+class QueuedJobDescriptor extends DataObject {
     public static $db = array(
 		'JobTitle' => 'Varchar(255)',
 		'Signature' => 'Varchar(64)',
@@ -60,7 +59,7 @@ class QueuedJobDescriptor extends DataObject
 			$this->activateOnQueue();
 		}
 	}
-	
+
 	/**
 	 * Called to indicate that the job is ready to be run on the queue. This is done either as the result of
 	 * creating the job and adding it, or when resuming. 

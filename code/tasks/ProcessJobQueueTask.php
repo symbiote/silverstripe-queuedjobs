@@ -25,14 +25,16 @@ class ProcessJobQueueTask extends BuildTask {
 				$queue = QueuedJob::IMMEDIATE;
 				break;
 			}
+			case 'queued': {
+				$queue = QueuedJob::QUEUED;
+				break;
+			}
 			case 'large': {
 				$queue = QueuedJob::LARGE;
 				break;
 			}
 			default: {
-				if (!is_numeric($queue)) {
-					$queue = QueuedJob::QUEUED;
-				}
+				// leave it as whatever this queue name is
 			}
 		}
 
