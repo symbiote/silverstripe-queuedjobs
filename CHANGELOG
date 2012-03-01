@@ -1,3 +1,10 @@
+2012-03-02 v1.5.1
+-----------------
+
+* Changed queuedjob service to only process 'immediate' jobs if executed
+  from commandline to prevent the possibility of session bleeding as SS 
+  doesn't provide a nice way to switch user context
+
 2012-01-18 v1.5.0
 -----------------
 

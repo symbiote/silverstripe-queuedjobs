@@ -56,7 +56,8 @@ class QueuedJobService {
 	 * Register our shutdown handler
 	 */
 	public function __construct() {
-		if (self::$use_shutdown_function) {
+		// bind a shutdown function to process all 'immediate' queued jobs if needed, but only in CLI mode
+		if (self::$use_shutdown_function && Director::is_cli()) {
 			register_shutdown_function(array($this, 'onShutdown'));
 		} else {
 			
@@ -501,8 +502,6 @@ class QueuedJobService {
 	 * 
 	 * We use the 'getNextPendingJob' method, instead of just iterating the queue, to ensure
 	 * we ignore paused or stalled jobs. 
-	 * 
-	 * @deprecated
 	 */
 	public function onShutdown() {
 		$job = $this->getNextPendingJob(QueuedJob::IMMEDIATE);
