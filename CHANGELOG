@@ -1,3 +1,9 @@
+2012-03-09 v1.5.2
+-----------------
+
+* Fixed small bug with setting the base URL for a subsites job
+  where it failed to append a trailing slash
+
 2012-03-02 v1.5.1
 -----------------
 

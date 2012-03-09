@@ -10,35 +10,30 @@
  * @author Marcus Nyeholt <marcus@silverstripe.com.au>
  * @license BSD http://silverstripe.org/bsd-license/
  */
-abstract class AbstractQueuedJob implements QueuedJob
-{
-    protected $jobData;
+abstract class AbstractQueuedJob implements QueuedJob {
 
+	protected $jobData;
 	protected $messages = array();
-
 	protected $totalSteps = 0;
-
 	protected $currentStep = 0;
-
 	protected $isComplete = false;
-
 
 	public function getTitle() {
 		return "This needs a title!";
 	}
-	
+
 	/**
 	 * Sets a data object for persisting by adding its id and type to the serialised vars
 	 *
 	 * @param DataObject $object 
 	 * @param string $name
-	 *				A name to give it, if you want to store more than one
+	 * 				A name to give it, if you want to store more than one
 	 */
 	protected function setObject(DataObject $object, $name = 'Object') {
 		$this->{$name . 'ID'} = $object->ID;
 		$this->{$name . 'Type'} = $object->ClassName;
 	}
-	
+
 	/**
 	 * @param string $name 
 	 */
@@ -56,7 +51,7 @@ abstract class AbstractQueuedJob implements QueuedJob
 	 * @return String
 	 */
 	public function getSignature() {
-		return md5(get_class($this).serialize($this->jobData));
+		return md5(get_class($this) . serialize($this->jobData));
 	}
 
 	/**
@@ -76,7 +71,7 @@ abstract class AbstractQueuedJob implements QueuedJob
 	public function getJobType() {
 		return QueuedJob::QUEUED;
 	}
-	
+
 	/**
 	 * Implement yourself!
 	 *
@@ -85,7 +80,7 @@ abstract class AbstractQueuedJob implements QueuedJob
 	 * If you want to do some checking on every restart, look into using the prepareForRestart method
 	 */
 	public function setup() {
-
+		
 	}
 
 	/**
@@ -93,15 +88,14 @@ abstract class AbstractQueuedJob implements QueuedJob
 	 * job. 
 	 */
 	public function prepareForRestart() {
-
+		
 	}
-
 
 	/**
 	 * Do some processing yourself!
 	 */
 	public function process() {
-
+		
 	}
 
 	/**
@@ -111,7 +105,7 @@ abstract class AbstractQueuedJob implements QueuedJob
 	public function jobFinished() {
 		return $this->isComplete;
 	}
-	
+
 	/**
 	 * Called when the job is determined to be 'complete'
 	 */
@@ -144,19 +138,20 @@ abstract class AbstractQueuedJob implements QueuedJob
 
 		if ($this->SubsiteID && class_exists('Subsite')) {
 			Subsite::changeSubsite($this->SubsiteID);
-			
+
 			// lets set the base URL as far as Director is concerned so that our URLs are correct
 			$subsite = DataObject::get_by_id('Subsite', $this->SubsiteID);
 			if ($subsite && $subsite->exists()) {
 				$domain = $subsite->domain();
-				Director::setbaseURL(Director::protocol() . $domain);
+				$base = rtrim(Director::protocol() . $domain, '/') . '/';
+				Director::setbaseURL($base);
 			}
 		}
 	}
 
 	public function addMessage($message, $severity='INFO') {
 		$severity = strtoupper($severity);
-		$this->messages[] = '['.date('Y-m-d H:i:s')."][$severity] $message";
+		$this->messages[] = '[' . date('Y-m-d H:i:s') . "][$severity] $message";
 	}
 
 	/**
@@ -181,4 +176,5 @@ abstract class AbstractQueuedJob implements QueuedJob
 	public function __get($name) {
 		return isset($this->jobData->$name) ? $this->jobData->$name : null;
 	}
+
 }
