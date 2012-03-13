@@ -506,6 +506,11 @@ class QueuedJobService {
 	public function onShutdown() {
 		$job = $this->getNextPendingJob(QueuedJob::IMMEDIATE);
 		do {
+			if (class_exists('Subsite')) {
+				// clear subsite back to default to prevent any subsite changes from leaking to 
+				// subsequent actions
+				Subsite::changeSubsite(0);
+			}
 			$job = $this->getNextPendingJob(QueuedJob::IMMEDIATE);
 			if ($job) {
 				$this->runJob($job->ID);
