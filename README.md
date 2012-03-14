@@ -73,3 +73,8 @@ queues - this can be done by manually calling the *setup()* and *process()* meth
 under these circumstances, try having *getJobType()* return *QueuedJob::IMMEDIATE* to have execution
 work immediately, without being persisted or executed via cron. If this works, next make sure your
 cronjob is configured and executing correctly. 
+
+## Indexes
+
+ALTER TABLE `QueuedJobDescriptor` ADD INDEX ( `JobStatus` ) ;
+ALTER TABLE `QueuedJobDescriptor` ADD INDEX ( `JobType` ) ;
