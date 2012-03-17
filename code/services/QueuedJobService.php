@@ -228,6 +228,7 @@ class QueuedJobService {
 					$msg = sprintf(_t('QueuedJobs.STALLED_JOB_MSG', 'A job named %s appears to have stalled. It has been paused, please login to check it'), $stalledJob->JobTitle);
 				}
 
+				singleton('QJUtils')->log($msg);
 				$mail = new Email(Email::getAdminEmail(), Email::getAdminEmail(), _t('QueuedJobs.STALLED_JOB', 'Stalled job'), $msg);
 				$mail->send();
 			}
@@ -377,6 +378,17 @@ class QueuedJobService {
 			while (!$job->jobFinished() && !$broken) {
 				// see that we haven't been set to 'paused' or otherwise by another process
 				$jobDescriptor = DataObject::get_by_id('QueuedJobDescriptor', (int) $jobId);
+				if (!$jobDescriptor || !$jobDescriptor->exists()) {
+					$broken = true;
+					SS_Log::log(array(
+						'errno' => 0,
+						'errstr' => 'Job descriptor ' . $jobId . ' could not be found',
+						'errfile' => __FILE__,
+						'errline' => __LINE__,
+						'errcontext' => ''
+					), SS_Log::ERR);
+					break;
+				}
 				if ($jobDescriptor->JobStatus != QueuedJob::STATUS_RUN) {
 					// we've been paused by something, so we'll just exit
 					$job->addMessage(sprintf(_t('QueuedJobs.JOB_PAUSED', "Job paused at %s"), date('Y-m-d H:i:s')));
@@ -414,12 +426,26 @@ class QueuedJobService {
 					}
 				}
 
-				$this->copyJobToDescriptor($job, $jobDescriptor);
-				$jobDescriptor->write();
+				if ($jobDescriptor) {
+					$this->copyJobToDescriptor($job, $jobDescriptor);
+					$jobDescriptor->write();
+				} else {
+					SS_Log::log(array(
+						'errno' => 0,
+						'errstr' => 'Job descriptor has been set to null',
+						'errfile' => __FILE__,
+						'errline' => __LINE__,
+						'errcontext' => ''
+					), SS_Log::WARN);
+					$broken = true;
+				}
 			}
 			
 			// a last final save. The job is complete by now
-			$jobDescriptor->write();
+			if ($jobDescriptor) {
+				$jobDescriptor->write();
+			}
+
 			if (!$broken) {
 				$job->afterComplete();
 				$jobDescriptor->cleanupJob();
