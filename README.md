@@ -76,5 +76,5 @@ cronjob is configured and executing correctly.
 
 ## Indexes
 
-ALTER TABLE `QueuedJobDescriptor` ADD INDEX ( `JobStatus` ) ;
-ALTER TABLE `QueuedJobDescriptor` ADD INDEX ( `JobType` ) ;
+ALTER TABLE `QueuedJobDescriptor` ADD INDEX ( `JobStatus` , `JobType` ) 
+
