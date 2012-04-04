@@ -537,6 +537,12 @@ class QueuedJobService {
 				// subsequent actions
 				Subsite::changeSubsite(0);
 			}
+			if (Controller::has_curr()) {
+				Session::clear('loggedInAs');
+			} else {
+				unset($_SESSION['loggedInAs']);
+			}
+
 			$job = $this->getNextPendingJob(QueuedJob::IMMEDIATE);
 			if ($job) {
 				$this->runJob($job->ID);

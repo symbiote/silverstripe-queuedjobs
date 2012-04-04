@@ -1,3 +1,9 @@
+2012-04-04 v1.5.3
+-----------------
+
+* Make sure to change the current runas user when doing onShutdown queue
+  emptying
+
 2012-03-09 v1.5.2
 -----------------
 
