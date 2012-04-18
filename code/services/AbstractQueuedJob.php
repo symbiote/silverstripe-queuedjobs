@@ -80,7 +80,7 @@ abstract class AbstractQueuedJob implements QueuedJob {
 	 * If you want to do some checking on every restart, look into using the prepareForRestart method
 	 */
 	public function setup() {
-		
+
 	}
 
 	/**
@@ -136,17 +136,7 @@ abstract class AbstractQueuedJob implements QueuedJob {
 		$this->jobData = $jobData;
 		$this->messages = $messages;
 
-		if ($this->SubsiteID && class_exists('Subsite')) {
-			Subsite::changeSubsite($this->SubsiteID);
-
-			// lets set the base URL as far as Director is concerned so that our URLs are correct
-			$subsite = DataObject::get_by_id('Subsite', $this->SubsiteID);
-			if ($subsite && $subsite->exists()) {
-				$domain = $subsite->domain();
-				$base = rtrim(Director::protocol() . $domain, '/') . '/';
-				Director::setbaseURL($base);
-			}
-		}
+		
 	}
 
 	public function addMessage($message, $severity='INFO') {

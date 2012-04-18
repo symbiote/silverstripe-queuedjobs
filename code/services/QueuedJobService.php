@@ -374,6 +374,20 @@ class QueuedJobService {
 			$stallCount = 0;
 			$broken = false;
 
+			$currentBaseUrl = Director::absoluteBaseURL();
+			
+			if ($job->SubsiteID && class_exists('Subsite')) {
+				Subsite::changeSubsite($job->SubsiteID);
+
+				// lets set the base URL as far as Director is concerned so that our URLs are correct
+				$subsite = DataObject::get_by_id('Subsite', $job->SubsiteID);
+				if ($subsite && $subsite->exists()) {
+					$domain = $subsite->domain();
+					$base = rtrim(Director::protocol() . $domain, '/') . '/';
+					Director::setbaseURL($base);
+				}
+			}
+
 			// while not finished
 			while (!$job->jobFinished() && !$broken) {
 				// see that we haven't been set to 'paused' or otherwise by another process
@@ -441,6 +455,7 @@ class QueuedJobService {
 				}
 			}
 			
+			Director::setBaseURL($currentBaseUrl);
 			// a last final save. The job is complete by now
 			if ($jobDescriptor) {
 				$jobDescriptor->write();
