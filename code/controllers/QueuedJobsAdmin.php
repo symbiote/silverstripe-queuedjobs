@@ -1,45 +1,39 @@
 <?php
 
 /**
- * Admin controller for queuedjobs
- *
  * @author Marcus Nyeholt <marcus@silverstripe.com.au>
  * @license BSD http://silverstripe.org/bsd-license/
  */
-class QueuedJobsAdmin extends LeftAndMain
-{
+class QueuedJobsAdmin extends ModelAdmin {
     static $url_segment = 'queuedjobs';
-
-	static $url_rule = '$Action//$ID';
-
 	static $menu_title = 'Jobs';
+	
+	static $managed_models = array('QueuedJobDescriptor');
 
-	public static $allowed_actions = array(
-		'EditForm',
-		'showqueue',
+	public static $dependencies = array(
+		'jobQueue'			=> '%$QueuedJobService',
 	);
-
-	protected $selectedQueue;
-
+	
 	/**
-	 * @var QueuedJobsService
+	 *
+	 * @var QueuedJobService
 	 */
-	protected $queuedJobsService;
+	public $jobQueue;
+	
+	public function EditForm($request = null) {
+		$form = parent::EditForm($request);
+		
+		$filter = $this->jobQueue->getJobListFilter();
 
-	public function init() {
-		parent::init();
-
-		Requirements::javascript('queuedjobs/javascript/QueuedJobsAdmin.js');
-
-		$qs = singleton('QueuedJobService');
-		/* @var $qs QueuedJobService */
-		$this->queuedJobsService = $qs;
-	}
-
-	public function EditForm() {
-		$fields = new FieldSet(new TabSet("Root"));
-		$actions = new FieldSet();
-
+		$list = DataList::create('QueuedJobDescriptor');
+		$list->where($filter);
+		
+		$grid = new GridField('QueuedJobDescriptor', 'Jobs', $list);
+		$grid->setForm($form);
+		$form->Fields()->replaceField('QueuedJobDescriptor', $grid);
+		
+		return $form;
+		
 		$columns = array(
 			'JobTitle' => _t('QueuedJobs.TABLE_TITLE', 'Title'),
 			'Created' => _t('QueuedJobs.TABLE_ADDE', 'Added'),
@@ -54,7 +48,7 @@ class QueuedJobsAdmin extends LeftAndMain
 		);
 
 		// QueuedJobListField
-		$filter = $this->queuedJobsService->getJobListFilter($this->selectedQueue, 300);
+		
 		$table = new QueuedJobListField('QueuedJobs', 'QueuedJobDescriptor', $columns, $filter, 'StartAfter ASC, Created DESC');
 
 		$table->actions['pause'] = array(
@@ -84,13 +78,8 @@ class QueuedJobsAdmin extends LeftAndMain
 
 		return new Form($this, 'EditForm', $fields, $actions);
 	}
-
-	public function showqueue($request) {
-		if ($request->param('ID')) {
-			$this->selectedQueue = $request->param('ID');
-		}
-		
-		return $this->renderWith('QueuedJobsAdmin_right');
-	}
 	
+	public function Tools() {
+		return '';
+	}
 }
