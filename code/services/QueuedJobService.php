@@ -331,7 +331,7 @@ class QueuedJobService {
 		$originalUser = $originalUserID ? DataObject::get_by_id('Member', $originalUserID) : null;
 		$runAsUser = null;
 
-		if (Director::is_cli() || !$originalUser || $originalUser->isAdmin()) {
+		if (Director::is_cli() || !$originalUser || Permission::checkMember($originalUser, 'ADMIN')) {
 			$runAsUser = $jobDescriptor->RunAs();
 			if ($runAsUser && $runAsUser->exists()) {
 				// the job runner outputs content way early in the piece, meaning there'll be cookie errors

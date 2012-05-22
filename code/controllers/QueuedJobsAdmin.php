@@ -32,6 +32,9 @@ class QueuedJobsAdmin extends ModelAdmin {
 		$grid->setForm($form);
 		$form->Fields()->replaceField('QueuedJobDescriptor', $grid);
 		
+		$grid->getConfig()->addComponent(new GridFieldQueuedJobExecute());
+		$grid->getConfig()->addComponent(new GridFieldDeleteAction());
+		
 		return $form;
 		
 		$columns = array(
