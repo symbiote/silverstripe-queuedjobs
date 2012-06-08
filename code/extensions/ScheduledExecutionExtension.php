@@ -9,21 +9,18 @@
  * @author marcus@silverstripe.com.au
  * @license BSD License http://silverstripe.org/bsd-license/
  */
-class ScheduledExecutionExtension extends DataObjectDecorator {
+class ScheduledExecutionExtension extends DataExtension {
 	
-	public function extraStatics() {
-		return array(
-			'db' => array(
-				'FirstExecution'		=> 'SS_Datetime',
-				'ExecuteEvery'			=> "Enum(',Hour,Day,Week,Fortnight,Month,Year')",
-				'ExecuteFree'			=> 'Varchar',
-			),
-			'has_one' => array(
-				'ScheduledJob'			=> 'QueuedJobDescriptor',
-			)
-		);
-	}
-
+	public static $db = array(
+		'FirstExecution'		=> 'SS_Datetime',
+		'ExecuteEvery'			=> "Enum(',Hour,Day,Week,Fortnight,Month,Year')",
+		'ExecuteFree'			=> 'Varchar',
+	);
+	
+	public static $has_one = array(
+		'ScheduledJob'			=> 'QueuedJobDescriptor',
+	);
+	
 	/**
 	 *
 	 * @param FieldSet $fields 
