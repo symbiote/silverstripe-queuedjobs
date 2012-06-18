@@ -1,3 +1,10 @@
+2012-06-18 v1.6.0
+-----------------
+
+* Allow for running in 'immediate' mode where jobs are executed as soon as they
+  are queued, removing the need for cron (ie if you don't have access to set 
+  one up) 
+
 2012-04-18 v1.5.4
 -----------------
 

@@ -51,17 +51,25 @@ class QueuedJobService {
 	 * @var String
 	 */
 	public static $cache_dir = 'queuedjobs';
+	
+	/**
+	 * Are we executing jobs immediately? 
+	 * @var type 
+	 */
+	protected $immediate = false;
 
 	/**
 	 * Register our shutdown handler
 	 */
-	public function __construct() {
+	public function __construct($immediateMode = false) {
 		// bind a shutdown function to process all 'immediate' queued jobs if needed, but only in CLI mode
 		if (self::$use_shutdown_function && Director::is_cli()) {
 			register_shutdown_function(array($this, 'onShutdown'));
 		} else {
 			
 		}
+		
+		$this->immediate = $immediateMode;
 	}
 	
     /**
@@ -106,6 +114,10 @@ class QueuedJobService {
 
 		$jobDescriptor->write();
 		$jobDescriptor->activateOnQueue();
+		
+		if ($this->immediate) {
+			$this->runJob($jobDescriptor->ID);
+		}
 		
 		return $jobDescriptor->ID;
 	}
