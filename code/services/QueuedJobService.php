@@ -291,7 +291,7 @@ class QueuedJobService {
 	protected function initialiseJob(QueuedJobDescriptor $jobDescriptor) {
 		// create the job class
 		$impl = $jobDescriptor->Implementation;
-		$job = new $impl;
+		$job = Object::create($impl);
 		/* @var $job QueuedJob */
 		if (!$job) {
 			throw new Exception("Implementation $impl no longer exists");
