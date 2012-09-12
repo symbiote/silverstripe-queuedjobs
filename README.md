@@ -53,6 +53,25 @@ The following will run the publish job in 1 day's time from now.
 	$publish = new PublishItemsJob(21);
 	singleton('QueuedJobService')->queueJob($publish, date('Y-m-d H:i:s', time() + 86400));
 
+## Using Gearman for running jobs
+
+* Make sure gearmand is installed
+* Get the gearman module from https://github.com/nyeholt/silverstripe-gearman
+* Create a _config/queuedjobs.yml file in your project with the following declaration
+
+---
+Name: localproject
+After: '#queuedjobsettings'
+---
+Injector:
+  QueueHandler: 
+    class: GearmanQueueHandler
+
+* Run the gearman worker using `php gearman/gearman_runner.php` in your SS root dir
+
+This will cause all queuedjobs to trigger immediate via a gearman worker (code/workers/JobWorker.php)
+EXCEPT those with a StartAfter date set, for which you will STILL need the cron settings from above
+
 ## Using QueuedJob::IMMEDIATE jobs
 
 Queued jobs can be executed immediately (instead of being limited by cron's 1 minute interval) by using

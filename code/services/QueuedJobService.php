@@ -23,6 +23,7 @@
  * @license BSD http://silverstripe.org/bsd-license/
  */
 class QueuedJobService {
+	
 	public static $stall_threshold = 3;
 
 	/**
@@ -53,23 +54,19 @@ class QueuedJobService {
 	public static $cache_dir = 'queuedjobs';
 	
 	/**
-	 * Are we executing jobs immediately? 
-	 * @var type 
+	 * @var DefaultQueueHandler
 	 */
-	protected $immediate = false;
+	public $queueHandler;
+	
 
 	/**
 	 * Register our shutdown handler
 	 */
-	public function __construct($immediateMode = false) {
+	public function __construct() {
 		// bind a shutdown function to process all 'immediate' queued jobs if needed, but only in CLI mode
 		if (self::$use_shutdown_function && Director::is_cli()) {
 			register_shutdown_function(array($this, 'onShutdown'));
-		} else {
-			
 		}
-		
-		$this->immediate = $immediateMode;
 	}
 	
     /**
@@ -90,14 +87,14 @@ class QueuedJobService {
 
 		// see if we already have this job in a queue
 		$filter = array(
-			'Signature =' => $signature,
-			'JobStatus =' => QueuedJob::STATUS_NEW,
+			'Signature' => $signature,
+			'JobStatus' => QueuedJob::STATUS_NEW,
 		);
 
-		$existing = DataObject::get('QueuedJobDescriptor', singleton('QJUtils')->dbQuote($filter));
+		$existing = DataList::create('QueuedJobDescriptor')->filter($filter)->first();
 
-		if ($existing && $existing->Count()) {
-			return $existing->First()->ID;
+		if ($existing && $existing->ID) {
+			return $existing->ID;
 		}
 
 		$jobDescriptor = new QueuedJobDescriptor();
@@ -113,11 +110,8 @@ class QueuedJobService {
 		$this->copyJobToDescriptor($job, $jobDescriptor);
 
 		$jobDescriptor->write();
-		$jobDescriptor->activateOnQueue();
-		
-		if ($this->immediate) {
-			$this->runJob($jobDescriptor->ID);
-		}
+
+		$this->queueHandler->startJobOnQueue($jobDescriptor);
 		
 		return $jobDescriptor->ID;
 	}
@@ -179,8 +173,9 @@ class QueuedJobService {
 		$type = $type ? (string)  $type : QueuedJob::QUEUED;
 
 		// see if there's any blocked jobs that need to be resumed
-		$filter = singleton('QJUtils')->dbQuote(array('JobStatus =' => QueuedJob::STATUS_WAIT, 'JobType =' => $type));
-		$existingJob = DataObject::get_one('QueuedJobDescriptor', $filter);
+		$filter = singleton('QJUtils')->dbQuote();
+		
+		$existingJob = DataList::create('QueuedJobDescriptor')->filter(array('JobStatus' => QueuedJob::STATUS_WAIT, 'JobType' => $type))->first();
 		if ($existingJob && $existingJob->exists()) {
 			return $existingJob;
 		}
@@ -247,9 +242,7 @@ class QueuedJobService {
 		}
 		
 		// now, find those that need to be marked before the next check
-		$filter = singleton('QJUtils')->dbQuote(array('JobStatus =' => QueuedJob::STATUS_RUN));
-		$runningJobs = DataObject::get('QueuedJobDescriptor', $filter);
-		
+		$runningJobs = DataList::create('QueuedJobDescriptor', array('JobStatus' => QueuedJob::STATUS_RUN));
 		if ($runningJobs) {
 			// foreach job, mark it as having been incremented
 			foreach ($runningJobs as $job) {
@@ -257,12 +250,12 @@ class QueuedJobService {
 				$job->write();
 			}
 		}
-		
+
 		// finally, find the list of broken jobs and send an email if there's some found
 		$min = date('i');
 		if ($min == '42' || true) {
-			$filter = singleton('QJUtils')->dbQuote(array('JobStatus =' => QueuedJob::STATUS_BROKEN));
-			$brokenJobs = DataObject::get('QueuedJobDescriptor', $filter);
+			$filter = singleton('QJUtils')->dbQuote();
+			$brokenJobs = DataList::create('QueuedJobDescriptor', array('JobStatus' => QueuedJob::STATUS_BROKEN));
 			if ($brokenJobs && $brokenJobs->count()) {
 				SS_Log::log(array(
 					'errno' => 0,

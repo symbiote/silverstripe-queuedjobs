@@ -27,28 +27,27 @@ class CreateQueuedJobTask extends BuildTask {
 	}
 }
 
-
 class DummyQueuedJob extends AbstractQueuedJob implements QueuedJob {
 	public function __construct($number = 0) {
 		if ($number) {
-			$this->jobData->startNumber = $number;
-			$this->totalSteps = $this->jobData->startNumber;
+			$this->startNumber = $number;
+			$this->totalSteps = $this->startNumber;
 		}
 	}
 
 	public function getTitle() {
-		return "Some test job for ".$this->jobData->startNumber.' seconds';
+		return "Some test job for ".$this->startNumber.' seconds';
 	}
 
 	public function getJobType() {
 		return QueuedJob::IMMEDIATE;
 		
-		return $this->jobData->startNumber > 50 ? QueuedJob::LARGE : QueuedJob::QUEUED;
+		return $this->startNumber > 50 ? QueuedJob::LARGE : QueuedJob::QUEUED;
 	}
 
 	public function setup() {
 		// just demonstrating how to get a job going...
-		$this->totalSteps = $this->jobData->startNumber;
+		$this->totalSteps = $this->startNumber;
 		$this->times = array();
 	}
 
