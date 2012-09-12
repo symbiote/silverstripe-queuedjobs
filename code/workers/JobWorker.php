@@ -9,7 +9,6 @@ class JobWorker implements GearmanHandler {
 	public static $dependencies = array(
 		'queuedJobService' => '%$QueuedJobService',
 	);
-	
 	/**
 	 * @var QueuedJobService
 	 */

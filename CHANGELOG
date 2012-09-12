@@ -1,3 +1,18 @@
+2012-09-12 v1.8.0
+-----------------
+
+* Added ability to have jobs executed by Gearman
+* Removed the 'immediate' mode feature; this can be done by using the 
+  ImmediateQueueHandler via config instead - 
+
+---
+Name: localproject
+After: '#queuedjobsettings'
+---
+Injector:
+  QueueHandler: 
+    class: ImmediateQueueHandler
+
 2012-09-06 v1.7.0
 -----------------
 

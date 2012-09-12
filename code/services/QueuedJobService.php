@@ -110,8 +110,13 @@ class QueuedJobService {
 		$this->copyJobToDescriptor($job, $jobDescriptor);
 
 		$jobDescriptor->write();
-
-		$this->queueHandler->startJobOnQueue($jobDescriptor);
+		
+		if ($startAfter && strtotime($startAfter) > time()) {
+			
+		} else {
+			// immediately start it on the queue, however that works
+			$this->queueHandler->startJobOnQueue($jobDescriptor);
+		}
 		
 		return $jobDescriptor->ID;
 	}
