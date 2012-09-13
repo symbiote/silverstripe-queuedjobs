@@ -55,17 +55,17 @@ class QueuedJobDescriptor extends DataObject {
 			'JobTitle' => _t('QueuedJobs.TABLE_TITLE', 'Title'),
 			'Created' => _t('QueuedJobs.TABLE_ADDE', 'Added'),
 			'JobStarted' => _t('QueuedJobs.TABLE_STARTED', 'Started'),
-			'JobRestarted' => _t('QueuedJobs.TABLE_RESUMED', 'Resumed'),
+//			'JobRestarted' => _t('QueuedJobs.TABLE_RESUMED', 'Resumed'),
 			'StartAfter' => _t('QueuedJobs.TABLE_START_AFTER', 'Start After'),
 			'JobType'	=> _t('QueuedJobs.JOB_TYPE', 'Job Type'),
 			'JobStatus' => _t('QueuedJobs.TABLE_STATUS', 'Status'),
 			'Messages' => _t('QueuedJobs.TABLE_MESSAGES', 'Message'),
-			'StepsProcessed' => _t('QueuedJobs.TABLE_NUM_PROCESSED', 'Number Processed'),
+			'StepsProcessed' => _t('QueuedJobs.TABLE_NUM_PROCESSED', 'Done'),
 			'TotalSteps' => _t('QueuedJobs.TABLE_TOTAL', 'Total'),
 		);
 		return $columns;
 	}
-
+	
 	public function pause() {
 		if ($this->JobStatus == QueuedJob::STATUS_WAIT || $this->JobStatus == QueuedJob::STATUS_RUN) {
 			$this->JobStatus = QueuedJob::STATUS_PAUSED;

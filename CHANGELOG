@@ -1,3 +1,9 @@
+2012-09-13 v1.8.1
+-----------------
+
+* Improved layout of jobs table to keep previous 5 mins worth of finished jobs
+  and display messages better
+
 2012-09-12 v1.8.0
 -----------------
 
