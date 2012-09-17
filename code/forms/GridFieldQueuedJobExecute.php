@@ -105,6 +105,7 @@ class GridFieldQueuedJobExecute implements GridField_ColumnProvider, GridField_A
 			if($actionName == 'execute') { // && !$item->canDelete()) {
 				$item->execute();
 			}
+			Requirements::clear();
 		} 
 	}
 }

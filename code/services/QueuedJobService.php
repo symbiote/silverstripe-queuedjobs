@@ -260,7 +260,7 @@ class QueuedJobService {
 		$min = date('i');
 		if ($min == '42' || true) {
 			$filter = singleton('QJUtils')->dbQuote();
-			$brokenJobs = DataList::create('QueuedJobDescriptor', array('JobStatus' => QueuedJob::STATUS_BROKEN));
+			$brokenJobs = DataList::create('QueuedJobDescriptor')->filter(array('JobStatus' => QueuedJob::STATUS_BROKEN));
 			if ($brokenJobs && $brokenJobs->count()) {
 				SS_Log::log(array(
 					'errno' => 0,
