@@ -558,6 +558,10 @@ class QueuedJobService {
 				unset($_SESSION['loggedInAs']);
 			}
 
+			if (class_exists('SecurityContext')) {
+				singleton('SecurityContext')->setMember(null);
+			}
+
 			$job = $this->getNextPendingJob(QueuedJob::IMMEDIATE);
 			if ($job) {
 				$this->runJob($job->ID);
