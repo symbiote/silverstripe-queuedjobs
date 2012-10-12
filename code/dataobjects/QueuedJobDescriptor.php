@@ -137,4 +137,8 @@ class QueuedJobDescriptor extends DataObject {
 			return is_array($msgs) ? '<ul><li>'.implode('</li><li>', $msgs).'</li></ul>' : '';
 		}
 	}
+
+	public function getTitle(){
+		return $this->JobTitle;
+	}
 }
