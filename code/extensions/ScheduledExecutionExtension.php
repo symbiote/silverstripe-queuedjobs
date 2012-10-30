@@ -25,7 +25,7 @@ class ScheduledExecutionExtension extends DataExtension {
 	 *
 	 * @param FieldSet $fields 
 	 */
-	public function updateCMSFields($fields) {
+	function updateCMSFields(FieldList $fields) {
 		$fields->addFieldsToTab('Root.Schedule', array(
 			$dt = new Datetimefield('FirstExecution', _t('ScheduledExecution.FIRST_EXECUTION', 'First Execution')),
 			new DropdownField('ExecuteEvery', _t('ScheduledExecution.EXECUTE_EVERY', 'Execute every'), $this->owner->dbObject('ExecuteEvery')->enumValues()),
