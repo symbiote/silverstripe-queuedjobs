@@ -19,7 +19,7 @@ class DeleteObjectJob extends AbstractQueuedJob {
 		}
 	}
 	
-	public function getObject() {
+	protected function getObject($name = 'Object') {
 		return DataObject::get_by_id($this->TargetClass, $this->TargetID);
 	}
 	
