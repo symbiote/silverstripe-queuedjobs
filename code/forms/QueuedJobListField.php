@@ -14,7 +14,7 @@ class QueuedJobListField extends TableListField {
 		return new QueuedJobListField_ItemRequest($this, $request->param('ID'));
 	}
 
-	function FieldHolder() {
+	function FieldHolder($properties = array()) {
 		Requirements::javascript('queuedjobs/javascript/QueuedJobListField.js');
 		return parent::FieldHolder();
 	}
