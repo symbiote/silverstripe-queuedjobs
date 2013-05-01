@@ -64,7 +64,7 @@ class QueuedJobService {
 	 */
 	public function __construct() {
 		// bind a shutdown function to process all 'immediate' queued jobs if needed, but only in CLI mode
-		if (self::$use_shutdown_function && Director::is_cli()) {
+		if (self::$use_shutdown_function && Director::is_cli() && !SapphireTest::is_running_test()) {
 			register_shutdown_function(array($this, 'onShutdown'));
 		}
 	}
