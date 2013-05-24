@@ -7,6 +7,7 @@
 class QueuedJobsAdmin extends ModelAdmin {
     static $url_segment = 'queuedjobs';
 	static $menu_title = 'Jobs';
+	private static $menu_icon = "queuedjobs/images/clipboard.png";
 	
 	static $managed_models = array('QueuedJobDescriptor');
 
