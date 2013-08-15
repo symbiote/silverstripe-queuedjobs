@@ -14,7 +14,7 @@ Marcus Nyeholt
 * https://github.com/nyeholt/silverstripe-multivaluefield
 
 Please note: branch names will match the SilverStripe "minor" versions - eg 
-the 3.0.0 branch keeps in track with the 3.0.x branch of SS
+the 3.0 branch keeps in track with the 3.0.x branch of SS
 
 ## Documentation
 
