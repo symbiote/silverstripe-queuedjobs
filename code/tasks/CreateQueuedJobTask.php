@@ -14,7 +14,7 @@
  */
 class CreateQueuedJobTask extends BuildTask {
 	
-	protected $description = 'A task used to create a queued job. Pass the queued job class name as the "name" parameter';
+	protected $description = 'A task used to create a queued job. Pass the queued job class name as the "name" parameter, pass an optional "start" parameter (parseable by strtotime) to set a start time for the job.';
 	
     public function run($request) {
 		if (isset($request['name']) && ClassInfo::exists($request['name'])) {
@@ -23,7 +23,22 @@ class CreateQueuedJobTask extends BuildTask {
 		} else {
 			$job = new DummyQueuedJob(mt_rand(10, 100));
 		}
-		singleton('QueuedJobService')->queueJob($job);
+
+        if (isset($request['start'])){
+            $start = strtotime($request['start']);
+            $now = time();
+            if ($start >= $now){
+                $friendlyStart = date('Y-m-d H:i:s', $start);
+                echo "Job ".$request['name']. " queued to start at: <b>".$friendlyStart."</b>";
+                singleton('QueuedJobService')->queueJob($job, $start);
+            } else {
+                echo "'start' parameter must be a date/time in the future, parseable with strtotime";
+            }
+        } else {
+            echo "Job Queued";
+            singleton('QueuedJobService')->queueJob($job);
+        }
+
 	}
 }
 
