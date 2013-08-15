@@ -555,7 +555,6 @@ class QueuedJobService {
 	 * we ignore paused or stalled jobs. 
 	 */
 	public function onShutdown() {
-		$job = $this->getNextPendingJob(QueuedJob::IMMEDIATE);
 		do {
 			if (class_exists('Subsite')) {
 				// clear subsite back to default to prevent any subsite changes from leaking to 
