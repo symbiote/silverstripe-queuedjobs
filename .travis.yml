@@ -20,4 +20,4 @@ before_script:
  - cd ~/builds/ss
 
 script: 
- - phpunit queuedjobs/tests/*
+ - phpunit queuedjobs/tests

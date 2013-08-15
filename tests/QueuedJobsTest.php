@@ -5,7 +5,7 @@
  *
  * @author Marcus Nyeholt <marcus@silverstripe.com.au>
  */
-class TestQueuedJobs extends SapphireTest
+class QueuedJobsTest extends SapphireTest
 {
 	public function testQueueJob() {
 		$svc = singleton("QueuedJobService");
