@@ -1,5 +1,7 @@
 # SilverStripe Queued Jobs Module
 
+[![Build Status](https://secure.travis-ci.org/nyeholt/silverstripe-queuedjobs.png)](http://travis-ci.org/nyeholt/silverstripe-queuedjobs)
+
 
 ## Maintainer Contact
 
