@@ -12,9 +12,7 @@ class TestScheduledExecution extends SapphireTest {
 		'TestScheduledDataObject',
 	);
 	
-	public function testScheduledExecution() {
-		
-		$this->resetDBSchema(true);
+	public function testScheduledExecutionTimes() {
 		
 		$test = new TestScheduledDataObject;
 		
