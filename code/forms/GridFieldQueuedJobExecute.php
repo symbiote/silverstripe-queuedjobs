@@ -15,6 +15,32 @@
  */
 class GridFieldQueuedJobExecute implements GridField_ColumnProvider, GridField_ActionProvider {
 	
+	protected $action = 'execute';
+	
+	protected $icons = array(
+		'execute'		=> 'navigation',
+		'pause'			=> 'minus-circle_disabled',
+		'resume'		=> 'arrow-circle-double',
+	);
+	
+	/**
+	 * Call back to see if the record's action icon should be shown. 
+	 *
+	 * @var closure
+	 */
+	protected $viewCheck;
+	
+	public function __construct($action = 'execute', $check=null) {
+		$this->action = $action;
+		if (!$check) {
+			$check = function ($record) {
+				return $record->JobStatus == QueuedJob::STATUS_WAIT || $record->JobStatus == QueuedJob::STATUS_NEW;
+			};
+		}
+		
+		$this->viewCheck = $check;
+	}
+
 	/**
 	 * Add a column 'Delete'
 	 * 
@@ -69,7 +95,7 @@ class GridFieldQueuedJobExecute implements GridField_ColumnProvider, GridField_A
 	 * @return array 
 	 */
 	public function getActions($gridField) {
-		return array('execute');
+		return array('execute', 'pause', 'resume');
 	}
 	
 	/**
@@ -80,10 +106,19 @@ class GridFieldQueuedJobExecute implements GridField_ColumnProvider, GridField_A
 	 * @return string - the HTML for the column 
 	 */
 	public function getColumnContent($gridField, $record, $columnName) {
-		$field = GridField_FormAction::create($gridField,  'ExecuteJob'.$record->ID, false, "execute", array('RecordID' => $record->ID))
-			->addExtraClass('gridfield-button-executejob')
-			->setAttribute('title', _t('QueuedJob.EXECUTE_JOB', "Execute"))
-			->setAttribute('data-icon', 'navigation');
+		$icon = $this->icons[$this->action];
+		
+		if ($this->viewCheck) {
+			$func = $this->viewCheck;
+			if (!$func($record)) {
+				return;
+			}
+		}
+
+		$field = GridField_FormAction::create($gridField,  'ExecuteJob'.$record->ID, false, $this->action, array('RecordID' => $record->ID))
+			->addExtraClass('gridfield-button-job' . $this->action)
+			->setAttribute('title', ucfirst($this->action))
+			->setAttribute('data-icon', $icon);
 		return $field->Field();
 	}
 	
@@ -97,15 +132,14 @@ class GridFieldQueuedJobExecute implements GridField_ColumnProvider, GridField_A
 	 * @return void
 	 */
 	public function handleAction(GridField $gridField, $actionName, $arguments, $data) {
-		if($actionName == 'execute') {
+		$actions = $this->getActions(null);
+		if (in_array($actionName, $actions)) {
 			$item = $gridField->getList()->byID($arguments['RecordID']);
 			if(!$item) {
 				return;
 			}
-			if($actionName == 'execute') { // && !$item->canDelete()) {
-				$item->execute();
-			}
+			$item->$actionName();
 			Requirements::clear();
-		} 
+		}
 	}
 }
