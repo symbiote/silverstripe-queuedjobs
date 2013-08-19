@@ -1,20 +1,16 @@
 <?php
 
 /**
- * Description of TestScheduledJob
- *
  * @author marcus@silverstripe.com.au
  * @license BSD License http://silverstripe.org/bsd-license/
  */
-class TestScheduledExecution extends SapphireTest {
+class ScheduledExecutionTest extends SapphireTest {
 	
 	protected $extraDataObjects = array(
 		'TestScheduledDataObject',
 	);
 	
-	public function testScheduledExecution() {
-		
-		$this->resetDBSchema(true);
+	public function testScheduledExecutionTimes() {
 		
 		$test = new TestScheduledDataObject;
 		

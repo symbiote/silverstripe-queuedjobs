@@ -1,5 +1,7 @@
 # SilverStripe Queued Jobs Module
 
+[![Build Status](https://secure.travis-ci.org/nyeholt/silverstripe-queuedjobs.png)](http://travis-ci.org/nyeholt/silverstripe-queuedjobs)
+
 
 ## Maintainer Contact
 
@@ -13,7 +15,8 @@ Marcus Nyeholt
 * Access to create cron jobs
 * https://github.com/nyeholt/silverstripe-multivaluefield
 
-For older versions, please check the ss30 or ss24 branches
+Please note: branch names will match the SilverStripe "minor" versions - eg 
+the 3.0 branch keeps in track with the 3.0.x branch of SS
 
 ## Documentation
 
