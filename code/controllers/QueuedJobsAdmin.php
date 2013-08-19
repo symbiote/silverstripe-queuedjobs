@@ -33,6 +33,12 @@ class QueuedJobsAdmin extends ModelAdmin {
 		$form->Fields()->replaceField('QueuedJobDescriptor', $grid);
 		
 		$grid->getConfig()->addComponent(new GridFieldQueuedJobExecute());
+		$grid->getConfig()->addComponent(new GridFieldQueuedJobExecute('pause', function ($record) {
+			return $record->JobStatus == QueuedJob::STATUS_WAIT || $record->JobStatus == QueuedJob::STATUS_RUN;
+		}));
+		$grid->getConfig()->addComponent(new GridFieldQueuedJobExecute('resume', function ($record) {
+			return $record->JobStatus == QueuedJob::STATUS_PAUSED || $record->JobStatus == QueuedJob::STATUS_BROKEN;
+		}));
 		$grid->getConfig()->addComponent(new GridFieldDeleteAction());
 		
 		$formatting = array(
