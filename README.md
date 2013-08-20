@@ -15,8 +15,10 @@ Marcus Nyeholt
 * Access to create cron jobs
 * https://github.com/nyeholt/silverstripe-multivaluefield
 
-Please note: branch names will match the SilverStripe "minor" versions - eg 
-the 3.0 branch keeps in track with the 3.0.x branch of SS
+The master branch of this module is currently aiming for SilverStripe 3.1 compatibility
+
+[SilverStripe 3.0 compatible version](https://github.com/nyeholt/silverstripe-queuedjobs/tree/1.0)
+[SilverStripe 2.4 compatible version](https://github.com/nyeholt/silverstripe-queuedjobs/tree/ss24)
 
 ## Documentation
 
