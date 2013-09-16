@@ -5,13 +5,17 @@
  * @license BSD http://silverstripe.org/bsd-license/
  */
 class QueuedJobsAdmin extends ModelAdmin {
-    static $url_segment = 'queuedjobs';
-	static $menu_title = 'Jobs';
+    private static $url_segment = 'queuedjobs';
+	private static $menu_title = 'Jobs';
 	
-	static $managed_models = array('QueuedJobDescriptor');
+	private static $managed_models = array('QueuedJobDescriptor');
 
-	public static $dependencies = array(
+	private static $dependencies = array(
 		'jobQueue'			=> '%$QueuedJobService',
+	);
+	
+	private static $allowed_actions = array(
+		'EditForm',
 	);
 
 	/**
@@ -20,16 +24,17 @@ class QueuedJobsAdmin extends ModelAdmin {
 	 */
 	public $jobQueue;
 	
-	public function EditForm($request = null) {
-		$form = parent::EditForm($request);
+	public function getEditForm($id = null, $fields = null) {
+		$form = parent::getEditForm($id, $fields);
 		
 		$filter = $this->jobQueue->getJobListFilter(null, 300);
 
 		$list = DataList::create('QueuedJobDescriptor');
-		$list->where($filter);
+		$list = $list->where($filter);
 		
 		$grid = new GridField('QueuedJobDescriptor', 'Jobs', $list);
 		$grid->setForm($form);
+		
 		$form->Fields()->replaceField('QueuedJobDescriptor', $grid);
 		
 		$grid->getConfig()->addComponent(new GridFieldQueuedJobExecute());

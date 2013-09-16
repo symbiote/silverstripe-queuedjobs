@@ -11,13 +11,13 @@
  */
 class ScheduledExecutionExtension extends DataExtension {
 	
-	public static $db = array(
+	private static $db = array(
 		'FirstExecution'		=> 'SS_Datetime',
 		'ExecuteEvery'			=> "Enum(',Hour,Day,Week,Fortnight,Month,Year')",
 		'ExecuteFree'			=> 'Varchar',
 	);
 	
-	public static $has_one = array(
+	private static $has_one = array(
 		'ScheduledJob'			=> 'QueuedJobDescriptor',
 	);
 	

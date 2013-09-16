@@ -12,7 +12,7 @@
  * @license BSD http://silverstripe.org/bsd-license/
  */
 class QueuedJobDescriptor extends DataObject {
-    public static $db = array(
+    private static $db = array(
 		'JobTitle' => 'Varchar(255)',
 		'Signature' => 'Varchar(64)',
 		'Implementation' => 'Varchar(64)',
@@ -30,17 +30,17 @@ class QueuedJobDescriptor extends DataObject {
 		'JobType' => 'Varchar(16)',
 	);
 
-	public static $has_one = array(
+	private static $has_one = array(
 		'RunAs' => 'Member',
 	);
 
-	public static $defaults = array(
+	private static $defaults = array(
 		'JobStatus' => 'New',
 		'ResumeCounts' => 0,
 	);
 	
 	
-	public static $searchable_fields = array(
+	private static $searchable_fields = array(
 		'JobTitle',
 	);
 	
@@ -88,7 +88,7 @@ class QueuedJobDescriptor extends DataObject {
 	 */
 	public function activateOnQueue() {
 		// if it's an immediate job, lets cache it to disk to be picked up later
-		if ($this->JobType == QueuedJob::IMMEDIATE && !QueuedJobService::$use_shutdown_function) {
+		if ($this->JobType == QueuedJob::IMMEDIATE && !Config::inst()->get('QueuedJobService', 'use_shutdown_function')) {
 			touch($this->getJobDir() . '/' . 'queuedjob-' . $this->ID);
 		}
 	}
@@ -98,7 +98,7 @@ class QueuedJobDescriptor extends DataObject {
 	 */
 	protected function getJobDir() {
 		// make sure our temp dir is in place. This is what will be inotify watched
-		$jobDir = QueuedJobService::$cache_dir;
+		$jobDir = Config::inst()->get('QueuedJobService', 'cache_dir');
 		if ($jobDir{0} != '/') {
 			$jobDir = getTempFolder() . '/' . $jobDir;
 		}

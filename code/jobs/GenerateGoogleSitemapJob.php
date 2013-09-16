@@ -10,7 +10,7 @@
  */
 class GenerateGoogleSitemapJob extends AbstractQueuedJob {
 
-	public static $regenerate_time = 43200;
+	private static $regenerate_time = 43200;
 
 	public function __construct() {
 		$this->pagesToProcess = DB::query('SELECT ID FROM "SiteTree_Live" WHERE "ShowInSearch"=1')->column();

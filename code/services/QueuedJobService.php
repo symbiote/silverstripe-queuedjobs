@@ -24,7 +24,7 @@
  */
 class QueuedJobService {
 	
-	public static $stall_threshold = 3;
+	private static $stall_threshold = 3;
 
 	/**
 	 * how many meg of ram will we allow before pausing and releasing the memory?
@@ -34,7 +34,7 @@ class QueuedJobService {
 	 *
 	 * @var int
 	 */
-	public static $memory_limit = 134217728;
+	private static $memory_limit = 134217728;
 	
 	/**
 	 * Should "immediate" jobs be managed using the shutdown function? 
@@ -44,14 +44,14 @@ class QueuedJobService {
 	 *
 	 * @var boolean
 	 */
-	public static $use_shutdown_function = true;
+	private static $use_shutdown_function = true;
 	
 	/**
 	 * The location for immediate jobs to be stored in
 	 *
 	 * @var String
 	 */
-	public static $cache_dir = 'queuedjobs';
+	private static $cache_dir = 'queuedjobs';
 	
 	/**
 	 * @var DefaultQueueHandler
