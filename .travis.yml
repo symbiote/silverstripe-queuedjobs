@@ -6,7 +6,16 @@ php:
 
 env:
   - DB=MYSQL CORE_RELEASE=3.0
-#   - DB=MYSQL CORE_RELEASE=master
+  - DB=MYSQL CORE_RELEASE=3.1
+
+matrix:
+  include:
+    - php: 5.3
+      env: DB=MYSQL CORE_RELEASE=3.0
+      branch: 3.0
+    - php: 5.3
+      env: DB=MYSQL CORE_RELEASE=3.1
+      branch: master
 
 branches:
   only:
