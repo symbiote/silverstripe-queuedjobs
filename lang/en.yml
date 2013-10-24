@@ -1,0 +1,47 @@
+en:
+  QueuedJobsAdmin:
+    MENUTITLE: Jobs
+  CreateQueuedJobTask:
+    Description: 'A task used to create a queued job. Pass the queued job class name as the "name" parameter, pass an optional "start" parameter (parseable by strtotime) to set a start time for the job.'
+  DeleteObjectJob:
+    DELETE_JOB: 'Delete node'
+    DELETE_OBJ2: 'Delete {title}'
+  GenerateSitemapJob:
+    REGENERATE: 'Regenerate Google sitemap .xml file'
+  ProcessJobQueueTask:
+    Description: 'Used via a cronjob to execute queued jobs that need running'
+  PublishItemsJob:
+    Title: 'Publish items beneath {title}'
+  QueuedJobDescriptor:
+    PLURALNAME: 'Queued Job Descriptors'
+    SINGULARNAME: 'Queued Job Descriptor'
+  QueuedJobs:
+    JOB_EXCEPT: 'Job caused exception %s in %s at line %s'
+    JOB_PAUSED: 'Job paused at %s'
+    JOB_STALLED: 'Job stalled after %s attempts - please check'
+    JOB_TYPE: 'Job Type'
+    JobsFieldTitle: Jobs
+    MEMORY_RELEASE: 'Job releasing memory and waiting (%s used)'
+    STALLED_JOB: 'Stalled job'
+    STALLED_JOB_MSG: 'A job named %s appears to have stalled. It has been paused, please login to check it'
+    TABLE_ADDE: Added
+    TABLE_MESSAGES: Message
+    TABLE_NUM_PROCESSED: Done
+    TABLE_STARTED: Started
+    TABLE_START_AFTER: 'Start After'
+    TABLE_STATUS: Status
+    TABLE_TITLE: Title
+    TABLE_TOTAL: Total
+  ScheduledExecution:
+    EXECUTE_EVERY: 'Execute every'
+    EXECUTE_FREE: 'Scheduled (in strtotime format from first execution)'
+    ExecuteEveryDay: Day
+    ExecuteEveryFortnight: Fortnight
+    ExecuteEveryHour: Hour
+    ExecuteEveryMonth: Month
+    ExecuteEveryWeek: Week
+    ExecuteEveryYear: Year
+    FIRST_EXECUTION: 'First Execution'
+    NEXT_RUN_DATE: 'Next run date'
+  ScheduledExecutionJob:
+    Title: 'Scheduled execution for {title}'

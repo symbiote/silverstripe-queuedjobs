@@ -8,7 +8,12 @@
  */
 class ProcessJobQueueTask extends BuildTask {
 
-	protected $description = 'Used via a cronjob to execute queued jobs that need running';
+	public function getDescription() {
+		return _t(
+			'ProcessJobQueueTask.Description',
+			'Used via a cronjob to execute queued jobs that need running'
+		);
+	}
 
     public function run($request) {
 		$service = singleton('QueuedJobService');
