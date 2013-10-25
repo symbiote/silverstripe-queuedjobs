@@ -23,7 +23,11 @@ class PublishItemsJob extends AbstractQueuedJob implements QueuedJob {
 	}
 
 	public function getTitle() {
-		return "Publish items beneath " . $this->getRoot()->Title;
+		return _t(
+			'PublishItemsJob.Title',
+			"Publish items beneath {title}",
+			array('title' => $this->getRoot()->Title)
+		);
 	}
 
 	/**

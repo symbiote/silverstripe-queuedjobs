@@ -32,7 +32,11 @@ class QueuedJobsAdmin extends ModelAdmin {
 		$list = DataList::create('QueuedJobDescriptor');
 		$list = $list->where($filter);
 		
-		$grid = new GridField('QueuedJobDescriptor', 'Jobs', $list);
+		$grid = new GridField(
+			'QueuedJobDescriptor', 
+			_t('QueuedJobs.JobsFieldTitle','Jobs'), 
+			$list
+		);
 		$grid->setForm($form);
 		
 		$form->Fields()->replaceField('QueuedJobDescriptor', $grid);

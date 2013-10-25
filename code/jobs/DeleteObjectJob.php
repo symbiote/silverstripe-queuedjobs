@@ -33,7 +33,7 @@ class DeleteObjectJob extends AbstractQueuedJob {
 	public function getTitle() {
 		$obj = $this->getObject();
 		if ($obj) {
-			return _t('DeleteObjectJob.DELETE_OBJ', 'Delete ' . $obj->Title);
+			return _t('DeleteObjectJob.DELETE_OBJ2', 'Delete {title}', array('title' => $obj->Title));
 		} else {
 			return _t('DeleteObjectJob.DELETE_JOB', 'Delete node');
 		}
