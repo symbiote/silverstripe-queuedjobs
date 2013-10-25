@@ -7,6 +7,7 @@
 class QueuedJobsAdmin extends ModelAdmin {
     private static $url_segment = 'queuedjobs';
 	private static $menu_title = 'Jobs';
+	private static $menu_icon = "queuedjobs/images/clipboard.png";
 	
 	private static $managed_models = array('QueuedJobDescriptor');
 
@@ -18,8 +19,11 @@ class QueuedJobsAdmin extends ModelAdmin {
 		'EditForm',
 	);
 
+	private static $allowed_actions = array(
+		'EditForm'
+	);
+
 	/**
-	 *
 	 * @var QueuedJobService
 	 */
 	public $jobQueue;
