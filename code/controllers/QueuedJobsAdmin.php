@@ -16,10 +16,6 @@ class QueuedJobsAdmin extends ModelAdmin {
 	);
 	
 	private static $allowed_actions = array(
-		'EditForm',
-	);
-
-	private static $allowed_actions = array(
 		'EditForm'
 	);
 
