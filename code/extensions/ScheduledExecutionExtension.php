@@ -26,6 +26,10 @@ class ScheduledExecutionExtension extends DataExtension {
 	 * @param FieldSet $fields 
 	 */
 	public function updateCMSFields(FieldList $fields) {
+		$fields->findOrMakeTab(
+			'Root.Schedule',
+			_t('ScheduledExecution.ScheduleTabTitle', 'Schedule')
+		);
 		$fields->addFieldsToTab('Root.Schedule', array(
 			$dt = new Datetimefield('FirstExecution', _t('ScheduledExecution.FIRST_EXECUTION', 'First Execution')),
 			new DropdownField(
