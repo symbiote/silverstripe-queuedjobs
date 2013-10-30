@@ -43,5 +43,6 @@ en:
     ExecuteEveryYear: Year
     FIRST_EXECUTION: 'First Execution'
     NEXT_RUN_DATE: 'Next run date'
+    ScheduleTabTitle: Schedule
   ScheduledExecutionJob:
     Title: 'Scheduled execution for {title}'

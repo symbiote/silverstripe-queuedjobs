@@ -1,0 +1,47 @@
+ar:
+  QueuedJobsAdmin:
+    MENUTITLE: وظائف
+  CreateQueuedJobTask:
+    Description: 'مهمة تستخدم لإنشاء وظيفة مجدولة. قم بتمرير اسم تصنيف الوظيفة المجدولة ك "اسم" العامل المتغير, قم بتمرير عامل متغير "بادئ" (قابل للقراءة عن طريق إس تى آر تو تايم) لتحديد وقت بدء الوظيفة.'
+  DeleteObjectJob:
+    DELETE_JOB: 'حذف عقدة فى النظام'
+    DELETE_OBJ2: 'حذف {title}'
+  GenerateSitemapJob:
+    REGENERATE: 'إعادة إنتاج ملف جوجل سايت ماب.إكس إم إل'
+  ProcessJobQueueTask:
+    Description: 'تم استخدامه بواسطة المهام المجدولة لتنفيذ المهام التى تحتاج للتشغيل'
+  PublishItemsJob:
+    Title: 'قم بإعلان العناصر تحت عنوان {title}'
+  QueuedJobDescriptor:
+    PLURALNAME: 'الواصفات الوظيفية الموضوعة في قائمة الانتظار'
+    SINGULARNAME: 'الواصف الوظيفي الموضوع في قائمة الانتظار'
+  QueuedJobs:
+    JOB_EXCEPT: 'الوظيفة سببت استثناء s% فى s% فى السطر s%'
+    JOB_PAUSED: 'تم توقف الوظيفة عند s%'
+    JOB_STALLED: 'تم تعطيل الوظيفة بعد s% محاولات - من فضلك قم بالتحقق'
+    JOB_TYPE: 'نوع الوظيفة'
+    JobsFieldTitle: الوظائف
+    MEMORY_RELEASE: 'ذاكرة إطلاق الوظائف و الانتظار (s% مستخدم)'
+    STALLED_JOB: 'الوظيفة المؤجلة'
+    STALLED_JOB_MSG: 'وظيفة باسم s% تبين أنها تعطلت. قد تم توقفها, من فضلك سجل الدخول لكى تتحقق منها'
+    TABLE_ADDE: تمت إضافته
+    TABLE_MESSAGES: رسالة
+    TABLE_NUM_PROCESSED: تم
+    TABLE_STARTED: تم البدأ
+    TABLE_START_AFTER: 'ابدأ بعد'
+    TABLE_STATUS: الحالة
+    TABLE_TITLE: عنوان
+    TABLE_TOTAL: الكلى
+  ScheduledExecution:
+    EXECUTE_EVERY: 'قم بتنفيذ كل'
+    EXECUTE_FREE: 'محددة (بصيغة إس تى آر تو تايم من التنفيذ الأول)'
+    ExecuteEveryDay: يوم
+    ExecuteEveryFortnight: أسبوعان
+    ExecuteEveryHour: ساعة
+    ExecuteEveryMonth: شهر
+    ExecuteEveryWeek: أسبوع
+    ExecuteEveryYear: سنة
+    FIRST_EXECUTION: 'التنفيذ الأول'
+    NEXT_RUN_DATE: 'موعد التشغيل التالى'
+  ScheduledExecutionJob:
+    Title: 'موعد التنفيذ المحدد ل {title}'
