@@ -1,6 +1,7 @@
 # SilverStripe Queued Jobs Module
 
-[![Build Status](https://secure.travis-ci.org/nyeholt/silverstripe-queuedjobs.png)](http://travis-ci.org/nyeholt/silverstripe-queuedjobs)
+
+[![Build Status](https://secure.travis-ci.org/silverstripe-australia/silverstripe-queuedjobs.png)](http://travis-ci.org/nyeholt/silverstripe-queuedjobs)
 
 
 ## Maintainer Contact
@@ -14,6 +15,8 @@ Marcus Nyeholt
 * SilverStripe 3.x
 * Access to create cron jobs
 * https://github.com/nyeholt/silverstripe-multivaluefield
+
+## Version info
 
 The master branch of this module is currently aiming for SilverStripe 3.1 compatibility
 
@@ -42,12 +45,12 @@ The module comes with
 * Install the cronjob needed to manage all the jobs within the system. It is best to have this execute as the
 same user as your webserver - this prevents any problems with file permissions.
 
-> */1 * * * * php /path/to/silverstripe/sapphire/cli-script.php dev/tasks/ProcessJobQueueTask
+> */1 * * * * php /path/to/silverstripe/framework/cli-script.php dev/tasks/ProcessJobQueueTask
 
 * If your code is to make use of the 'long' jobs, ie that could take days to process, also install another task
 that processes this queue. Its time of execution can be left a little longer.
 
-> */15 * * * * php /path/to/silverstripe/sapphire/cli-script.php dev/tasks/ProcessJobQueueTask queue=2
+> */15 * * * * php /path/to/silverstripe/framework/cli-script.php dev/tasks/ProcessJobQueueTask queue=2
 
 * From your code, add a new job for execution.
 
@@ -104,3 +107,10 @@ cronjob is configured and executing correctly.
 
 ALTER TABLE `QueuedJobDescriptor` ADD INDEX ( `JobStatus` , `JobType` ) 
 
+## Contributing
+
+### Translations
+
+Translations of the natural language strings are managed through a third party translation interface, transifex.com. Newly added strings will be periodically uploaded there for translation, and any new translations will be merged back to the project source code.
+
+Please use [https://www.transifex.com/projects/p/silverstripe-queuedjobs](https://www.transifex.com/projects/p/silverstripe-queuedjobs) to contribute translations, rather than sending pull requests with YAML files.

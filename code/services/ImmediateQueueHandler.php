@@ -7,7 +7,7 @@
  * @license BSD License http://silverstripe.org/bsd-license/
  */
 class ImmediateQueueHandler {
-	public static $dependencies = array(
+	private static $dependencies = array(
 		'queuedJobService' => '%$QueuedJobService',
 	);
 	/**

@@ -26,7 +26,11 @@ class ScheduledExecutionJob extends AbstractQueuedJob {
 	}
 	
 	public function getTitle() {
-		return 'Scheduled execution for '.$this->getDataObject()->getTitle();
+		return _t(
+			'ScheduledExecutionJob.Title',
+			'Scheduled execution for {title}',
+			array('title' => $this->getDataObject()->getTitle())
+		);
 	}
 	
 

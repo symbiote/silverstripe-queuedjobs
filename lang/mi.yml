@@ -1,0 +1,47 @@
+mi:
+  QueuedJobsAdmin:
+    MENUTITLE: Ngā Mahi
+  CreateQueuedJobTask:
+    Description: 'He taumahi e whakamahia ana hei hanga mahi kua tūtirahia. Tukuna te ingoa tauaha mahi kua tūtirahia hei tawhā "ingoa", tukuna he tawhā "tīmata" kōwhiringa (ka taea te poroporo mā te strtotime) hei tautuhi i te wā tīmata mō te mahi.'
+  DeleteObjectJob:
+    DELETE_JOB: 'Muku kōpuku'
+    DELETE_OBJ2: 'Muku {title}'
+  GenerateSitemapJob:
+    REGENERATE: 'Whakatupuriā anō te kōnae .xml maherepae Google'
+  ProcessJobQueueTask:
+    Description: 'Ka whakamahia mā tētahi mahi whakarite hei kawe i ērā mahi kua tūtiratia mō te whakahaere'
+  PublishItemsJob:
+    Title: 'Whakaputa tuemi ki raro i {title}'
+  QueuedJobDescriptor:
+    PLURALNAME: 'Ngā Pūwhakaahua Mahi Kua Tūtiratia'
+    SINGULARNAME: 'Pūwhakaahua Mahi Kua Tūtiratia'
+  QueuedJobs:
+    JOB_EXCEPT: 'nā te mahi i whakaputa he aweretanga %s i %s i te rārangi %s'
+    JOB_PAUSED: 'i okioki te mahi i %s'
+    JOB_STALLED: 'I auporoa te mahi i muri i ngā whakamātauranga %s - me tirotiro'
+    JOB_TYPE: 'Momo mahi'
+    JobsFieldTitle: Ngā Mahi
+    MEMORY_RELEASE: 'E tuku pūmahara ana te mahi, ka tataru (i whakamahia te %s)'
+    STALLED_JOB: 'Mahi Kua Auporoa'
+    STALLED_JOB_MSG: 'Te āhua nei, kua auporoa he mahi e kīia ana ko %s. Kua okioki, me takiuru anō kia tirohia'
+    TABLE_ADDE: I Tāpiritia
+    TABLE_MESSAGES: Karere
+    TABLE_NUM_PROCESSED: Kua Oti
+    TABLE_STARTED: I Tīmata
+    TABLE_START_AFTER: 'Tīmata Ā Muri'
+    TABLE_STATUS: Tūnga
+    TABLE_TITLE: Taitara
+    TABLE_TOTAL: Tapeke
+  ScheduledExecution:
+    EXECUTE_EVERY: 'Kawea Te Katoa'
+    EXECUTE_FREE: 'Kua whakaritea ( i te hōputu strtotime mai i te kawenga tuatahi)'
+    ExecuteEveryDay: Rā
+    ExecuteEveryFortnight: Rua Wiki
+    ExecuteEveryHour: Haora
+    ExecuteEveryMonth: Marama
+    ExecuteEveryWeek: Wiki
+    ExecuteEveryYear: Tau
+    FIRST_EXECUTION: 'Kawenga Tuatahi'
+    NEXT_RUN_DATE: 'Rā whakahaere anō'
+  ScheduledExecutionJob:
+    Title: 'Ka whakaritea te kawenga mō {title}'

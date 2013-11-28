@@ -6,7 +6,7 @@
  */
 class GearmanQueueHandler {
 	
-	public static $dependencies = array(
+	private static $dependencies = array(
 		'gearmanService' => '%$GearmanService'
 	);
 	

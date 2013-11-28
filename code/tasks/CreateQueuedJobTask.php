@@ -13,8 +13,13 @@
  * @license BSD http://silverstripe.org/bsd-license/
  */
 class CreateQueuedJobTask extends BuildTask {
-	
-	protected $description = 'A task used to create a queued job. Pass the queued job class name as the "name" parameter, pass an optional "start" parameter (parseable by strtotime) to set a start time for the job.';
+
+	public function getDescription() {
+		return _t(
+			'CreateQueuedJobTask.Description',
+			'A task used to create a queued job. Pass the queued job class name as the "name" parameter, pass an optional "start" parameter (parseable by strtotime) to set a start time for the job.'
+		);
+	}
 	
     public function run($request) {
 		if (isset($request['name']) && ClassInfo::exists($request['name'])) {

@@ -11,13 +11,13 @@
  */
 class ScheduledExecutionExtension extends DataExtension {
 	
-	public static $db = array(
+	private static $db = array(
 		'FirstExecution'		=> 'SS_Datetime',
 		'ExecuteEvery'			=> "Enum(',Hour,Day,Week,Fortnight,Month,Year')",
 		'ExecuteFree'			=> 'Varchar',
 	);
 	
-	public static $has_one = array(
+	private static $has_one = array(
 		'ScheduledJob'			=> 'QueuedJobDescriptor',
 	);
 	
@@ -26,9 +26,25 @@ class ScheduledExecutionExtension extends DataExtension {
 	 * @param FieldSet $fields 
 	 */
 	public function updateCMSFields(FieldList $fields) {
+		$fields->findOrMakeTab(
+			'Root.Schedule',
+			_t('ScheduledExecution.ScheduleTabTitle', 'Schedule')
+		);
 		$fields->addFieldsToTab('Root.Schedule', array(
 			$dt = new Datetimefield('FirstExecution', _t('ScheduledExecution.FIRST_EXECUTION', 'First Execution')),
-			new DropdownField('ExecuteEvery', _t('ScheduledExecution.EXECUTE_EVERY', 'Execute every'), $this->owner->dbObject('ExecuteEvery')->enumValues()),
+			new DropdownField(
+				'ExecuteEvery', 
+				_t('ScheduledExecution.EXECUTE_EVERY', 'Execute every'), 
+				array(
+					'' => '',
+					'Hour' => _t('ScheduledExecution.ExecuteEveryHour', 'Hour'),
+					'Day' => _t('ScheduledExecution.ExecuteEveryDay', 'Day'),
+					'Week' => _t('ScheduledExecution.ExecuteEveryWeek', 'Week'),
+					'Fortnight' => _t('ScheduledExecution.ExecuteEveryFortnight', 'Fortnight'),
+					'Month' => _t('ScheduledExecution.ExecuteEveryMonth', 'Month'),
+					'Year' => _t('ScheduledExecution.ExecuteEveryYear', 'Year'),
+				)
+			),
 			new TextField('ExecuteFree', _t('ScheduledExecution.EXECUTE_FREE','Scheduled (in strtotime format from first execution)'))
 		));
 
