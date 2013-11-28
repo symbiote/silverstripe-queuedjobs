@@ -226,8 +226,14 @@ class QueuedJobService {
 		// processed a few steps...)
 		$filter = singleton('QJUtils')->dbQuote(array('JobStatus =' => QueuedJob::STATUS_RUN, 'StepsProcessed >' => 0));
 		$filter = $filter . ' AND "StepsProcessed"="LastProcessedCount"';
+		
+		$stalledJobs = QueuedJobDescriptor::get()->filter(array(
+			'JobStatus'		=> QueuedJob::STATUS_RUN,
+			'StepsProcessed:GreaterThan' => 0,
+		));
 
-		$stalledJobs = DataObject::get('QueuedJobDescriptor', $filter);
+		$stalledJobs = $stalledJobs->where('"StepsProcessed"="LastProcessedCount"');
+
 		if ($stalledJobs) {
 			foreach ($stalledJobs as $stalledJob) {
 				if ($stalledJob->ResumeCount <= self::$stall_threshold) {
@@ -247,7 +253,7 @@ class QueuedJobService {
 		}
 		
 		// now, find those that need to be marked before the next check
-		$runningJobs = DataList::create('QueuedJobDescriptor', array('JobStatus' => QueuedJob::STATUS_RUN));
+		$runningJobs = QueuedJobDescriptor::get()->filter('JobStatus', QueuedJob::STATUS_RUN);
 		if ($runningJobs) {
 			// foreach job, mark it as having been incremented
 			foreach ($runningJobs as $job) {
@@ -259,8 +265,7 @@ class QueuedJobService {
 		// finally, find the list of broken jobs and send an email if there's some found
 		$min = date('i');
 		if ($min == '42' || true) {
-			$filter = singleton('QJUtils')->dbQuote();
-			$brokenJobs = DataList::create('QueuedJobDescriptor')->filter(array('JobStatus' => QueuedJob::STATUS_BROKEN));
+			$brokenJobs = QueuedJobDescriptor::get()->filter('JobStatus', QueuedJob::STATUS_BROKEN);
 			if ($brokenJobs && $brokenJobs->count()) {
 				SS_Log::log(array(
 					'errno' => 0,
