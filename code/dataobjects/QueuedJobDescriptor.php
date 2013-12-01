@@ -39,6 +39,10 @@ class QueuedJobDescriptor extends DataObject {
 		'ResumeCounts' => 0,
 	);
 	
+	private static $indexes = array(
+		'JobStatus' => true,
+	);
+	
 	
 	private static $searchable_fields = array(
 		'JobTitle',
