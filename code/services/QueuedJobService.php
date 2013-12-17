@@ -64,8 +64,13 @@ class QueuedJobService {
 	 */
 	public function __construct() {
 		// bind a shutdown function to process all 'immediate' queued jobs if needed, but only in CLI mode
-		if (self::$use_shutdown_function && Director::is_cli() && !SapphireTest::is_running_test()) {
-			register_shutdown_function(array($this, 'onShutdown'));
+		if (self::$use_shutdown_function && Director::is_cli()) {
+			if (class_exists('PHPUnit_Framework_TestCase') && SapphireTest::is_running_test()) {
+				// do NOTHING
+			} else {
+				register_shutdown_function(array($this, 'onShutdown'));
+			}
+			
 		}
 	}
 	
@@ -178,19 +183,18 @@ class QueuedJobService {
 		$type = $type ? (string)  $type : QueuedJob::QUEUED;
 
 		// see if there's any blocked jobs that need to be resumed
-		$filter = singleton('QJUtils')->dbQuote();
-		
 		$existingJob = DataList::create('QueuedJobDescriptor')->filter(array('JobStatus' => QueuedJob::STATUS_WAIT, 'JobType' => $type))->first();
 		if ($existingJob && $existingJob->exists()) {
 			return $existingJob;
 		}
 
+		$list = QueuedJobDescriptor::get()->filter(array(
+			'JobStatus'		=> array(QueuedJob::STATUS_INIT, QueuedJob::STATUS_RUN),
+			'JobType'		=> $type
+		));
 		// lets see if we have a currently running job
-		$filter = singleton('QJUtils')->dbQuote(array('JobStatus =' => QueuedJob::STATUS_INIT)) .' OR '. singleton('QJUtils')->dbQuote(array('JobStatus =' => QueuedJob::STATUS_RUN));
 
-		$filter = '('.$filter.') AND '.singleton('QJUtils')->dbQuote(array('JobType =' => $type));
-
-		$existingJob = DataObject::get_one('QueuedJobDescriptor', $filter);
+		$existingJob = $list->first();
 
 		// if there's an existing job either running or pending, the lets just return false to indicate
 		// that we're still executing
@@ -203,13 +207,14 @@ class QueuedJobService {
 			'JobStatus =' => 'New',
 			'JobType =' => $type ? (string) $type : QueuedJob::QUEUED,
 		);
+		
+		$where = '"StartAfter" < \'' . date('Y-m-d H:i:s').'\' OR "StartAfter" IS NULL';
+		$list = QueuedJobDescriptor::get()->where($where);
+		$list = $list->filter(array('JobStatus' => 'New', 'JobType' => $type));
+		$list = $list->sort('ID', 'ASC');
 
-		$filter = singleton('QJUtils')->dbQuote($filter) . ' AND ('. singleton('QJUtils')->dbQuote(array('StartAfter <' => date('Y-m-d H:i:s'), 'StartAfter IS' => null), ' OR ').')';
-
-		$jobs = DataObject::get('QueuedJobDescriptor', $filter, 'ID ASC');
-
-		if ($jobs && $jobs->Count()) {
-			return $jobs->First();
+		if ($list && $list->Count()) {
+			return $list->First();
 		}
 	}
 
@@ -554,12 +559,12 @@ class QueuedJobService {
 	}
 
 	/**
-	 * When PHP shuts down, we want to process all of the immediate queue items
+	 * Process all jobs from a given queue
 	 * 
-	 * We use the 'getNextPendingJob' method, instead of just iterating the queue, to ensure
-	 * we ignore paused or stalled jobs. 
+	 * @param string $name
+	 *					The job queue to completely process
 	 */
-	public function onShutdown() {
+	public function processJobQueue($name) {
 		do {
 			if (class_exists('Subsite')) {
 				// clear subsite back to default to prevent any subsite changes from leaking to 
@@ -576,11 +581,21 @@ class QueuedJobService {
 				singleton('SecurityContext')->setMember(null);
 			}
 
-			$job = $this->getNextPendingJob(QueuedJob::IMMEDIATE);
+			$job = $this->getNextPendingJob($name);
 			if ($job) {
 				$this->runJob($job->ID);
 			}
 		} while($job);
+	}
+	
+	/**
+	 * When PHP shuts down, we want to process all of the immediate queue items
+	 * 
+	 * We use the 'getNextPendingJob' method, instead of just iterating the queue, to ensure
+	 * we ignore paused or stalled jobs. 
+	 */
+	public function onShutdown() {
+		$this->processJobQueue(QueuedJob::IMMEDIATE);
 	}
 }
 

@@ -60,9 +60,7 @@ class DummyQueuedJob extends AbstractQueuedJob implements QueuedJob {
 	}
 
 	public function getJobType() {
-		return QueuedJob::IMMEDIATE;
-		
-		return $this->startNumber > 50 ? QueuedJob::LARGE : QueuedJob::QUEUED;
+		return  QueuedJob::QUEUED;
 	}
 
 	public function setup() {

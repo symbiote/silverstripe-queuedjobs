@@ -68,15 +68,15 @@ class ProcessJobQueueTask extends BuildTask {
 		$service->checkJobHealth();
 
 		if ($nextJob) {
-			echo "$datestamp Running $nextJob->JobTitle \n";
-			$service->runJob($nextJob->ID);
+			echo "$datestamp Running $nextJob->JobTitle and others from $queue \n";
+			$service->processJobQueue($queue);
 		}
 
 		if (is_null($nextJob)) {
 			echo "$datestamp No new jobs\n";
 		}
 		if ($nextJob === false) {
-			echo "$datestamp Job is still running\n";
+			echo "$datestamp Job is still running on $queue\n";
 		}
 	}
 }

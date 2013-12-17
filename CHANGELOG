@@ -1,3 +1,11 @@
+2013-12-16 v2.1.0
+-----------------
+
+* All jobs of a particular type are completed for a job queue when
+  ProcessJobQueueTask is called for a particular queue
+* Fixed some of the remaining-job lookups to use proper ss3 querying to be
+  much more efficient
+
 
 2013-12-02 v2.0.3
 -----------------
