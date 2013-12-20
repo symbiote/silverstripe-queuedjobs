@@ -1,3 +1,9 @@
+2013-12-16 v2.1.1
+-----------------
+
+* If a job is marked broken or paused (ie mem too high) the processJobQueue
+  method will now return instead of continuing to process that queue
+
 2013-12-16 v2.1.0
 -----------------
 

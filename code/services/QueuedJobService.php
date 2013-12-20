@@ -375,6 +375,8 @@ class QueuedJobService {
 		$errorHandler = new JobErrorHandler();
 
 		$job = null;
+		
+		$broken = false;
 
 		try {
 			$job = $this->initialiseJob($jobDescriptor);
@@ -392,7 +394,6 @@ class QueuedJobService {
 			$lastStepProcessed = 0;
 			// have we stalled at all?
 			$stallCount = 0;
-			$broken = false;
 
 			$currentBaseUrl = Director::absoluteBaseURL();
 			
@@ -490,6 +491,7 @@ class QueuedJobService {
 			SS_Log::log($e, SS_Log::ERR);
 			$jobDescriptor->JobStatus =  QueuedJob::STATUS_BROKEN;
 			$jobDescriptor->write();
+			$broken = true;
 		}
 
 		$errorHandler->clear();
@@ -501,6 +503,8 @@ class QueuedJobService {
 				Session::set("loggedInAs", $originalUser->ID);
 			}
 		}
+		
+		return !$broken;
 	}
 
 	/**
@@ -583,7 +587,13 @@ class QueuedJobService {
 
 			$job = $this->getNextPendingJob($name);
 			if ($job) {
-				$this->runJob($job->ID);
+				$success = $this->runJob($job->ID);
+				if (!$success) {
+					// make sure job is null so it doesn't continue the current 
+					// processing loop. Next queue executor can pick up where
+					// things left off
+					$job = null;
+				}
 			}
 		} while($job);
 	}
