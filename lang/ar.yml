@@ -43,5 +43,6 @@ ar:
     ExecuteEveryYear: سنة
     FIRST_EXECUTION: 'التنفيذ الأول'
     NEXT_RUN_DATE: 'موعد التشغيل التالى'
+    ScheduleTabTitle: الجدول الزمني
   ScheduledExecutionJob:
     Title: 'موعد التنفيذ المحدد ل {title}'

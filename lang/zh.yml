@@ -43,5 +43,6 @@ zh:
     ExecuteEveryYear: 年
     FIRST_EXECUTION: '第一次执行'
     NEXT_RUN_DATE: '下一次运行日期'
+    ScheduleTabTitle: 日程表
   ScheduledExecutionJob:
     Title: '{title}计划执行'
