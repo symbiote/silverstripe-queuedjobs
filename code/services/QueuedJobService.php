@@ -378,6 +378,9 @@ class QueuedJobService {
 		
 		$broken = false;
 
+		// Push a config context onto the stack for the duration of this job run.
+		Config::nest();
+
 		try {
 			$job = $this->initialiseJob($jobDescriptor);
 
@@ -395,8 +398,6 @@ class QueuedJobService {
 			// have we stalled at all?
 			$stallCount = 0;
 
-			$currentBaseUrl = Director::absoluteBaseURL();
-			
 			if ($job->SubsiteID && class_exists('Subsite')) {
 				Subsite::changeSubsite($job->SubsiteID);
 
@@ -405,7 +406,8 @@ class QueuedJobService {
 				if ($subsite && $subsite->exists()) {
 					$domain = $subsite->domain();
 					$base = rtrim(Director::protocol() . $domain, '/') . '/';
-					Director::setbaseURL($base);
+
+					Config::inst()->update('Director', 'alternate_base_url', $base);
 				}
 			}
 
@@ -475,8 +477,7 @@ class QueuedJobService {
 					$broken = true;
 				}
 			}
-			
-			Director::setBaseURL($currentBaseUrl);
+
 			// a last final save. The job is complete by now
 			if ($jobDescriptor) {
 				$jobDescriptor->write();
@@ -495,6 +496,8 @@ class QueuedJobService {
 		}
 
 		$errorHandler->clear();
+
+		Config::unnest();
 
 		// okay lets reset our user if we've got an original
 		if ($runAsUser && $originalUser) {
