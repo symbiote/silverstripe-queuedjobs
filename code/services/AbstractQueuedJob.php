@@ -73,22 +73,20 @@ abstract class AbstractQueuedJob implements QueuedJob {
 	}
 
 	/**
-	 * Implement yourself!
+	 * Performs setup tasks the first time this job is run.
 	 *
-	 * Be aware that this is only executed ONCE for every job
-	 *
-	 * If you want to do some checking on every restart, look into using the prepareForRestart method
+	 * This is only executed once for every job. If you want to run something on every job restart, use the
+	 * {@link prepareForRestart} method.
 	 */
 	public function setup() {
-
+		$this->loadCustomConfig();
 	}
 
 	/**
-	 * This is called when you want to perform some form of initialisation on a restart of a
-	 * job. 
+	 * Run when an already setup job is being restarted.
 	 */
 	public function prepareForRestart() {
-		
+		$this->loadCustomConfig();
 	}
 
 	/**
@@ -137,6 +135,39 @@ abstract class AbstractQueuedJob implements QueuedJob {
 		$this->messages = $messages;
 
 		
+	}
+
+	/**
+	 * Gets custom config settings to use when running the job.
+	 *
+	 * @return array|null
+	 */
+	public function getCustomConfig() {
+		return $this->CustomConfig;
+	}
+
+	/**
+	 * Sets custom config settings to use when the job is run.
+	 *
+	 * @param array $config
+	 */
+	public function setCustomConfig(array $config) {
+		$this->CustomConfig = $config;
+	}
+
+	/**
+	 * Sets custom configuration settings from the job data.
+	 */
+	private function loadCustomConfig() {
+		$custom = $this->getCustomConfig();
+
+		if (!is_array($custom)) {
+			return;
+		}
+
+		foreach ($custom as $class => $settings) {
+			foreach ($settings as $setting => $value) Config::inst()->update($class, $setting, $value);
+		}
 	}
 
 	public function addMessage($message, $severity='INFO') {
