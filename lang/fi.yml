@@ -1,0 +1,38 @@
+fi:
+  QueuedJobsAdmin:
+    MENUTITLE: Tehtävät
+  DeleteObjectJob:
+    DELETE_JOB: 'Poista solmu'
+    DELETE_OBJ2: 'Poista {title}'
+  GenerateSitemapJob:
+    REGENERATE: 'Luo Google-sivukartta .xml-tiedosto uudelleen'
+  QueuedJobDescriptor:
+    PLURALNAME: 'Jonossa olevien tehtävien kuvaajat'
+    SINGULARNAME: 'Jonossa olevan tehtävän kuvaaja'
+  QueuedJobs:
+    JOB_PAUSED: 'Tehtävä pysäytetty aikaan %s'
+    JOB_TYPE: 'Tehtävätyyppi'
+    JobsFieldTitle: Tehtävät
+    STALLED_JOB: 'Pysäytetty työ'
+    STALLED_JOB_MSG: '%s tehtävä näyttää olevan seisahtunut. Se on nyt pysäytetty. Ole hyvä ja kirjaudu sisään tarkastellaksesi sitä'
+    TABLE_ADDE: Lisätty
+    TABLE_MESSAGES: Viesti
+    TABLE_NUM_PROCESSED: Tehty
+    TABLE_STARTED: Aloitettu
+    TABLE_START_AFTER: 'Aloita jälkeen'
+    TABLE_STATUS: Tila
+    TABLE_TITLE: Otsikko
+    TABLE_TOTAL: Yhteensä
+  ScheduledExecution:
+    EXECUTE_EVERY: 'Suorita joka'
+    ExecuteEveryDay: Päivä
+    ExecuteEveryFortnight: Kaksi viikkoa
+    ExecuteEveryHour: Tunti
+    ExecuteEveryMonth: Kuukausi
+    ExecuteEveryWeek: Viikko
+    ExecuteEveryYear: Vuosi
+    FIRST_EXECUTION: 'Ensimmäinen suoritus'
+    NEXT_RUN_DATE: 'Seuraava suorituspäivä'
+    ScheduleTabTitle: Aikatauluta
+  ScheduledExecutionJob:
+    Title: 'Suoritusaikataulu kohteelle {title}'
