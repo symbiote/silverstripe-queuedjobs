@@ -15,7 +15,20 @@ class ProcessJobQueueTask extends BuildTask {
 		);
 	}
 
-    public function run($request) {
+	/**
+	 * Write in a format expected by the output medium (CLI/HTML).
+	 *
+	 * @param $line Line to be written out, without the newline character.
+	 */
+	private function writeLogLine($line) {
+		if (Director::is_cli()) {
+			echo "$line\n";
+		} else {
+			echo Convert::raw2xml($line) . "<br>";
+		}
+	}
+
+	public function run($request) {
 		$service = singleton('QueuedJobService');
 		/* @var $service QueuedJobService */
 
@@ -43,13 +56,13 @@ class ProcessJobQueueTask extends BuildTask {
 			}
 		}
 
-		echo "$datestamp Processing queue $queue\n";
+		$this->writeLogLine("$datestamp Processing queue $queue");
 
 		if ($request->getVar('list')) {
 			for ($i = 1; $i  <= 3; $i++) {
 				$jobs = $service->getJobList($i);
 				$num = $jobs ? $jobs->Count() : 0;
-				echo "$datestamp Found $num jobs for mode $i\n";
+				$this->writeLogLine("$datestamp Found $num jobs for mode $i");
 			}
 			return;
 		}
@@ -68,15 +81,15 @@ class ProcessJobQueueTask extends BuildTask {
 		$service->checkJobHealth();
 
 		if ($nextJob) {
-			echo "$datestamp Running $nextJob->JobTitle and others from $queue \n";
+			$this->writeLogLine("$datestamp Running $nextJob->JobTitle and others from $queue.");
 			$service->processJobQueue($queue);
 		}
 
 		if (is_null($nextJob)) {
-			echo "$datestamp No new jobs\n";
+			$this->writeLogLine("$datestamp No new jobs");
 		}
 		if ($nextJob === false) {
-			echo "$datestamp Job is still running on $queue\n";
+			$this->writeLogLine("$datestamp Job is still running on $queue");
 		}
 	}
 }
