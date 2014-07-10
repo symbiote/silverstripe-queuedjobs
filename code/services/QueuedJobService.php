@@ -72,6 +72,9 @@ class QueuedJobService {
 			}
 			
 		}
+		if (Config::inst()->get('Email', 'queued_jobs_admin_email') == '') {
+			Config::inst()->update('Email', 'queued_jobs_admin_email', Config::inst()->get('Email', 'admin_email'));
+		}
 	}
 	
     /**
@@ -252,7 +255,7 @@ class QueuedJobService {
 				}
 
 				singleton('QJUtils')->log($msg);
-				$mail = new Email(Email::getAdminEmail(), Email::getAdminEmail(), _t('QueuedJobs.STALLED_JOB', 'Stalled job'), $msg);
+				$mail = new Email(Config::inst()->get('Email', 'admin_email'), Config::inst()->get('Email', 'queued_job_admin_email'), _t('QueuedJobs.STALLED_JOB', 'Stalled job'), $msg);
 				$mail->send();
 			}
 		}
