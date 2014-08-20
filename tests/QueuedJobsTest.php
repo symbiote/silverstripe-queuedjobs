@@ -14,8 +14,8 @@ class QueuedJobsTest extends SapphireTest
 		$job = new TestQueuedJob();
 		$jobId = $svc->queueJob($job);
 		$list = $svc->getJobList();
-		
-		$this->assertTrue($list->Count() > 0);
+
+		$this->assertEquals(1, $list->count());
 
 		$myJob = null;
 		foreach ($list as $job) {
@@ -159,14 +159,14 @@ class QueuedJobsTest extends SapphireTest
 		$id = $svc->queueJob($job);
 
 		$jobs = $svc->getJobList(QueuedJob::IMMEDIATE);
-		$this->assertEquals(2, $jobs->Count());
+		$this->assertEquals(2, $jobs->count());
 
 		// now fake a shutdown
 		$svc->onShutdown();
 
 		$jobs = $svc->getJobList(QueuedJob::IMMEDIATE);
-		$this->assertTrue($jobs instanceof DataList);
-		$this->assertTrue($jobs->count() == 0);
+		$this->assertInstanceOf('DataList', $jobs);
+		$this->assertEquals(0, $jobs->count());
 	}
 
 	public function testNextJob() {
@@ -178,7 +178,7 @@ class QueuedJobsTest extends SapphireTest
 		}
 
 		$list = $svc->getJobList();
-		$this->assertTrue($list->count() == 0);
+		$this->assertEquals(0, $list->count());
 
 		$job = new TestQueuedJob();
 		$id1 = $svc->queueJob($job);
@@ -196,7 +196,7 @@ class QueuedJobsTest extends SapphireTest
 		$this->assertEquals(2, $id3 - $id1);
 
 		$list = $svc->getJobList();
-		$this->assertEquals(3, $list->Count());
+		$this->assertEquals(3, $list->count());
 
 		// okay, lets get the first one and initialise it, then make sure that a subsequent init attempt fails
 		$job = $svc->getNextPendingJob();
