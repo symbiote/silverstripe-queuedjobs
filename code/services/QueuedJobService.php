@@ -321,6 +321,7 @@ class QueuedJobService {
 		
 		// make sure the descriptor is up to date with anything changed
 		$this->copyJobToDescriptor($job, $jobDescriptor);
+		$jobDescriptor->write();
 
 		return $job;
 	}
