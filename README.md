@@ -1,7 +1,7 @@
 # SilverStripe Queued Jobs Module
 
 
-[![Build Status](https://secure.travis-ci.org/silverstripe-australia/silverstripe-queuedjobs.png)](http://travis-ci.org/nyeholt/silverstripe-queuedjobs)
+[![Build Status](https://secure.travis-ci.org/silverstripe-australia/silverstripe-queuedjobs.png)](http://travis-ci.org/silverstripe-australia/silverstripe-queuedjobs)
 
 
 ## Maintainer Contact
@@ -20,12 +20,12 @@ Marcus Nyeholt
 
 The master branch of this module is currently aiming for SilverStripe 3.1 compatibility
 
-* [SilverStripe 3.0 compatible version](https://github.com/nyeholt/silverstripe-queuedjobs/tree/1.0)
-* [SilverStripe 2.4 compatible version](https://github.com/nyeholt/silverstripe-queuedjobs/tree/ss24)
+* [SilverStripe 3.0 compatible version](https://github.com/silverstripe-australia/silverstripe-queuedjobs/tree/1.0)
+* [SilverStripe 2.4 compatible version](https://github.com/silverstripe-australia/silverstripe-queuedjobs/tree/ss24)
 
 ## Documentation
 
-See http://github.com/nyeholt/silverstripe-queuedjobs/wiki/ for more complete
+See http://github.com/silverstripe-australia/silverstripe-queuedjobs/wiki/ for more complete
 documentation
 
 The Queued Jobs module provides a framework for SilverStripe developers to
