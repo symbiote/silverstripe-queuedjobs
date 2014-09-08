@@ -229,11 +229,8 @@ class QueuedJobService {
 	public function checkJobHealth() {
 		// first off, we want to find jobs that haven't changed since they were last checked (assuming they've actually
 		// processed a few steps...)
-		$filter = singleton('QJUtils')->dbQuote(array('JobStatus =' => QueuedJob::STATUS_RUN, 'StepsProcessed >' => 0));
-		$filter = $filter . ' AND "StepsProcessed"="LastProcessedCount"';
-		
 		$stalledJobs = QueuedJobDescriptor::get()->filter(array(
-			'JobStatus'		=> QueuedJob::STATUS_RUN,
+			'JobStatus'		=> array(QueuedJob::STATUS_RUN, QueuedJob::STATUS_INIT),
 			'StepsProcessed:GreaterThan' => 0,
 		));
 
