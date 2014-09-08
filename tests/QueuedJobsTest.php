@@ -209,6 +209,50 @@ class QueuedJobsTest extends SapphireTest
 		
 		$this->assertFalse($next);
 	}
+	
+	public function testJobHealthCheck() {
+		$svc = singleton("QueuedJobService");
+		// lets create a new job and add it to the queue
+
+		$job = new TestQueuedJob(QueuedJob::IMMEDIATE);
+		$job->firstJob = true;
+		$id = $svc->queueJob($job);
+		
+		$descriptor = QueuedJobDescriptor::get()->byID($id);
+		
+		$descriptor->JobStatus = 'Running';
+		$descriptor->StepsProcessed = 1;
+//		$descriptor->LastProcessedCount = 1;
+
+		$descriptor->write();
+		
+		$svc->checkJobHealth();
+		
+		$descriptor = QueuedJobDescriptor::get()->byID($id);
+		$this->assertEquals(1, $descriptor->LastProcessedCount);
+		
+		$svc->checkJobHealth();
+		
+		$descriptor = QueuedJobDescriptor::get()->byID($id);
+		$this->assertEquals(QueuedJob::STATUS_WAIT, $descriptor->JobStatus);
+		
+		// the same for init broken jobs
+		$descriptor->JobTitle = 'Test job broken in init';
+		$descriptor->JobStatus = QueuedJob::STATUS_INIT;
+		$descriptor->LastProcessedCount = 0;
+		$descriptor->write();
+		
+		$svc->checkJobHealth();
+		
+		$descriptor = QueuedJobDescriptor::get()->byID($id);
+		$this->assertEquals(1, $descriptor->LastProcessedCount);
+		
+		$svc->checkJobHealth();
+		
+		$descriptor = QueuedJobDescriptor::get()->byID($id);
+		$this->assertEquals(QueuedJob::STATUS_WAIT, $descriptor->JobStatus);
+		
+	}
 }
 
 // stub class to be able to call init from an external context

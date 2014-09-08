@@ -255,7 +255,7 @@ class QueuedJobService {
 		}
 		
 		// now, find those that need to be marked before the next check
-		$runningJobs = QueuedJobDescriptor::get()->filter('JobStatus', QueuedJob::STATUS_RUN);
+		$runningJobs = QueuedJobDescriptor::get()->filter('JobStatus', array(QueuedJob::STATUS_RUN, QueuedJob::STATUS_INIT));
 		if ($runningJobs) {
 			// foreach job, mark it as having been incremented
 			foreach ($runningJobs as $job) {

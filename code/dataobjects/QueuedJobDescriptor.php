@@ -71,7 +71,7 @@ class QueuedJobDescriptor extends DataObject {
 	}
 	
 	public function pause() {
-		if ($this->JobStatus == QueuedJob::STATUS_WAIT || $this->JobStatus == QueuedJob::STATUS_RUN) {
+		if ($this->JobStatus == QueuedJob::STATUS_WAIT || $this->JobStatus == QueuedJob::STATUS_RUN || $this->JobStatus == QueuedJob::STATUS_INIT) {
 			$this->JobStatus = QueuedJob::STATUS_PAUSED;
 			$this->write();
 		}
