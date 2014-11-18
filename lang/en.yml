@@ -38,6 +38,7 @@ en:
     ExecuteEveryDay: Day
     ExecuteEveryFortnight: Fortnight
     ExecuteEveryHour: Hour
+    ExecuteEveryMinute: Minute
     ExecuteEveryMonth: Month
     ExecuteEveryWeek: Week
     ExecuteEveryYear: Year
