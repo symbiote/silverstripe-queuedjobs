@@ -1,0 +1,48 @@
+eo:
+  QueuedJobsAdmin:
+    MENUTITLE: Taskoj
+  CreateQueuedJobTask:
+    Description: 'Tasko uzota por krei atendovican taskon. Pasu la klasnomon de la atendovican tasko kiel la parametron "nomo", pasu malnepran parametron "starto" (analizeblan de strtotime) por agordi startotempon por la tasko.'
+  DeleteObjectJob:
+    DELETE_JOB: 'Forigi nodon'
+    DELETE_OBJ2: 'Forigi je {title}'
+  GenerateSitemapJob:
+    REGENERATE: 'Regeneri xml-dosieron de Guglo-paĝarmapo'
+  ProcessJobQueueTask:
+    Description: 'Uzota per planita tasko por plenumi envicigitajn taskojn rulotajn'
+  PublishItemsJob:
+    Title: 'Publikigi erojn sub {title}'
+  QueuedJobDescriptor:
+    PLURALNAME: 'Atendovicaj priaĵoj'
+    SINGULARNAME: 'Atendovica priaĵo'
+  QueuedJobs:
+    JOB_EXCEPT: 'Tasko kaŭzis escepton %s en %s ĉe linio %s'
+    JOB_PAUSED: 'Tasko paŭzis ĉe %s'
+    JOB_STALLED: 'Tasko haltis post %s provoj - bonvole kontrolu'
+    JOB_TYPE: 'Tipo de tasko'
+    JobsFieldTitle: Taskoj
+    MEMORY_RELEASE: 'Tasko liberigas memoron kaj atendas (%s uzita)'
+    STALLED_JOB: 'Haltinta tasko'
+    STALLED_JOB_MSG: 'Ŝajnas ke haltis tasko nomita %s. Ĝi estas paŭzigita. Bonvolu ensaluti por kontroli ĝin.'
+    TABLE_ADDE: Aldonita
+    TABLE_MESSAGES: Mesaĝo
+    TABLE_NUM_PROCESSED: Farita
+    TABLE_STARTED: Startis
+    TABLE_START_AFTER: 'Startigi post'
+    TABLE_STATUS: Stato
+    TABLE_TITLE: Titolo
+    TABLE_TOTAL: Totalo
+  ScheduledExecution:
+    EXECUTE_EVERY: 'Plenumi ĉiun'
+    EXECUTE_FREE: 'Planita (en strtotime-formato ek de unua plenumo)'
+    ExecuteEveryDay: Tago
+    ExecuteEveryFortnight: Du semajnoj
+    ExecuteEveryHour: Horo
+    ExecuteEveryMonth: Monato
+    ExecuteEveryWeek: Semajno
+    ExecuteEveryYear: Jaro
+    FIRST_EXECUTION: 'Unua plenumo'
+    NEXT_RUN_DATE: 'Sekva ruldato'
+    ScheduleTabTitle: Plano
+  ScheduledExecutionJob:
+    Title: 'Planita plenumo por {title}'
