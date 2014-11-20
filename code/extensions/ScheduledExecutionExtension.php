@@ -13,10 +13,15 @@ class ScheduledExecutionExtension extends DataExtension {
 	
 	private static $db = array(
 		'FirstExecution'		=> 'SS_Datetime',
-		'ExecuteEvery'			=> "Enum(',Hour,Day,Week,Fortnight,Month,Year')",
+		'ExecuteInterval'		=> 'Int',
+		'ExecuteEvery'			=> "Enum(',Minute,Hour,Day,Week,Fortnight,Month,Year')",
 		'ExecuteFree'			=> 'Varchar',
 	);
 	
+	private static $defaults = array(
+		'ExecuteInterval' => 1,
+	);
+
 	private static $has_one = array(
 		'ScheduledJob'			=> 'QueuedJobDescriptor',
 	);
@@ -32,19 +37,23 @@ class ScheduledExecutionExtension extends DataExtension {
 		);
 		$fields->addFieldsToTab('Root.Schedule', array(
 			$dt = new Datetimefield('FirstExecution', _t('ScheduledExecution.FIRST_EXECUTION', 'First Execution')),
-			new DropdownField(
-				'ExecuteEvery', 
-				_t('ScheduledExecution.EXECUTE_EVERY', 'Execute every'), 
-				array(
-					'' => '',
-					'Hour' => _t('ScheduledExecution.ExecuteEveryHour', 'Hour'),
-					'Day' => _t('ScheduledExecution.ExecuteEveryDay', 'Day'),
-					'Week' => _t('ScheduledExecution.ExecuteEveryWeek', 'Week'),
-					'Fortnight' => _t('ScheduledExecution.ExecuteEveryFortnight', 'Fortnight'),
-					'Month' => _t('ScheduledExecution.ExecuteEveryMonth', 'Month'),
-					'Year' => _t('ScheduledExecution.ExecuteEveryYear', 'Year'),
+			FieldGroup::create(
+				new NumericField('ExecuteInterval', ''),
+				new DropdownField(
+					'ExecuteEvery', 
+					'', 
+					array(
+						'' => '',
+						'Minute' => _t('ScheduledExecution.ExecuteEveryMinute', 'Minute'),
+						'Hour' => _t('ScheduledExecution.ExecuteEveryHour', 'Hour'),
+						'Day' => _t('ScheduledExecution.ExecuteEveryDay', 'Day'),
+						'Week' => _t('ScheduledExecution.ExecuteEveryWeek', 'Week'),
+						'Fortnight' => _t('ScheduledExecution.ExecuteEveryFortnight', 'Fortnight'),
+						'Month' => _t('ScheduledExecution.ExecuteEveryMonth', 'Month'),
+						'Year' => _t('ScheduledExecution.ExecuteEveryYear', 'Year'),
+					)
 				)
-			),
+			)->setTitle(_t('ScheduledExecution.EXECUTE_EVERY', 'Execute every')),
 			new TextField('ExecuteFree', _t('ScheduledExecution.EXECUTE_FREE','Scheduled (in strtotime format from first execution)'))
 		));
 
@@ -64,7 +73,12 @@ class ScheduledExecutionExtension extends DataExtension {
 		
 		if ($this->owner->FirstExecution) {
 			$changed = $this->owner->getChangedFields();
-			$changed = isset($changed['FirstExecution']) || isset($changed['ExecuteEvery']) || isset($changed['ExecuteFree']);
+			$changed = (
+				isset($changed['FirstExecution']) ||
+				isset($changed['ExecuteInterval']) ||
+				isset($changed['ExecuteEvery']) ||
+				isset($changed['ExecuteFree'])
+			);
 
 			if ($changed && $this->owner->ScheduledJobID) {
 				if ($this->owner->ScheduledJob()->exists()) {

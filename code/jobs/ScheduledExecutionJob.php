@@ -46,13 +46,17 @@ class ScheduledExecutionJob extends AbstractQueuedJob {
 			// figure out what our rescheduled date should be
 			$timeStr = $object->ExecuteFree;
 			if ($object->ExecuteEvery) {
-				$timeStr = '+1 ' . $object->ExecuteEvery;
+				$executeInterval = $object->ExecuteInterval;
+				if (!$executeInterval || !is_numeric($executeInterval)) {
+					$executeInterval = 1;
+				}
+				$timeStr = '+' . $executeInterval . ' ' . $object->ExecuteEvery;
 			}
 			
 			$next = strtotime($timeStr);
 			if ($next > time()) {
 				// in the future
-				$nextGen = date('Y-m-d H:i:s', strtotime($timeStr));
+				$nextGen = date('Y-m-d H:i:s', $next);
 				$nextId = singleton('QueuedJobService')->queueJob(new ScheduledExecutionJob($object, $this->timesExecuted + 1), $nextGen);
 				$object->ScheduledJobID = $nextId;
 				$object->write();
