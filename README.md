@@ -69,6 +69,7 @@ The following will run the publish job in 1 day's time from now.
 * Get the gearman module from https://github.com/nyeholt/silverstripe-gearman
 * Create a _config/queuedjobs.yml file in your project with the following declaration
 
+```
 ---
 Name: localproject
 After: '#queuedjobsettings'
@@ -76,6 +77,7 @@ After: '#queuedjobsettings'
 Injector:
   QueueHandler: 
     class: GearmanQueueHandler
+```
 
 * Run the gearman worker using `php gearman/gearman_runner.php` in your SS root dir
 
