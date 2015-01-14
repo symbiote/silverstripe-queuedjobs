@@ -277,7 +277,7 @@ class QueuedJobService {
 					'errstr' => 'Broken jobs were found in the job queue',
 					'errfile' => __FILE__,
 					'errline' => __LINE__,
-					'errcontext' => ''
+					'errcontext' => array('')
 				), SS_Log::ERR);
 			}
 		}
@@ -423,7 +423,7 @@ class QueuedJobService {
 						'errstr' => 'Job descriptor ' . $jobId . ' could not be found',
 						'errfile' => __FILE__,
 						'errline' => __LINE__,
-						'errcontext' => ''
+						'errcontext' => array('')
 					), SS_Log::ERR);
 					break;
 				}
@@ -473,7 +473,7 @@ class QueuedJobService {
 						'errstr' => 'Job descriptor has been set to null',
 						'errfile' => __FILE__,
 						'errline' => __LINE__,
-						'errcontext' => ''
+						'errcontext' => array('')
 					), SS_Log::WARN);
 					$broken = true;
 				}
