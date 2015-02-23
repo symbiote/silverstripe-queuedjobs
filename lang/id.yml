@@ -1,0 +1,17 @@
+id:
+  DeleteObjectJob:
+    DELETE_OBJ2: 'Hapus {title}'
+  QueuedJobs:
+    JOB_TYPE: 'Jenis Pekerjaan'
+    JobsFieldTitle: Pekerjaan
+    TABLE_MESSAGES: Pesan
+    TABLE_NUM_PROCESSED: Selesai
+    TABLE_STATUS: Status
+    TABLE_TITLE: Judul
+    TABLE_TOTAL: Total
+  ScheduledExecution:
+    ExecuteEveryDay: Hari
+    ExecuteEveryHour: Jam
+    ExecuteEveryMonth: Bulan
+    ExecuteEveryWeek: Minggu
+    ExecuteEveryYear: Tahun
