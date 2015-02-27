@@ -268,18 +268,15 @@ class QueuedJobService {
 		}
 
 		// finally, find the list of broken jobs and send an email if there's some found
-		$min = date('i');
-		if ($min == '42' || true) {
-			$brokenJobs = QueuedJobDescriptor::get()->filter('JobStatus', QueuedJob::STATUS_BROKEN);
-			if ($brokenJobs && $brokenJobs->count()) {
-				SS_Log::log(array(
-					'errno' => 0,
-					'errstr' => 'Broken jobs were found in the job queue',
-					'errfile' => __FILE__,
-					'errline' => __LINE__,
-					'errcontext' => ''
-				), SS_Log::ERR);
-			}
+		$brokenJobs = QueuedJobDescriptor::get()->filter('JobStatus', QueuedJob::STATUS_BROKEN);
+		if ($brokenJobs && $brokenJobs->count()) {
+			SS_Log::log(array(
+				'errno' => 0,
+				'errstr' => 'Broken jobs were found in the job queue',
+				'errfile' => __FILE__,
+				'errline' => __LINE__,
+				'errcontext' => ''
+			), SS_Log::ERR);
 		}
 	}
 
