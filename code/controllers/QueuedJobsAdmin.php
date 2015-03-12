@@ -58,10 +58,46 @@ class QueuedJobsAdmin extends ModelAdmin {
 			
 		$grid->getConfig()->getComponentByType('GridFieldDataColumns')->setFieldFormatting($formatting);
 		
+		if (Permission::check('ADMIN')) {
+			$types = ClassInfo::subclassesFor('AbstractQueuedJob');
+			$types = array_combine($types, $types);
+			unset($types['AbstractQueuedJob']);
+			$jobType = DropdownField::create('JobType', _t('QueuedJobs.CREATE_JOB_TYPE', 'Create job of type'), $types);
+			$jobType->setEmptyString('(select job to create)');
+			$form->Fields()->push($jobType);
+
+			$jobParams = MultiValueTextField::create('JobParams', _t('QueuedJobs.JOB_TYPE_PARAMS', 'Constructor parameters for job creation'));
+			$form->Fields()->push($jobParams);
+			
+			$form->Fields()->push($dt = DatetimeField::create('JobStart', _t('QueuedJobs.START_JOB_TIME', 'Start job at')));
+			$dt->getDateField()->setConfig('showcalendar', true);
+
+			$actions = $form->Actions();
+			$actions->push(FormAction::create('createjob', _t('QueuedJobs.CREATE_NEW_JOB', 'Create new job')));
+		}
+		
 		return $form;
 	}
 	
 	public function Tools() {
 		return '';
+	}
+	
+	public function createjob($data, Form $form) {
+		if (Permission::check('ADMIN')) {
+			$jobType = isset($data['JobType']) ? $data['JobType'] : '';
+			$params = isset($data['JobParams']) ? $data['JobParams'] : array();
+			$time = isset($data['JobStart']) ? $data['JobStart'] : null;
+			
+			$js = $form->Fields()->dataFieldByName('JobStart');
+			$time = $js->Value();
+			
+			if ($jobType && class_exists($jobType)) {
+				$jobClass = new ReflectionClass($jobType);
+				$job = $jobClass->newInstanceArgs($params);
+				$this->jobQueue->queueJob($job, $time);
+			}
+		}
+		return $this->responseNegotiator->respond($this->getRequest());
 	}
 }
