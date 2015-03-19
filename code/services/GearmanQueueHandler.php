@@ -18,4 +18,8 @@ class GearmanQueueHandler {
 	public function startJobOnQueue(QueuedJobDescriptor $job) {
 		$this->gearmanService->jobqueueExecute($job->ID);
 	}
+	
+	public function scheduleJob(QueuedJobDescriptor $job, $date) {
+		$this->gearmanService->sendJob('scheduled', 'jobqueueExecute', array($job->ID), strtotime($date));
+	}
 }

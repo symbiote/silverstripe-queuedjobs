@@ -120,7 +120,7 @@ class QueuedJobService {
 		$jobDescriptor->write();
 		
 		if ($startAfter && strtotime($startAfter) > time()) {
-			
+			$this->queueHandler->scheduleJob($jobDescriptor, $startAfter);
 		} else {
 			// immediately start it on the queue, however that works
 			$this->queueHandler->startJobOnQueue($jobDescriptor);

@@ -4,6 +4,21 @@ Name: queuedjobsettings
 Injector:
   QueueHandler: 
     class: DefaultQueueHandler
-QueuedJobService:
-  dependencies: 
-    queueHandler: %$QueueHandler
+  QueuedJobService:
+    properties: 
+      queueHandler: %$QueueHandler
+
+---
+Name: gearman_queue_settings
+Only:
+    moduleexists: gearman
+---
+Injector:
+  GearmanQueueHandler:
+    properties: 
+      gearmanService: %$GearmanService
+  JobWorker:
+    properties:
+      queuedJobService: %$QueuedJobService
+  QueueHandler: 
+    class: GearmanQueueHandler

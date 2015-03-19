@@ -8,10 +8,6 @@
 // GearmanHandler is an extension that could be not available.
 if (interface_exists('GearmanHandler')) {
 	class JobWorker implements GearmanHandler {
-		
-		public static $dependencies = array(
-			'queuedJobService' => '%$QueuedJobService',
-		);
 		/**
 		 * @var QueuedJobService
 		 */
