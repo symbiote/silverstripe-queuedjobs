@@ -291,7 +291,7 @@ class QueuedJobService {
 	 * @param QueuedJobDescriptor $jobDescriptor
 	 *			The Job descriptor of a job to prepare for execution
 	 *
-	 * @return QueuedJob
+	 * @return QueuedJob|boolean
 	 */
 	protected function initialiseJob(QueuedJobDescriptor $jobDescriptor) {
 		// create the job class
@@ -302,7 +302,6 @@ class QueuedJobService {
 			throw new Exception("Implementation $impl no longer exists");
 		}
 
-		// start the init process
 		$jobDescriptor->JobStatus = QueuedJob::STATUS_INIT;
 		$jobDescriptor->write();
 
@@ -324,12 +323,47 @@ class QueuedJobService {
 	}
 
 	/**
-	 * Start the actual execution of a job
+	 * Given a {@link QueuedJobDescriptor} mark the job as initialised. Works sort of like a mutex.
+	 * Currently a database lock isn't entirely achievable, due to database adapters not supporting locks.
+	 * This may still have a race condition, but this should minimise the possibility.
+	 * Side effect is the job status will be changed to "Initialised".
+	 *
+	 * Assumption is the job has a status of "Queued" or "Wait".
+	 *
+	 * @param QueuedJobDescriptor $jobDescriptor
+	 * @return boolean
+	 */
+	protected function grabMutex(QueuedJobDescriptor $jobDescriptor) {
+		// write the status and determine if any rows were affected, for protection against a
+		// potential race condition where two or more processes init the same job at once.
+		// This deliberately does not use write() as that would always update LastEdited
+		// and thus the row would always be affected.
+		try {
+			DB::query(sprintf(
+				'UPDATE "QueuedJobDescriptor" SET "JobStatus" = \'%s\' WHERE "ID" = %s',
+				QueuedJob::STATUS_INIT,
+				$jobDescriptor->ID
+			));
+		} catch(Exception $e) {
+			return false;
+		}
+
+		if(DB::getConn()->affectedRows() === 0) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Start the actual execution of a job.
+	 * The assumption is the jobID refers to a {@link QueuedJobDescriptor} that is status set as "Queued".
 	 *
 	 * This method will continue executing until the job says it's completed
 	 *
 	 * @param int $jobId
 	 *			The ID of the job to start executing
+	 * @return boolean
 	 */
 	public function runJob($jobId) {
 		// first retrieve the descriptor
@@ -379,118 +413,120 @@ class QueuedJobService {
 		// Push a config context onto the stack for the duration of this job run.
 		Config::nest();
 
-		try {
-			$job = $this->initialiseJob($jobDescriptor);
+		if($this->grabMutex($jobDescriptor)) {
+			try {
+				$job = $this->initialiseJob($jobDescriptor);
 
-			// get the job ready to begin.
-			if (!$jobDescriptor->JobStarted) {
-				$jobDescriptor->JobStarted = date('Y-m-d H:i:s');
-			} else {
-				$jobDescriptor->JobRestarted = date('Y-m-d H:i:s');
-			}
-			
-			$jobDescriptor->JobStatus = QueuedJob::STATUS_RUN;
-			$jobDescriptor->write();
-
-			$lastStepProcessed = 0;
-			// have we stalled at all?
-			$stallCount = 0;
-
-			if ($job->SubsiteID && class_exists('Subsite')) {
-				Subsite::changeSubsite($job->SubsiteID);
-
-				// lets set the base URL as far as Director is concerned so that our URLs are correct
-				$subsite = DataObject::get_by_id('Subsite', $job->SubsiteID);
-				if ($subsite && $subsite->exists()) {
-					$domain = $subsite->domain();
-					$base = rtrim(Director::protocol() . $domain, '/') . '/';
-
-					Config::inst()->update('Director', 'alternate_base_url', $base);
+				// get the job ready to begin.
+				if (!$jobDescriptor->JobStarted) {
+					$jobDescriptor->JobStarted = date('Y-m-d H:i:s');
+				} else {
+					$jobDescriptor->JobRestarted = date('Y-m-d H:i:s');
 				}
-			}
 
-			// while not finished
-			while (!$job->jobFinished() && !$broken) {
-				// see that we haven't been set to 'paused' or otherwise by another process
-				$jobDescriptor = DataObject::get_by_id('QueuedJobDescriptor', (int) $jobId);
-				if (!$jobDescriptor || !$jobDescriptor->exists()) {
-					$broken = true;
-					SS_Log::log(array(
-						'errno' => 0,
-						'errstr' => 'Job descriptor ' . $jobId . ' could not be found',
-						'errfile' => __FILE__,
-						'errline' => __LINE__,
-						'errcontext' => ''
-					), SS_Log::ERR);
-					break;
+				$jobDescriptor->JobStatus = QueuedJob::STATUS_RUN;
+				$jobDescriptor->write();
+
+				$lastStepProcessed = 0;
+				// have we stalled at all?
+				$stallCount = 0;
+
+				if ($job->SubsiteID && class_exists('Subsite')) {
+					Subsite::changeSubsite($job->SubsiteID);
+
+					// lets set the base URL as far as Director is concerned so that our URLs are correct
+					$subsite = DataObject::get_by_id('Subsite', $job->SubsiteID);
+					if ($subsite && $subsite->exists()) {
+						$domain = $subsite->domain();
+						$base = rtrim(Director::protocol() . $domain, '/') . '/';
+
+						Config::inst()->update('Director', 'alternate_base_url', $base);
+					}
 				}
-				if ($jobDescriptor->JobStatus != QueuedJob::STATUS_RUN) {
-					// we've been paused by something, so we'll just exit
-					$job->addMessage(sprintf(_t('QueuedJobs.JOB_PAUSED', "Job paused at %s"), date('Y-m-d H:i:s')));
-					$broken = true;
+
+				// while not finished
+				while (!$job->jobFinished() && !$broken) {
+					// see that we haven't been set to 'paused' or otherwise by another process
+					$jobDescriptor = DataObject::get_by_id('QueuedJobDescriptor', (int) $jobId);
+					if (!$jobDescriptor || !$jobDescriptor->exists()) {
+						$broken = true;
+						SS_Log::log(array(
+							'errno' => 0,
+							'errstr' => 'Job descriptor ' . $jobId . ' could not be found',
+							'errfile' => __FILE__,
+							'errline' => __LINE__,
+							'errcontext' => ''
+						), SS_Log::ERR);
+						break;
+					}
+					if ($jobDescriptor->JobStatus != QueuedJob::STATUS_RUN) {
+						// we've been paused by something, so we'll just exit
+						$job->addMessage(sprintf(_t('QueuedJobs.JOB_PAUSED', "Job paused at %s"), date('Y-m-d H:i:s')));
+						$broken = true;
+					}
+
+					if (!$broken) {
+						try {
+							$job->process();
+						} catch (Exception $e) {
+							// okay, we'll just catch this exception for now
+							$job->addMessage(sprintf(_t('QueuedJobs.JOB_EXCEPT', 'Job caused exception %s in %s at line %s'), $e->getMessage(), $e->getFile(), $e->getLine()), 'ERROR');
+							SS_Log::log($e, SS_Log::ERR);
+							$jobDescriptor->JobStatus =  QueuedJob::STATUS_BROKEN;
+						}
+
+						// now check the job state
+						$data = $job->getJobData();
+						if ($data->currentStep == $lastStepProcessed) {
+							$stallCount++;
+						}
+
+						if ($stallCount > self::$stall_threshold) {
+							$broken = true;
+							$job->addMessage(sprintf(_t('QueuedJobs.JOB_STALLED', "Job stalled after %s attempts - please check"), $stallCount), 'ERROR');
+							$jobDescriptor->JobStatus =  QueuedJob::STATUS_BROKEN;
+						}
+
+						// now we'll be good and check our memory usage. If it is too high, we'll set the job to
+						// a 'Waiting' state, and let the next processing run pick up the job.
+						if ($this->isMemoryTooHigh()) {
+							$job->addMessage(sprintf(_t('QueuedJobs.MEMORY_RELEASE', 'Job releasing memory and waiting (%s used)'), $this->humanReadable(memory_get_usage())));
+							$jobDescriptor->JobStatus = QueuedJob::STATUS_WAIT;
+							$broken = true;
+						}
+					}
+
+					if ($jobDescriptor) {
+						$this->copyJobToDescriptor($job, $jobDescriptor);
+						$jobDescriptor->write();
+					} else {
+						SS_Log::log(array(
+							'errno' => 0,
+							'errstr' => 'Job descriptor has been set to null',
+							'errfile' => __FILE__,
+							'errline' => __LINE__,
+							'errcontext' => ''
+						), SS_Log::WARN);
+						$broken = true;
+					}
+				}
+
+				// a last final save. The job is complete by now
+				if ($jobDescriptor) {
+					$jobDescriptor->write();
 				}
 
 				if (!$broken) {
-					try {
-						$job->process();
-					} catch (Exception $e) {
-						// okay, we'll just catch this exception for now
-						$job->addMessage(sprintf(_t('QueuedJobs.JOB_EXCEPT', 'Job caused exception %s in %s at line %s'), $e->getMessage(), $e->getFile(), $e->getLine()), 'ERROR');
-						SS_Log::log($e, SS_Log::ERR);
-						$jobDescriptor->JobStatus =  QueuedJob::STATUS_BROKEN;
-					}
-
-					// now check the job state
-					$data = $job->getJobData();
-					if ($data->currentStep == $lastStepProcessed) {
-						$stallCount++;
-					}
-
-					if ($stallCount > self::$stall_threshold) {
-						$broken = true;
-						$job->addMessage(sprintf(_t('QueuedJobs.JOB_STALLED', "Job stalled after %s attempts - please check"), $stallCount), 'ERROR');
-						$jobDescriptor->JobStatus =  QueuedJob::STATUS_BROKEN;
-					}
-
-					// now we'll be good and check our memory usage. If it is too high, we'll set the job to
-					// a 'Waiting' state, and let the next processing run pick up the job.
-					if ($this->isMemoryTooHigh()) {
-						$job->addMessage(sprintf(_t('QueuedJobs.MEMORY_RELEASE', 'Job releasing memory and waiting (%s used)'), $this->humanReadable(memory_get_usage())));
-						$jobDescriptor->JobStatus = QueuedJob::STATUS_WAIT;
-						$broken = true;
-					}
+					$job->afterComplete();
+					$jobDescriptor->cleanupJob();
 				}
-
-				if ($jobDescriptor) {
-					$this->copyJobToDescriptor($job, $jobDescriptor);
-					$jobDescriptor->write();
-				} else {
-					SS_Log::log(array(
-						'errno' => 0,
-						'errstr' => 'Job descriptor has been set to null',
-						'errfile' => __FILE__,
-						'errline' => __LINE__,
-						'errcontext' => ''
-					), SS_Log::WARN);
-					$broken = true;
-				}
-			}
-
-			// a last final save. The job is complete by now
-			if ($jobDescriptor) {
+			} catch (Exception $e) {
+				// okay, we'll just catch this exception for now
+				SS_Log::log($e, SS_Log::ERR);
+				$jobDescriptor->JobStatus =  QueuedJob::STATUS_BROKEN;
 				$jobDescriptor->write();
+				$broken = true;
 			}
-
-			if (!$broken) {
-				$job->afterComplete();
-				$jobDescriptor->cleanupJob();
-			}
-		} catch (Exception $e) {
-			// okay, we'll just catch this exception for now
-			SS_Log::log($e, SS_Log::ERR);
-			$jobDescriptor->JobStatus =  QueuedJob::STATUS_BROKEN;
-			$jobDescriptor->write();
-			$broken = true;
 		}
 
 		$errorHandler->clear();
