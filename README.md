@@ -67,7 +67,7 @@ The following will run the publish job in 1 day's time from now.
 
 * Make sure gearmand is installed
 * Get the gearman module from https://github.com/nyeholt/silverstripe-gearman
-* Create a _config/queuedjobs.yml file in your project with the following declaration
+* Create a \_config/queuedjobs.yml file in your project with the following declaration
 
 ```
 ---
@@ -104,6 +104,12 @@ queues - this can be done by manually calling the *setup()* and *process()* meth
 under these circumstances, try having *getJobType()* return *QueuedJob::IMMEDIATE* to have execution
 work immediately, without being persisted or executed via cron. If this works, next make sure your
 cronjob is configured and executing correctly. 
+
+If defining your own job classes, be aware that when the job is started on the queue, the job class
+is constructed _without_ parameters being passed; this means if you accept constructor args, you
+_must_ detect whether they're present or not before using them. See [this issue](https://github.com/silverstripe-australia/silverstripe-queuedjobs/issues/35) 
+and [this wiki page](https://github.com/silverstripe-australia/silverstripe-queuedjobs/wiki/Defining-queued-jobs) for 
+more information
 
 ## Indexes
 
