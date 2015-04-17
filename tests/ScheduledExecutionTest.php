@@ -112,12 +112,12 @@ class ScheduledExecutionTest extends SapphireTest {
 
 
 class TestScheduledDataObject extends DataObject implements TestOnly {
-	public static $db = array(
+	private static $db = array(
 		'Title' => 'Varchar',
 		'Message' => 'Varchar',
 	);
 	
-	public static $extensions = array(
+	private static $extensions = array(
 		'ScheduledExecutionExtension'
 	);
 	
