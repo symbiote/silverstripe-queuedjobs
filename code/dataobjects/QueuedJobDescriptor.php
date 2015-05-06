@@ -42,7 +42,10 @@ class QueuedJobDescriptor extends DataObject {
 	private static $indexes = array(
 		'JobStatus' => true,
 	);
-	
+
+	private static $casting = array(
+		'Messages' => 'HTMLText'
+	);
 	
 	private static $searchable_fields = array(
 		'JobTitle',
@@ -146,5 +149,38 @@ class QueuedJobDescriptor extends DataObject {
 
 	public function getTitle(){
 		return $this->JobTitle;
+	}
+
+	public function getCMSFields() {
+		$fields = parent::getCMSFields();
+		$fields->replaceField(
+			'JobType',
+			new DropdownField('JobType', $this->fieldLabel('JobType'), array(
+				QueuedJob::IMMEDIATE => 'Immediate',
+				QueuedJob::QUEUED => 'Queued',
+				QueuedJob::LARGE => 'Large'
+			))
+		);
+		$fields->replaceField(
+			'JobStatus',
+			new DropdownField('JobStatus', $this->fieldLabel('JobStatus'), array(
+				QueuedJob::STATUS_NEW,
+				QueuedJob::STATUS_INIT,
+				QueuedJob::STATUS_RUN,
+				QueuedJob::STATUS_WAIT,
+				QueuedJob::STATUS_COMPLETE,
+				QueuedJob::STATUS_PAUSED,
+				QueuedJob::STATUS_CANCELLED,
+				QueuedJob::STATUS_BROKEN
+			))
+		);
+
+
+		if (Permission::check('ADMIN')) {
+			return $fields;
+		} else {
+			// Readonly CMS view is a lot more useful for debugging than no view at all
+			return $fields->makeReadonly();
+		}
 	}
 }
