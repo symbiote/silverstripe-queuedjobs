@@ -26,37 +26,40 @@ class QueuedJobsAdmin extends ModelAdmin {
 	
 	public function getEditForm($id = null, $fields = null) {
 		$form = parent::getEditForm($id, $fields);
-		
+
 		$filter = $this->jobQueue->getJobListFilter(null, 300);
 
 		$list = DataList::create('QueuedJobDescriptor');
 		$list = $list->where($filter);
-		
-		$grid = new GridField(
-			'QueuedJobDescriptor', 
-			_t('QueuedJobs.JobsFieldTitle','Jobs'), 
-			$list
-		);
-		$grid->setForm($form);
-		
-		$form->Fields()->replaceField('QueuedJobDescriptor', $grid);
-		
-		$grid->getConfig()->addComponent(new GridFieldQueuedJobExecute());
-		$grid->getConfig()->addComponent(new GridFieldQueuedJobExecute('pause', function ($record) {
-			return $record->JobStatus == QueuedJob::STATUS_WAIT || $record->JobStatus == QueuedJob::STATUS_RUN;
-		}));
-		$grid->getConfig()->addComponent(new GridFieldQueuedJobExecute('resume', function ($record) {
-			return $record->JobStatus == QueuedJob::STATUS_PAUSED || $record->JobStatus == QueuedJob::STATUS_BROKEN;
-		}));
-		$grid->getConfig()->addComponent(new GridFieldDeleteAction());
-		
+
+		$gridFieldConfig = GridFieldConfig_RecordEditor::create()
+			->addComponent(new GridFieldQueuedJobExecute('execute'))
+			->addComponent(new GridFieldQueuedJobExecute('pause', function ($record) {
+				return $record->JobStatus == QueuedJob::STATUS_WAIT || $record->JobStatus == QueuedJob::STATUS_RUN;
+			}))
+			->addComponent(new GridFieldQueuedJobExecute('resume', function ($record) {
+				return $record->JobStatus == QueuedJob::STATUS_PAUSED || $record->JobStatus == QueuedJob::STATUS_BROKEN;
+			}))
+			->removeComponentsByType('GridFieldAddNewButton');
+
+
+		// Set messages to HTML display format
 		$formatting = array(
-			'Messages'		=> function ($val, $obj) {
+			'Messages' => function ($val, $obj) {
 				return "<div style='max-width: 300px; max-height: 200px; overflow: auto;'>$obj->Messages</div>";
 			},
 		);
-			
-		$grid->getConfig()->getComponentByType('GridFieldDataColumns')->setFieldFormatting($formatting);
+		$gridFieldConfig->getComponentByType('GridFieldDataColumns')->setFieldFormatting($formatting);
+
+		// Replace gridfield
+		$grid = new GridField(
+			'QueuedJobDescriptor',
+			_t('QueuedJobs.JobsFieldTitle','Jobs'),
+			$list,
+			$gridFieldConfig
+		);
+		$grid->setForm($form);
+		$form->Fields()->replaceField('QueuedJobDescriptor', $grid);
 		
 		if (Permission::check('ADMIN')) {
 			$types = ClassInfo::subclassesFor('AbstractQueuedJob');
