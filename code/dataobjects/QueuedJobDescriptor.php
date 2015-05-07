@@ -47,6 +47,8 @@ class QueuedJobDescriptor extends DataObject {
 	private static $searchable_fields = array(
 		'JobTitle',
 	);
+
+	private static $default_sort = 'Created DESC';
 	
 	public function requireDefaultRecords() {
 		parent::requireDefaultRecords();
