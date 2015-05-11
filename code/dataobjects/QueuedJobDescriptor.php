@@ -161,18 +161,19 @@ class QueuedJobDescriptor extends DataObject {
 				QueuedJob::LARGE => 'Large'
 			))
 		);
+		$statuses = array(
+			QueuedJob::STATUS_NEW,
+			QueuedJob::STATUS_INIT,
+			QueuedJob::STATUS_RUN,
+			QueuedJob::STATUS_WAIT,
+			QueuedJob::STATUS_COMPLETE,
+			QueuedJob::STATUS_PAUSED,
+			QueuedJob::STATUS_CANCELLED,
+			QueuedJob::STATUS_BROKEN
+		);
 		$fields->replaceField(
 			'JobStatus',
-			new DropdownField('JobStatus', $this->fieldLabel('JobStatus'), array(
-				QueuedJob::STATUS_NEW,
-				QueuedJob::STATUS_INIT,
-				QueuedJob::STATUS_RUN,
-				QueuedJob::STATUS_WAIT,
-				QueuedJob::STATUS_COMPLETE,
-				QueuedJob::STATUS_PAUSED,
-				QueuedJob::STATUS_CANCELLED,
-				QueuedJob::STATUS_BROKEN
-			))
+			new DropdownField('JobStatus', $this->fieldLabel('JobStatus'), array_combine($statuses, $statuses))
 		);
 
 
