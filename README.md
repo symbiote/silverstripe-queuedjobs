@@ -112,6 +112,28 @@ _must_ detect whether they're present or not before using them. See [this issue]
 and [this wiki page](https://github.com/silverstripe-australia/silverstripe-queuedjobs/wiki/Defining-queued-jobs) for 
 more information
 
+Ensure that notifications are configured so that you can get updates or stalled or broken jobs. You can 
+set the notification email address in your config as below:
+
+
+	:::yaml
+	Email:
+	  queued_job_admin_email: support@mycompany.com
+
+## Memory limit configuration
+
+By default this task will run until either 128mb or the limit specified by php_ini('memory_limit') is reached.
+
+You can adjust this with the below config change
+
+
+	:::yaml
+	# Force memory limit to 256 megabytes
+	QueuedJobsService:
+	  # Accepts b, k, m, or b suffixes
+	  memory_limit: 256m
+
+
 ## Indexes
 
 ALTER TABLE `QueuedJobDescriptor` ADD INDEX ( `JobStatus` , `JobType` ) 

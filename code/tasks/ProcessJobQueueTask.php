@@ -66,6 +66,9 @@ class ProcessJobQueueTask extends BuildTask {
 			}
 			return;
 		}
+
+		// Cleanup or restart jobs before processing
+		$service->checkJobHealth();
 		
 		/* @var $service QueuedJobService */
 		$nextJob = null;
@@ -77,8 +80,6 @@ class ProcessJobQueueTask extends BuildTask {
 		} else {
 			$nextJob = $service->getNextPendingJob($queue);
 		}
-
-		$service->checkJobHealth();
 
 		if ($nextJob) {
 			$this->writeLogLine("$datestamp Running $nextJob->JobTitle and others from $queue.");

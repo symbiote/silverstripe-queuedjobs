@@ -27,12 +27,14 @@ class QueuedJobService {
 	private static $stall_threshold = 3;
 
 	/**
-	 * how many meg of ram will we allow before pausing and releasing the memory?
+	 * How much ram will we allow before pausing and releasing the memory?
 	 *
-	 * This is set to a somewhat low default as some people may not be able to run
-	 * on systems with a lot of ram (128MB by default)
+	 * For instance, set to 134217728 (128MB) to pause this process if used memory exceeds
+	 * this value. This needs to be set to a value lower than the php_ini max_memory as
+	 * the system will otherwise crash before shutdown can be handled gracefully.
 	 *
 	 * @var int
+	 * @config
 	 */
 	private static $memory_limit = 134217728;
 	
@@ -64,7 +66,7 @@ class QueuedJobService {
 	 */
 	public function __construct() {
 		// bind a shutdown function to process all 'immediate' queued jobs if needed, but only in CLI mode
-		if (self::$use_shutdown_function && Director::is_cli()) {
+		if (Config::inst()->get(__CLASS__, 'use_shutdown_function') && Director::is_cli()) {
 			if (class_exists('PHPUnit_Framework_TestCase') && SapphireTest::is_running_test()) {
 				// do NOTHING
 			} else {
@@ -189,45 +191,42 @@ class QueuedJobService {
 	 * Check the current job queues and see if any of the jobs currently in there should be started. If so,
 	 * return the next job that should be executed
 	 *
+	 * @param string $type Job type
 	 * @return QueuedJobDescriptor
 	 */
 	public function getNextPendingJob($type=null) {
-		$type = $type ? (string)  $type : QueuedJob::QUEUED;
+		// Filter jobs by type
+		$type = $type ?: QueuedJob::QUEUED;
+		$list = QueuedJobDescriptor::get()
+			->filter('JobType', $type)
+			->sort('ID', 'ASC');
 
 		// see if there's any blocked jobs that need to be resumed
-		$existingJob = DataList::create('QueuedJobDescriptor')->filter(array('JobStatus' => QueuedJob::STATUS_WAIT, 'JobType' => $type))->first();
-		if ($existingJob && $existingJob->exists()) {
-			return $existingJob;
+		$waitingJob = $list
+			->filter('JobStatus', QueuedJob::STATUS_WAIT)
+			->first();
+		if ($waitingJob) {
+			return $waitingJob;
 		}
 
-		$list = QueuedJobDescriptor::get()->filter(array(
-			'JobStatus'		=> array(QueuedJob::STATUS_INIT, QueuedJob::STATUS_RUN),
-			'JobType'		=> $type
-		));
-		// lets see if we have a currently running job
-
-		$existingJob = $list->first();
-
-		// if there's an existing job either running or pending, the lets just return false to indicate
+		// If there's an existing job either running or pending, the lets just return false to indicate
 		// that we're still executing
-		if ($existingJob && $existingJob->exists()) {
+		$runningJob = $list
+			->filter('JobStatus', array(QueuedJob::STATUS_INIT, QueuedJob::STATUS_RUN))
+			->first();
+		if ($runningJob) {
 			return false;
 		}
 
-		// otherwise, lets find any 'new' jobs that are waiting to execute
-		$filter = array(
-			'JobStatus =' => 'New',
-			'JobType =' => $type ? (string) $type : QueuedJob::QUEUED,
-		);
-		
-		$where = '"StartAfter" < \'' . date('Y-m-d H:i:s').'\' OR "StartAfter" IS NULL';
-		$list = QueuedJobDescriptor::get()->where($where);
-		$list = $list->filter(array('JobStatus' => 'New', 'JobType' => $type));
-		$list = $list->sort('ID', 'ASC');
-
-		if ($list && $list->Count()) {
-			return $list->First();
-		}
+		// Otherwise, lets find any 'new' jobs that are waiting to execute
+		$newJob = $list
+			->filter('JobStatus', QueuedJob::STATUS_NEW)
+			->where(sprintf(
+				'"StartAfter" < \'%s\' OR "StartAfter" IS NULL',
+				SS_DateTime::now()->getValue()
+			))
+			->first();
+		return $newJob;
 	}
 
 	/**
@@ -239,41 +238,30 @@ class QueuedJobService {
 	 * fix them
 	 */
 	public function checkJobHealth() {
-		// first off, we want to find jobs that haven't changed since they were last checked (assuming they've actually
-		// processed a few steps...)
-		$stalledJobs = QueuedJobDescriptor::get()->filter(array(
-			'JobStatus'		=> array(QueuedJob::STATUS_RUN, QueuedJob::STATUS_INIT),
-			'StepsProcessed:GreaterThan' => 0,
-		));
+		// Select all jobs currently marked as running
+		$runningJobs = QueuedJobDescriptor::get()
+			->filter(
+				'JobStatus',
+				array(
+					QueuedJob::STATUS_RUN,
+					QueuedJob::STATUS_INIT
+				)
+			);
 
-		$stalledJobs = $stalledJobs->where('"StepsProcessed"="LastProcessedCount"');
-
-		if ($stalledJobs) {
-			foreach ($stalledJobs as $stalledJob) {
-				if ($stalledJob->ResumeCount <= self::$stall_threshold) {
-					$stalledJob->ResumeCount++;
-					$stalledJob->pause();
-					$stalledJob->resume();
-					$msg = sprintf(_t('QueuedJobs.STALLED_JOB_MSG', 'A job named %s appears to have stalled. It will be stopped and restarted, please login to make sure it has continued'), $stalledJob->JobTitle);
-				} else {
-					$stalledJob->pause();
-					$msg = sprintf(_t('QueuedJobs.STALLED_JOB_MSG', 'A job named %s appears to have stalled. It has been paused, please login to check it'), $stalledJob->JobTitle);
-				}
-
-				singleton('QJUtils')->log($msg);
-				$mail = new Email(Config::inst()->get('Email', 'admin_email'), Config::inst()->get('Email', 'queued_job_admin_email'), _t('QueuedJobs.STALLED_JOB', 'Stalled job'), $msg);
-				$mail->send();
-			}
+		// If no steps have been processed since the last run, consider it a broken job
+		// Only check jobs that have been viewed before. LastProcessedCount defaults to -1 on new jobs.
+		$stalledJobs = $runningJobs
+			->filter('LastProcessedCount:GreaterThanOrEqual', 0)
+			->where('"StepsProcessed" = "LastProcessedCount"');
+		foreach ($stalledJobs as $stalledJob) {
+			$this->restartStalledJob($stalledJob);
 		}
 		
 		// now, find those that need to be marked before the next check
-		$runningJobs = QueuedJobDescriptor::get()->filter('JobStatus', array(QueuedJob::STATUS_RUN, QueuedJob::STATUS_INIT));
-		if ($runningJobs) {
-			// foreach job, mark it as having been incremented
-			foreach ($runningJobs as $job) {
-				$job->LastProcessedCount = $job->StepsProcessed;
-				$job->write();
-			}
+		// foreach job, mark it as having been incremented
+		foreach ($runningJobs as $job) {
+			$job->LastProcessedCount = $job->StepsProcessed;
+			$job->write();
 		}
 
 		// finally, find the list of broken jobs and send an email if there's some found
@@ -287,6 +275,41 @@ class QueuedJobService {
 				'errcontext' => ''
 			), SS_Log::ERR);
 		}
+	}
+
+	/**
+	 * Attempt to restart a stalled job
+	 *
+	 * @param QueuedJobDescriptor $stalledJob
+	 * @return bool True if the job was successfully restarted
+	 */
+	protected function restartStalledJob($stalledJob) {
+		if ($stalledJob->ResumeCounts < Config::inst()->get(__CLASS__, 'stall_threshold')) {
+			$stalledJob->restart();
+			$message = sprintf(
+				_t(
+					'QueuedJobs.STALLED_JOB_MSG',
+					'A job named %s appears to have stalled. It will be stopped and restarted, please login to make sure it has continued'
+				),
+				$stalledJob->JobTitle
+			);
+		} else {
+			$stalledJob->pause();
+			$message = sprintf(
+				_t(
+					'QueuedJobs.STALLED_JOB_MSG',
+					'A job named %s appears to have stalled. It has been paused, please login to check it'
+				),
+				$stalledJob->JobTitle
+			);
+		}
+
+		singleton('QJUtils')->log($message);
+		$from = Config::inst()->get('Email', 'admin_email');
+		$to = Config::inst()->get('Email', 'queued_job_admin_email');
+		$subject = _t('QueuedJobs.STALLED_JOB', 'Stalled job');
+		$mail = new Email($from, $to, $subject, $message);
+		$mail->send();
 	}
 
 	/**
@@ -490,7 +513,7 @@ class QueuedJobService {
 							$stallCount++;
 						}
 
-						if ($stallCount > self::$stall_threshold) {
+						if ($stallCount > Config::inst()->get(__CLASS__, 'stall_threshold')) {
 							$broken = true;
 							$job->addMessage(sprintf(_t('QueuedJobs.JOB_STALLED', "Job stalled after %s attempts - please check"), $stallCount), 'ERROR');
 							$jobDescriptor->JobStatus =  QueuedJob::STATUS_BROKEN;
@@ -499,7 +522,10 @@ class QueuedJobService {
 						// now we'll be good and check our memory usage. If it is too high, we'll set the job to
 						// a 'Waiting' state, and let the next processing run pick up the job.
 						if ($this->isMemoryTooHigh()) {
-							$job->addMessage(sprintf(_t('QueuedJobs.MEMORY_RELEASE', 'Job releasing memory and waiting (%s used)'), $this->humanReadable(memory_get_usage())));
+							$job->addMessage(sprintf(
+								_t('QueuedJobs.MEMORY_RELEASE', 'Job releasing memory and waiting (%s used)'),
+								$this->humanReadable($this->getMemoryUsage())
+							));
 							$jobDescriptor->JobStatus = QueuedJob::STATUS_WAIT;
 							$broken = true;
 						}
@@ -554,12 +580,75 @@ class QueuedJobService {
 	}
 
 	/**
-	 * Is memory usage too high? 
+	 * Is memory usage too high?
+	 *
+	 * @return bool
 	 */
 	protected function isMemoryTooHigh() {
-		if (function_exists('memory_get_usage')) {
-			$memory = memory_get_usage();
-			return memory_get_usage() > self::$memory_limit;
+		$used = $this->getMemoryUsage();
+		$limit = $this->getMemoryLimit();
+		return $limit && ($used > $limit);
+	}
+
+	/**
+	 * Get peak memory usage of this application
+	 *
+	 * @return float
+	 */
+	protected function getMemoryUsage() {
+		// Note we use real_usage = false http://stackoverflow.com/questions/15745385/memory-get-peak-usage-with-real-usage
+		// Also we use the safer peak memory usage
+		return (float)memory_get_peak_usage(false);
+	}
+
+	/**
+	 * Determines the memory limit (in bytes) for this application
+	 * Limits to the smaller of memory_limit configured via php.ini or silverstripe config
+	 *
+	 * @return float Memory limit in bytes
+	 */
+	protected function getMemoryLimit() {
+		// Limit to smaller of explicit limit or php memory limit
+		$limit = $this->parseMemory(Config::inst()->get(__CLASS__, 'memory_limit'));
+		if($limit) {
+			return $limit;
+		}
+
+		// Fallback to php memory limit
+		$phpLimit = $this->getPHPMemoryLimit();
+		if($phpLimit) {
+			return $phpLimit;
+		}
+	}
+
+	/**
+	 * Calculate the current memory limit of the server
+	 *
+	 * @return float
+	 */
+	protected function getPHPMemoryLimit() {
+		return $this->parseMemory(trim(ini_get("memory_limit")));
+	}
+
+	/**
+	 * Convert memory limit string to bytes.
+	 * Based on implementation in install.php5
+	 *
+	 * @param string $memString
+	 * @return float
+	 */
+	protected function parseMemory($memString) {
+		switch(strtolower(substr($memString, -1))) {
+			case "b":
+				return round(substr($memString, 0, -1));
+			case "k":
+				return round(substr($memString, 0, -1) * 1024);
+			case "m":
+				return round(substr($memString, 0, -1) * 1024 * 1024);
+			case "g":
+				return round(substr($memString, 0, -1) * 1024 * 1024 * 1024);
+			default:
+				return round($memString);
 		}
 	}
 
