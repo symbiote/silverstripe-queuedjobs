@@ -112,6 +112,30 @@ _must_ detect whether they're present or not before using them. See [this issue]
 and [this wiki page](https://github.com/silverstripe-australia/silverstripe-queuedjobs/wiki/Defining-queued-jobs) for 
 more information
 
+## Memory limit configuration
+
+By default this task will run until it comes within 12MB of the memory limit configured by PHP, giving the application
+room to safely shutdown and restart.
+
+In some cases the buffer can be adjusted to be more robust (increased) or more performant (decreased). To adjust this
+buffer set the following config.
+
+
+	:::yaml
+	# Reduce memory buffer to 10mb
+	QueuedJobService:
+	  memory_buffer: 10485760
+
+
+This limit can be completely bypassed by setting a hard limit on the exact memory, thus ignoring php_ini('memory_limit').
+
+
+	:::yaml
+	# Force memory limit to 256mb
+	QueuedJobsService:
+	  memory_limit: 268435456
+
+
 ## Indexes
 
 ALTER TABLE `QueuedJobDescriptor` ADD INDEX ( `JobStatus` , `JobType` ) 
