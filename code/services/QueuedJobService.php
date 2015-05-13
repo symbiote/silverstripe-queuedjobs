@@ -27,14 +27,40 @@ class QueuedJobService {
 	private static $stall_threshold = 3;
 
 	/**
-	 * how many meg of ram will we allow before pausing and releasing the memory?
+	 * How much ram will we allow before pausing and releasing the memory?
 	 *
-	 * This is set to a somewhat low default as some people may not be able to run
-	 * on systems with a lot of ram (128MB by default)
+	 * For instance, set to 134217728 (128MB) to pause this process if used memory exceeds
+	 * this value. In that case memory_limit_default and memory_buffer will be ignored. This needs to be set to
+	 * a value lower than the php_ini max_memory as the system will otherwise crash before shutdown can be
+	 * handled gracefully.
+	 *
+	 * If this is left as 0 then the memory limit will be set to init_get('memory_limit') - memory_buffer,
+	 * and will fallback to memory_limit_default if for whatever reason this can't be determined automatically.
 	 *
 	 * @var int
+	 * @config
 	 */
-	private static $memory_limit = 134217728;
+	private static $memory_limit = 0;
+
+	/**
+	 * In case the instance memory limit can't be determined and memory_limit isn't set, fallback
+	 * to this default for memory_limit
+	 *
+	 * @var int
+	 * @config
+	 */
+	private static $memory_limit_default = 134217728;
+
+	/**
+	 * When memory_limit is not set, auto-detect the configured memory limit and subtract
+	 * this buffer value.
+	 *
+	 * Defaults to 12582912 (12mb)
+	 *
+	 * @var int
+	 * @config
+	 */
+	private static $memory_buffer = 12582912;
 	
 	/**
 	 * Should "immediate" jobs be managed using the shutdown function? 
@@ -64,7 +90,7 @@ class QueuedJobService {
 	 */
 	public function __construct() {
 		// bind a shutdown function to process all 'immediate' queued jobs if needed, but only in CLI mode
-		if (self::$use_shutdown_function && Director::is_cli()) {
+		if (Config::inst()->get(__CLASS__, 'use_shutdown_function') && Director::is_cli()) {
 			if (class_exists('PHPUnit_Framework_TestCase') && SapphireTest::is_running_test()) {
 				// do NOTHING
 			} else {
@@ -241,7 +267,7 @@ class QueuedJobService {
 
 		if ($stalledJobs) {
 			foreach ($stalledJobs as $stalledJob) {
-				if ($stalledJob->ResumeCount <= self::$stall_threshold) {
+				if ($stalledJob->ResumeCount <= Config::inst()->get(__CLASS__, 'stall_threshold')) {
 					$stalledJob->ResumeCount++;
 					$stalledJob->pause();
 					$stalledJob->resume();
@@ -481,7 +507,7 @@ class QueuedJobService {
 							$stallCount++;
 						}
 
-						if ($stallCount > self::$stall_threshold) {
+						if ($stallCount > Config::inst()->get(__CLASS__, 'stall_threshold')) {
 							$broken = true;
 							$job->addMessage(sprintf(_t('QueuedJobs.JOB_STALLED', "Job stalled after %s attempts - please check"), $stallCount), 'ERROR');
 							$jobDescriptor->JobStatus =  QueuedJob::STATUS_BROKEN;
@@ -490,7 +516,10 @@ class QueuedJobService {
 						// now we'll be good and check our memory usage. If it is too high, we'll set the job to
 						// a 'Waiting' state, and let the next processing run pick up the job.
 						if ($this->isMemoryTooHigh()) {
-							$job->addMessage(sprintf(_t('QueuedJobs.MEMORY_RELEASE', 'Job releasing memory and waiting (%s used)'), $this->humanReadable(memory_get_usage())));
+							$job->addMessage(sprintf(
+								_t('QueuedJobs.MEMORY_RELEASE', 'Job releasing memory and waiting (%s used)'),
+								$this->humanReadable($this->getMemoryUsage())
+							));
 							$jobDescriptor->JobStatus = QueuedJob::STATUS_WAIT;
 							$broken = true;
 						}
@@ -545,13 +574,79 @@ class QueuedJobService {
 	}
 
 	/**
-	 * Is memory usage too high? 
+	 * Calculate the current memory limit of the server
+	 *
+	 * @return float
+	 */
+	protected function getPHPMemoryLimit() {
+		return $this->parseMemory(trim(ini_get("memory_limit")));
+	}
+
+	/**
+	 * Convert memory limit string to bytes.
+	 * Based on implementation in install.php5
+	 *
+	 * @param string $memString
+	 * @return float
+	 */
+	protected function parseMemory($memString) {
+		switch(strtolower(substr($memString, -1))) {
+			case "b":
+				return round(substr($memString, 0, -1));
+			case "k":
+				return round(substr($memString, 0, -1) * 1024);
+			case "m":
+				return round(substr($memString, 0, -1) * 1024 * 1024);
+			case "g":
+				return round(substr($memString, 0, -1) * 1024 * 1024 * 1024);
+			default:
+				return round($memString);
+		}
+	}
+
+	/**
+	 * Determines the memory limit (in bytes) for this application
+	 *
+	 * @return float Memory limit in bytes
+	 */
+	protected function getMemoryLimit() {
+		// Check explicit memory limit
+		$limit = $this->parseMemory(Config::inst()->get(__CLASS__, 'memory_limit'));
+		if($limit) {
+			return $limit;
+		}
+
+		// Auto-calculate buffer
+		$buffer = $this->parseMemory(Config::inst()->get(__CLASS__, 'memory_buffer'));
+		$phpLimit = $this->getPHPMemoryLimit();
+		if($buffer && $phpLimit && $buffer < $phpLimit) {
+			return $phpLimit - $buffer;
+		}
+
+		// Fallback if can't calculate
+		return $this->parseMemory(Config::inst()->get(__CLASS__, 'memory_limit_default'));
+	}
+
+	/**
+	 * Is memory usage too high?
+	 *
+	 * @return bool
 	 */
 	protected function isMemoryTooHigh() {
-		if (function_exists('memory_get_usage')) {
-			$memory = memory_get_usage();
-			return memory_get_usage() > self::$memory_limit;
-		}
+		$used = $this->getMemoryUsage();
+		$limit = $this->getMemoryLimit();
+		return $used > $limit;
+	}
+
+	/**
+	 * Get peak memory usage of this application
+	 *
+	 * @return float
+	 */
+	protected function getMemoryUsage() {
+		// Note we use real_usage = false http://stackoverflow.com/questions/15745385/memory-get-peak-usage-with-real-usage
+		// Also we use the safer peak memory usage
+		return (float)memory_get_peak_usage(false);
 	}
 
 	protected function humanReadable($size) {
