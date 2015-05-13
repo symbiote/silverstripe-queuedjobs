@@ -2,6 +2,7 @@
 
 
 [![Build Status](https://secure.travis-ci.org/silverstripe-australia/silverstripe-queuedjobs.png)](http://travis-ci.org/silverstripe-australia/silverstripe-queuedjobs)
+[![Scrutinizer](https://scrutinizer-ci.com/g/silverstripe-australia/silverstripe-queuedjobs/badges/quality-score.png)](https://scrutinizer-ci.com/g/silverstripe-australia/silverstripe-queuedjobs/)
 
 
 ## Maintainer Contact
