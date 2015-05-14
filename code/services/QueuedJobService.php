@@ -119,16 +119,25 @@ class QueuedJobService {
 
 		$jobDescriptor->write();
 		
+		$this->startJob($jobDescriptor, $startAfter);
+		
+		return $jobDescriptor->ID;
+	}
+	
+	/**
+	 * Start a job (or however the queue handler determines it should be started)
+	 * 
+	 * @param JobDescriptor $jobDescriptor
+	 * @param date $startAfter
+	 */
+	public function startJob($jobDescriptor, $startAfter = null) {
 		if ($startAfter && strtotime($startAfter) > time()) {
 			$this->queueHandler->scheduleJob($jobDescriptor, $startAfter);
 		} else {
 			// immediately start it on the queue, however that works
 			$this->queueHandler->startJobOnQueue($jobDescriptor);
 		}
-		
-		return $jobDescriptor->ID;
 	}
-	
 
 	/**
 	 * Copies data from a job into a descriptor for persisting

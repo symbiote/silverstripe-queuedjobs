@@ -87,7 +87,7 @@ class QueuedJobDescriptor extends DataObject {
 			$this->JobStatus = QueuedJob::STATUS_WAIT;
 			$this->ResumeCounts++;
 			$this->write();
-			$this->activateOnQueue();
+			singleton('QueuedJobService')->startJob($this);
 		}
 	}
 
