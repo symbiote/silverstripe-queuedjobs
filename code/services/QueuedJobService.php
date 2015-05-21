@@ -37,6 +37,23 @@ class QueuedJobService {
 	 * @config
 	 */
 	private static $memory_limit = 134217728;
+
+	/**
+	 * Optional time limit (in seconds) to run the service before restarting to release resources.
+	 *
+	 * Defaults to no limit.
+	 *
+	 * @var int
+	 * @config
+	 */
+	private static $time_limit = 0;
+
+	/**
+	 * Timestamp (in seconds) when the queue was started
+	 *
+	 * @var int
+	 */
+	protected $startedAt = 0;
 	
 	/**
 	 * Should "immediate" jobs be managed using the shutdown function? 
@@ -529,6 +546,16 @@ class QueuedJobService {
 							$jobDescriptor->JobStatus = QueuedJob::STATUS_WAIT;
 							$broken = true;
 						}
+
+						// Also check if we are running too long
+						if($this->hasPassedTimeLimit()) {
+							$job->addMessage(_t(
+								'QueuedJobs.TIME_LIMIT',
+								'Queue has passed time limit and will restart before continuing'
+							));
+							$jobDescriptor->JobStatus = QueuedJob::STATUS_WAIT;
+							$broken = true;
+						}
 					}
 
 					if ($jobDescriptor) {
@@ -577,6 +604,35 @@ class QueuedJobService {
 		}
 		
 		return !$broken;
+	}
+
+	/**
+	 * Start timer
+	 */
+	protected function markStarted() {
+		if($this->startedAt) {
+			$this->startedAt = SS_Datetime::now()->Format('U');
+		}
+	}
+
+	/**
+	 * Is execution time too long?
+	 *
+	 * @return bool True if the script has passed the configured time_limit
+	 */
+	protected function hasPassedTimeLimit() {
+		// Ensure a limit exists
+		$limit = Config::inst()->get(__CLASS__, 'time_limit');
+		if(!$limit) {
+			return false;
+		}
+
+		// Ensure started date is set
+		$this->markStarted();
+
+		// Check duration
+		$now = SS_Datetime::now()->Format('U');
+		return $now > $this->startedAt + $limit;
 	}
 
 	/**
@@ -700,10 +756,13 @@ class QueuedJobService {
 	/**
 	 * Process all jobs from a given queue
 	 * 
-	 * @param string $name
-	 *					The job queue to completely process
+	 * @param string $name The job queue to completely process
 	 */
 	public function processJobQueue($name) {
+		// Start timer to measure lifetime
+		$this->markStarted();
+
+		// Begin main loop
 		do {
 			if (class_exists('Subsite')) {
 				// clear subsite back to default to prevent any subsite changes from leaking to 

@@ -120,7 +120,7 @@ set the notification email address in your config as below:
 	Email:
 	  queued_job_admin_email: support@mycompany.com
 
-## Memory limit configuration
+## Performance configuration
 
 By default this task will run until either 128mb or the limit specified by php_ini('memory_limit') is reached.
 
@@ -132,6 +132,16 @@ You can adjust this with the below config change
 	QueuedJobsService:
 	  # Accepts b, k, m, or b suffixes
 	  memory_limit: 256m
+
+
+You can also enforce a time limit for each queue, after which the task will attempt a restart to release all
+resources. By default this is disabled, so you must specify this in your project as below:
+
+
+	:::yaml
+	# Force limit to 10 minutes
+	QueuedJobsService:
+	  time_limit: 600
 
 
 ## Indexes
