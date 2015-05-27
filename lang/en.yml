@@ -32,6 +32,11 @@ en:
     TABLE_STATUS: Status
     TABLE_TITLE: Title
     TABLE_TOTAL: Total
+    CREATE_JOB_TYPE: 'Create job of type'
+    CREATE_NEW_JOB: 'Create new job'
+    JOB_TYPE_PARAMS: 'Constructor parameters for job creation'
+    START_JOB_TIME: 'Start job at'
+    TIME_LIMIT: 'Queue has passed time limit and will restart before continuing'
   ScheduledExecution:
     EXECUTE_EVERY: 'Execute every'
     EXECUTE_FREE: 'Scheduled (in strtotime format from first execution)'
