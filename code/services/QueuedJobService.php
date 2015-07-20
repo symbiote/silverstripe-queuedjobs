@@ -115,7 +115,10 @@ class QueuedJobService {
 		// see if we already have this job in a queue
 		$filter = array(
 			'Signature' => $signature,
-			'JobStatus' => QueuedJob::STATUS_NEW,
+			'JobStatus' => array(
+				QueuedJob::STATUS_NEW,
+				QueuedJob::STATUS_INIT
+			)
 		);
 
 		$existing = DataList::create('QueuedJobDescriptor')->filter($filter)->first();
@@ -397,7 +400,7 @@ class QueuedJobService {
 			return false;
 		}
 
-		if(DB::getConn()->affectedRows() === 0) {
+		if(DB::getConn()->affectedRows() === 0 && $jobDescriptor->JobStatus !== QueuedJob::STATUS_INIT) {
 			return false;
 		}
 

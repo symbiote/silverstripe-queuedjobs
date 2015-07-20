@@ -7,11 +7,25 @@ Injector:
   QueuedJobService:
     properties: 
       queueHandler: %$QueueHandler
+  DefaultRule:
+    class: 'AsyncPHP\Doorman\Rule\InMemoryRule'
+    properties:
+      Processes: 1
+      MinimumProcessorUsage: 0
+      MaximumProcessorUsage: 100
+  ProcessJobQueueTask:
+    properties:
+      # Change to DoormanRunner for async processing
+      TaskRunner: %$QueueRunner
+  DoormanRunner:
+    properties:
+      DefaultRules:
+        - '%$DefaultRule'
 
 ---
 Name: gearman_queue_settings
 Only:
-    moduleexists: gearman
+  moduleexists: gearman
 ---
 Injector:
   GearmanQueueHandler:

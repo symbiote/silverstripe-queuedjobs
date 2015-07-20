@@ -64,6 +64,27 @@ The following will run the publish job in 1 day's time from now.
 	$publish = new PublishItemsJob(21);
 	singleton('QueuedJobService')->queueJob($publish, date('Y-m-d H:i:s', time() + 86400));
 
+## Using Doorman for running jobs
+
+Doorman is included by default, and allows for asynchronous task processing.
+
+In order to enable this, configure the ProcessJobQueueTask to use this backend.
+
+In your YML set the below:
+
+
+```yaml
+---
+Name: localproject
+After: '#queuedjobsettings'
+---
+Injector:
+  ProcessJobQueueTask:
+    properties:
+      TaskRunner: %$DoormanRunner
+```
+
+
 ## Using Gearman for running jobs
 
 * Make sure gearmand is installed
