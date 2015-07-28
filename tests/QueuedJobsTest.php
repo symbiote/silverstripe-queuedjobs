@@ -1,7 +1,7 @@
 <?php
 
 /**
- * 
+ *
  *
  * @author Marcus Nyeholt <marcus@silverstripe.com.au>
  */
@@ -45,7 +45,7 @@ class QueuedJobsTest extends SapphireTest {
 				break;
 			}
 		}
-		
+
 		$this->assertNotNull($myJob);
 		$this->assertTrue($jobId > 0);
 		$this->assertEquals('TestQueuedJob', $myJob->Implementation);
@@ -138,7 +138,7 @@ class QueuedJobsTest extends SapphireTest {
 		$id = $svc->queueJob($job);
 
 		$descriptor = DataObject::get_by_id('QueuedJobDescriptor', $id);
-		
+
 		$job = $svc->testInit($descriptor);
 		$this->assertInstanceOf('TestQueuedJob', $job, 'Job has been triggered');
 
@@ -153,7 +153,7 @@ class QueuedJobsTest extends SapphireTest {
 		// lets create a new job and add it to the queue
 
 		$this->logInWithPermission('DUMMYUSER');
-		
+
 		$job = new TestQueuedJob();
 		$job->testingStartJob = true;
 		$id = $svc->queueJob($job);
@@ -223,13 +223,13 @@ class QueuedJobsTest extends SapphireTest {
 
 		// okay, lets get the first one and initialise it, then make sure that a subsequent init attempt fails
 		$job = $svc->getNextPendingJob();
-		
+
 		$this->assertEquals($id1, $job->ID);
 		$svc->testInit($job);
 
 		// now try and get another, it should be === false
 		$next = $svc->getNextPendingJob();
-		
+
 		$this->assertFalse($next);
 	}
 
