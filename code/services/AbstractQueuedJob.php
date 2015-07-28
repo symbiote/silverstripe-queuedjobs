@@ -5,7 +5,7 @@
  *
  * This implementation assumes that when you created your job class, you initialised the
  * jobData with relevant variables needed to process() your job later on in execution. If you do not,
- * please ensure you do before you queueJob() the job, to ensure the signature that is generated is 'correct'. 
+ * please ensure you do before you queueJob() the job, to ensure the signature that is generated is 'correct'.
  *
  * @author Marcus Nyeholt <marcus@silverstripe.com.au>
  * @license BSD http://silverstripe.org/bsd-license/
@@ -25,7 +25,7 @@ abstract class AbstractQueuedJob implements QueuedJob {
 	/**
 	 * Sets a data object for persisting by adding its id and type to the serialised vars
 	 *
-	 * @param DataObject $object 
+	 * @param DataObject $object
 	 * @param string $name
 	 * 				A name to give it, if you want to store more than one
 	 */
@@ -35,7 +35,7 @@ abstract class AbstractQueuedJob implements QueuedJob {
 	}
 
 	/**
-	 * @param string $name 
+	 * @param string $name
 	 */
 	protected function getObject($name = 'Object') {
 		$id = $this->{$name . 'ID'};
@@ -93,7 +93,7 @@ abstract class AbstractQueuedJob implements QueuedJob {
 	 * Do some processing yourself!
 	 */
 	public function process() {
-		
+
 	}
 
 	/**
@@ -108,7 +108,7 @@ abstract class AbstractQueuedJob implements QueuedJob {
 	 * Called when the job is determined to be 'complete'
 	 */
 	public function afterComplete() {
-		
+
 	}
 
 	public function getJobData() {
@@ -134,7 +134,7 @@ abstract class AbstractQueuedJob implements QueuedJob {
 		$this->jobData = $jobData;
 		$this->messages = $messages;
 
-		
+
 	}
 
 	/**
@@ -179,7 +179,7 @@ abstract class AbstractQueuedJob implements QueuedJob {
 	 * Convenience methods for setting and getting job data
 	 *
 	 * @param mixed $name
-	 * @param mixed $value 
+	 * @param mixed $value
 	 */
 	public function __set($name, $value) {
 		if (!$this->jobData) {

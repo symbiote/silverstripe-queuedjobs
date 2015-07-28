@@ -8,7 +8,7 @@
  * When the queues are scanned, a job is reloaded and processed. Ignoring the persistence and reloading, it looks
  * something like
  *
- 
+
  * job->getJobType();
  * job->getJobData();
  * data->write();
@@ -17,13 +17,13 @@
  *	job->process();
  *	job->getJobData();
  *  data->write();
- * 
+ *
  *
  * @author Marcus Nyeholt <marcus@silverstripe.com.au>
  * @license BSD http://silverstripe.org/bsd-license/
  */
 class QueuedJobService {
-	
+
 	private static $stall_threshold = 3;
 
 	/**
@@ -54,29 +54,29 @@ class QueuedJobService {
 	 * @var int
 	 */
 	protected $startedAt = 0;
-	
+
 	/**
-	 * Should "immediate" jobs be managed using the shutdown function? 
-	 * 
-	 * It is recommended you set up an inotify watch and use that for 
+	 * Should "immediate" jobs be managed using the shutdown function?
+	 *
+	 * It is recommended you set up an inotify watch and use that for
 	 * triggering immediate jobs. See the wiki for more information
 	 *
 	 * @var boolean
 	 */
 	private static $use_shutdown_function = true;
-	
+
 	/**
 	 * The location for immediate jobs to be stored in
 	 *
 	 * @var String
 	 */
 	private static $cache_dir = 'queuedjobs';
-	
+
 	/**
 	 * @var DefaultQueueHandler
 	 */
 	public $queueHandler;
-	
+
 
 	/**
 	 * Register our shutdown handler
@@ -89,19 +89,19 @@ class QueuedJobService {
 			} else {
 				register_shutdown_function(array($this, 'onShutdown'));
 			}
-			
+
 		}
 		if (Config::inst()->get('Email', 'queued_jobs_admin_email') == '') {
 			Config::inst()->update('Email', 'queued_jobs_admin_email', Config::inst()->get('Email', 'admin_email'));
 		}
 	}
-	
+
     /**
 	 * Adds a job to the queue to be started
-	 * 
+	 *
 	 * Relevant data about the job will be persisted using a QueuedJobDescriptor
 	 *
-	 * @param QueuedJob $job 
+	 * @param QueuedJob $job
 	 *			The job to start.
 	 * @param $startAfter
 	 *			The date (in Y-m-d H:i:s format) to start execution after
@@ -137,15 +137,15 @@ class QueuedJobService {
 		$this->copyJobToDescriptor($job, $jobDescriptor);
 
 		$jobDescriptor->write();
-		
+
 		$this->startJob($jobDescriptor, $startAfter);
-		
+
 		return $jobDescriptor->ID;
 	}
-	
+
 	/**
 	 * Start a job (or however the queue handler determines it should be started)
-	 * 
+	 *
 	 * @param JobDescriptor $jobDescriptor
 	 * @param date $startAfter
 	 */
@@ -185,11 +185,11 @@ class QueuedJobService {
 	protected function copyDescriptorToJob($jobDescriptor, $job) {
 		$jobData = null;
 		$messages = null;
-		
+
 		// switching to php's serialize methods... not sure why this wasn't done from the start!
 		$jobData = @unserialize($jobDescriptor->SavedJobData);
 		$messages = @unserialize($jobDescriptor->SavedJobMessages);
-		
+
 		if (!$jobData) {
 			// SS's convert:: function doesn't do this detection for us!!
 			if (function_exists('json_decode')) {
@@ -200,7 +200,7 @@ class QueuedJobService {
 				$messages = Convert::json2obj($jobDescriptor->SavedJobMessages);
 			}
 		}
-		
+
 		$job->setJobData($jobDescriptor->TotalSteps, $jobDescriptor->StepsProcessed, $jobDescriptor->JobStatus == QueuedJob::STATUS_COMPLETE, $jobData, $messages);
 	}
 
@@ -273,7 +273,7 @@ class QueuedJobService {
 		foreach ($stalledJobs as $stalledJob) {
 			$this->restartStalledJob($stalledJob);
 		}
-		
+
 		// now, find those that need to be marked before the next check
 		// foreach job, mark it as having been incremented
 		foreach ($runningJobs as $job) {
@@ -335,7 +335,7 @@ class QueuedJobService {
 	 *
 	 * Note that this is called each time a job is picked up to be executed from the cron
 	 * job - meaning that jobs that are paused and restarted will have 'setup()' called on them again,
-	 * so your job MUST detect that and act accordingly. 
+	 * so your job MUST detect that and act accordingly.
 	 *
 	 * @param QueuedJobDescriptor $jobDescriptor
 	 *			The Job descriptor of a job to prepare for execution
@@ -363,7 +363,7 @@ class QueuedJobService {
 		} else {
 			$job->prepareForRestart();
 		}
-		
+
 		// make sure the descriptor is up to date with anything changed
 		$this->copyJobToDescriptor($job, $jobDescriptor);
 		$jobDescriptor->write();
@@ -425,7 +425,7 @@ class QueuedJobService {
 		// we want it to actually execute as the RunAs user - however, if running via the web (which is rare...), we
 		// want to ensure that the current user has admin privileges before switching. Otherwise, we just run it
 		// as the currently logged in user and hope for the best
-		
+
 		// We need to use $_SESSION directly because SS ties the session to a controller that no longer exists at
 		// this point of execution in some circumstances
 		$originalUserID = isset($_SESSION['loggedInAs']) ? $_SESSION['loggedInAs'] : 0;
@@ -444,7 +444,7 @@ class QueuedJobService {
 				}
 
 				// this is an explicit coupling brought about by SS not having
-				// a nice way of mocking a user, as it requires session 
+				// a nice way of mocking a user, as it requires session
 				// nastiness
 				if (class_exists('SecurityContext')) {
 					singleton('SecurityContext')->setMember($runAsUser);
@@ -456,7 +456,7 @@ class QueuedJobService {
 		$errorHandler = new JobErrorHandler();
 
 		$job = null;
-		
+
 		$broken = false;
 
 		// Push a config context onto the stack for the duration of this job run.
@@ -602,7 +602,7 @@ class QueuedJobService {
 				Session::set("loggedInAs", $originalUser->ID);
 			}
 		}
-		
+
 		return !$broken;
 	}
 
@@ -721,7 +721,7 @@ class QueuedJobService {
 	 *			if we're after a particular job list
 	 * @param int $includeUpUntil
 	 *			The number of seconds to include jobs that have just finished, allowing a job list to be built that
-	 *			includes recently finished jobs 
+	 *			includes recently finished jobs
 	 */
 	public function getJobList($type = null, $includeUpUntil = 0) {
 		$jobs = DataObject::get('QueuedJobDescriptor', $this->getJobListFilter($type, $includeUpUntil));
@@ -755,7 +755,7 @@ class QueuedJobService {
 
 	/**
 	 * Process all jobs from a given queue
-	 * 
+	 *
 	 * @param string $name The job queue to completely process
 	 */
 	public function processJobQueue($name) {
@@ -765,7 +765,7 @@ class QueuedJobService {
 		// Begin main loop
 		do {
 			if (class_exists('Subsite')) {
-				// clear subsite back to default to prevent any subsite changes from leaking to 
+				// clear subsite back to default to prevent any subsite changes from leaking to
 				// subsequent actions
 				Subsite::changeSubsite(0);
 			}
@@ -783,7 +783,7 @@ class QueuedJobService {
 			if ($job) {
 				$success = $this->runJob($job->ID);
 				if (!$success) {
-					// make sure job is null so it doesn't continue the current 
+					// make sure job is null so it doesn't continue the current
 					// processing loop. Next queue executor can pick up where
 					// things left off
 					$job = null;
@@ -791,12 +791,12 @@ class QueuedJobService {
 			}
 		} while($job);
 	}
-	
+
 	/**
 	 * When PHP shuts down, we want to process all of the immediate queue items
-	 * 
+	 *
 	 * We use the 'getNextPendingJob' method, instead of just iterating the queue, to ensure
-	 * we ignore paused or stalled jobs. 
+	 * we ignore paused or stalled jobs.
 	 */
 	public function onShutdown() {
 		$this->processJobQueue(QueuedJob::IMMEDIATE);

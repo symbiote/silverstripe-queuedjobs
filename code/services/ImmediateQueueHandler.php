@@ -14,7 +14,7 @@ class ImmediateQueueHandler {
 	 * @var QueuedJobService
 	 */
 	public $queuedJobService;
-	
+
 	public function startJobOnQueue(QueuedJobDescriptor $job) {
 		$this->queuedJobService->runJob($job->ID);
 	}
