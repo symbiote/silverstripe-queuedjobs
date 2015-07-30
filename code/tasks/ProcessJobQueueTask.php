@@ -9,27 +9,6 @@
 class ProcessJobQueueTask extends BuildTask {
 
 	/**
-	 *
-	 * @var TaskRunnerEngine
-	 */
-	protected $taskRunner;
-
-	/**
-	 * @param TaskRunnerEngine $engine
-	 */
-	public function setTaskRunner($engine) {
-		$this->taskRunner = $engine;
-	}
-
-	/**
-	 *
-	 * @return TaskRunnerEngine
-	 */
-	public function getTaskRunner() {
-		return $this->taskRunner;
-	}
-
-	/**
 	 * @return string
 	 */
 	public function getDescription() {
@@ -50,21 +29,18 @@ class ProcessJobQueueTask extends BuildTask {
 		}
 
 		// Check if there is a job to run
+		$service = $this->getService();
 		if(($job = $request->getVar('job')) && strpos($job, '-')) {
 			// Run from a isngle job
 			$parts = explode('-', $job);
 			$id = $parts[1];
-			$this
-				->getTaskRunner()
-				->runJob($id);
+			$service->runJob($id);
 			return;
 		}
 
 		// Run the queue
 		$queue = $this->getQueue($request);
-		$this
-			->getTaskRunner()
-			->runQueue($queue);
+		$service->runQueue($queue);
 	}
 
 	/**
@@ -99,6 +75,15 @@ class ProcessJobQueueTask extends BuildTask {
 		}
 
 		return $queue;
+	}
+
+	/**
+	 * Returns an instance of the QueuedJobService.
+	 *
+	 * @return QueuedJobService
+	 */
+	public function getService() {
+		return singleton('QueuedJobService');
 	}
 
 }

@@ -10,7 +10,6 @@ class QueueRunner extends BaseRunner implements TaskRunnerEngine {
 	 */
 	public function runQueue($queue) {
 		$service = $this->getService();
-		$service->checkJobHealth();
 		
 		$nextJob = $service->getNextPendingJob($queue);
 		$this->logDescriptorStatus($nextJob, $queue);
@@ -18,11 +17,5 @@ class QueueRunner extends BaseRunner implements TaskRunnerEngine {
 		if($nextJob instanceof QueuedJobDescriptor) {
 			$service->processJobQueue($queue);
 		}
-	}
-
-	public function runJob($id) {
-		$this
-			->getService()
-			->runJob($id);
 	}
 }

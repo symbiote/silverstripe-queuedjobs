@@ -7,29 +7,13 @@
  */
 class BaseRunner {
 
-	private static $dependencies = array(
-		'Service' => '%$QueuedJobService'
-	);
-	
-	/**
-	 * @var QueuedJobService
-	 */
-	protected $service;
-
 	/**
 	 * Returns an instance of the QueuedJobService.
 	 *
 	 * @return QueuedJobService
 	 */
 	public function getService() {
-		return $this->service;
-	}
-
-	/**
-	 * @param QueuedJobService $service
-	 */
-	public function setService($service) {
-		$this->service = $service;
+		return singleton('QueuedJobService');
 	}
 
 	/**

@@ -7,16 +7,14 @@ Injector:
   QueuedJobService:
     properties: 
       queueHandler: %$QueueHandler
+      # Change to %$DoormanRunner for async processing (requires *nix)
+      queueRunner: %$QueueRunner
   DefaultRule:
     class: 'AsyncPHP\Doorman\Rule\InMemoryRule'
     properties:
       Processes: 1
       MinimumProcessorUsage: 0
       MaximumProcessorUsage: 100
-  ProcessJobQueueTask:
-    properties:
-      # Change to DoormanRunner for async processing
-      TaskRunner: %$QueueRunner
   DoormanRunner:
     properties:
       DefaultRules:

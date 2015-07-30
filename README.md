@@ -68,6 +68,9 @@ The following will run the publish job in 1 day's time from now.
 
 Doorman is included by default, and allows for asynchronous task processing.
 
+This requires that you are running an a *nix based system, or within some kind of environment
+emulator such as cygwin.
+
 In order to enable this, configure the ProcessJobQueueTask to use this backend.
 
 In your YML set the below:
@@ -79,9 +82,9 @@ Name: localproject
 After: '#queuedjobsettings'
 ---
 Injector:
-  ProcessJobQueueTask:
-    properties:
-      TaskRunner: %$DoormanRunner
+  QueuedJobService:
+    properties: 
+      queueRunner: %$DoormanRunner
 ```
 
 

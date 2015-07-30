@@ -35,10 +35,6 @@ class DoormanRunner extends BaseRunner implements TaskRunnerEngine {
 	 * @param string $queue
 	 */
 	public function runQueue($queue) {
-		// fix/prep any strange jobs!
-		$this
-			->getService()
-			->checkJobHealth();
 
 		// split jobs out into multiple tasks...
 
@@ -67,12 +63,6 @@ class DoormanRunner extends BaseRunner implements TaskRunnerEngine {
 
 			$descriptor = $this->getNextJobDescriptorWithoutMutex($queue);
 		}
-	}
-
-	public function runJob($id) {
-		$this
-			->getService()
-			->runJob($id);
 	}
 
 	/**

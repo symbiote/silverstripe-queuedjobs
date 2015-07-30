@@ -76,7 +76,12 @@ class QueuedJobService {
 	 * @var DefaultQueueHandler
 	 */
 	public $queueHandler;
-	
+
+	/**
+	 *
+	 * @var TaskRunnerEngine
+	 */
+	public $queuedRunner;
 
 	/**
 	 * Register our shutdown handler
@@ -754,6 +759,16 @@ class QueuedJobService {
 		}
 
 		return $filter;
+	}
+
+	/**
+	 * Process the job queue with the current queue runner
+	 *
+	 * @param string $queue
+	 */
+	public function runQueue($queue) {
+		$this->checkJobHealth();
+		$this->queueRunner->runQueue($queue);
 	}
 
 	/**
