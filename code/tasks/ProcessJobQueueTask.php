@@ -8,37 +8,58 @@
  */
 class ProcessJobQueueTask extends BuildTask {
 
+	/**
+	 * @return string
+	 */
 	public function getDescription() {
 		return _t(
 			'ProcessJobQueueTask.Description',
-			'Used via a cronjob to execute queued jobs that need running'
+			'Used via a cron job to execute queued jobs that need to be run.'
 		);
 	}
 
 	/**
-	 * Write in a format expected by the output medium (CLI/HTML).
-	 *
-	 * @param $line Line to be written out, without the newline character.
+	 * @param SS_HttpRequest $request
 	 */
-	private function writeLogLine($line) {
-		if (Director::is_cli()) {
-			echo "$line\n";
-		} else {
-			echo Convert::raw2xml($line) . "<br>";
+	public function run($request) {
+		if($request->getVar('list')) {
+			// List helper
+			$this->listJobs();
+			return;
 		}
+
+		// Check if there is a job to run
+		$service = $this->getService();
+		if(($job = $request->getVar('job')) && strpos($job, '-')) {
+			// Run from a isngle job
+			$parts = explode('-', $job);
+			$id = $parts[1];
+			$service->runJob($id);
+			return;
+		}
+
+		// Run the queue
+		$queue = $this->getQueue($request);
+		$service->runQueue($queue);
 	}
 
-	public function run($request) {
-		$service = singleton('QueuedJobService');
-		/* @var $service QueuedJobService */
-
-		$datestamp = '['.date('Y-m-d H:i:s').']';
+	/**
+	 * Resolves the queue name to one of a few aliases.
+	 *
+	 * @todo Solve the "Queued"/"queued" mystery!
+	 *
+	 * @param SS_HTTPRequest $request
+	 *
+	 * @return string
+	 */
+	protected function getQueue($request) {
 		$queue = $request->getVar('queue');
-		if (!$queue) {
+
+		if(!$queue) {
 			$queue = 'Queued';
 		}
 
-		switch (strtolower($queue)) {
+		switch(strtolower($queue)) {
 			case 'immediate': {
 				$queue = QueuedJob::IMMEDIATE;
 				break;
@@ -51,46 +72,18 @@ class ProcessJobQueueTask extends BuildTask {
 				$queue = QueuedJob::LARGE;
 				break;
 			}
-			default: {
-				// leave it as whatever this queue name is
-			}
 		}
 
-		$this->writeLogLine("$datestamp Processing queue $queue");
-
-		if ($request->getVar('list')) {
-			for ($i = 1; $i  <= 3; $i++) {
-				$jobs = $service->getJobList($i);
-				$num = $jobs ? $jobs->Count() : 0;
-				$this->writeLogLine("$datestamp Found $num jobs for mode $i");
-			}
-			return;
-		}
-
-		// Cleanup or restart jobs before processing
-		$service->checkJobHealth();
-		
-		/* @var $service QueuedJobService */
-		$nextJob = null;
-		
-		// see if we've got an explicit job ID, otherwise we'll just check the queue directly
-		if ($request->getVar('job') && strpos($request->getVar('job'), '-')) {
-			list($junk, $jobId) = split('-', $request->getVar('job'));
-			$nextJob = DataObject::get_by_id('QueuedJobDescriptor', $jobId);
-		} else {
-			$nextJob = $service->getNextPendingJob($queue);
-		}
-
-		if ($nextJob) {
-			$this->writeLogLine("$datestamp Running $nextJob->JobTitle and others from $queue.");
-			$service->processJobQueue($queue);
-		}
-
-		if (is_null($nextJob)) {
-			$this->writeLogLine("$datestamp No new jobs");
-		}
-		if ($nextJob === false) {
-			$this->writeLogLine("$datestamp Job is still running on $queue");
-		}
+		return $queue;
 	}
+
+	/**
+	 * Returns an instance of the QueuedJobService.
+	 *
+	 * @return QueuedJobService
+	 */
+	public function getService() {
+		return singleton('QueuedJobService');
+	}
+
 }
