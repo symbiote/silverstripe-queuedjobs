@@ -30,7 +30,7 @@ class QueuedJobsAdmin extends ModelAdmin {
 		$filter = $this->jobQueue->getJobListFilter(null, 300);
 
 		$list = DataList::create('QueuedJobDescriptor');
-		$list = $list->where($filter);
+		$list = $list->where($filter)->sort('Created', 'DESC');
 
 		$gridFieldConfig = GridFieldConfig_RecordEditor::create()
 			->addComponent(new GridFieldQueuedJobExecute('execute'))
