@@ -4,7 +4,7 @@
  * A set of utility functions used by the queued jobs module
  *
  * @license http://silverstripe.org/bsd-license
- * @author Marcus Nyeholt <marcus@silverstripe.com.au> 
+ * @author Marcus Nyeholt <marcus@silverstripe.com.au>
  */
 class QJUtils {
 	public function __construct() {}
