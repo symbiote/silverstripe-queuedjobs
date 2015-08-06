@@ -56,7 +56,7 @@ class QueuedJobDescriptor extends DataObject {
 		'ResumeCounts' => 0,
 		'LastProcessedCount' => -1 // -1 means never checked, 0 means checked and none were processed
 	);
-	
+
 	private static $indexes = array(
 		'JobStatus' => true,
 	);
@@ -64,19 +64,19 @@ class QueuedJobDescriptor extends DataObject {
 	private static $casting = array(
 		'Messages' => 'HTMLText'
 	);
-	
+
 	private static $searchable_fields = array(
 		'JobTitle',
 	);
 
 	private static $default_sort = 'Created DESC';
-	
+
 	public function requireDefaultRecords() {
 		parent::requireDefaultRecords();
 		$this->getJobDir();
 	}
-	
-	
+
+
 	public function summaryFields() {
 		$columns = array(
 			'JobTitle' => _t('QueuedJobs.TABLE_TITLE', 'Title'),
@@ -137,7 +137,7 @@ class QueuedJobDescriptor extends DataObject {
 
 	/**
 	 * Called to indicate that the job is ready to be run on the queue. This is done either as the result of
-	 * creating the job and adding it, or when resuming. 
+	 * creating the job and adding it, or when resuming.
 	 */
 	public function activateOnQueue() {
 		// if it's an immediate job, lets cache it to disk to be picked up later
@@ -165,7 +165,7 @@ class QueuedJobDescriptor extends DataObject {
 		}
 		return $jobDir;
 	}
-	
+
 	public function execute() {
 		$service = singleton('QueuedJobService');
 		$service->runJob($this->ID);
@@ -173,7 +173,7 @@ class QueuedJobDescriptor extends DataObject {
 
 	/**
 	 * Called when the job has completed and we want to cleanup anything the descriptor has lying around
-	 * in caches or the like. 
+	 * in caches or the like.
 	 */
 	public function cleanupJob() {
 		// remove the job's temp file if it exists

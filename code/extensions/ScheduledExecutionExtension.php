@@ -2,22 +2,22 @@
 
 /**
  * An extension that can be added to objects that automatically
- * adds scheduled execution capabilities to data objects. 
- * 
- * Developers who want to use these capabilities can set up 
+ * adds scheduled execution capabilities to data objects.
+ *
+ * Developers who want to use these capabilities can set up
  *
  * @author marcus@silverstripe.com.au
  * @license BSD License http://silverstripe.org/bsd-license/
  */
 class ScheduledExecutionExtension extends DataExtension {
-	
+
 	private static $db = array(
 		'FirstExecution'		=> 'SS_Datetime',
 		'ExecuteInterval'		=> 'Int',
 		'ExecuteEvery'			=> "Enum(',Minute,Hour,Day,Week,Fortnight,Month,Year')",
 		'ExecuteFree'			=> 'Varchar',
 	);
-	
+
 	private static $defaults = array(
 		'ExecuteInterval' => 1,
 	);
@@ -25,10 +25,10 @@ class ScheduledExecutionExtension extends DataExtension {
 	private static $has_one = array(
 		'ScheduledJob'			=> 'QueuedJobDescriptor',
 	);
-	
+
 	/**
 	 *
-	 * @param FieldSet $fields 
+	 * @param FieldSet $fields
 	 */
 	public function updateCMSFields(FieldList $fields) {
 		$fields->findOrMakeTab(
@@ -40,8 +40,8 @@ class ScheduledExecutionExtension extends DataExtension {
 			FieldGroup::create(
 				new NumericField('ExecuteInterval', ''),
 				new DropdownField(
-					'ExecuteEvery', 
-					'', 
+					'ExecuteEvery',
+					'',
 					array(
 						'' => '',
 						'Minute' => _t('ScheduledExecution.ExecuteEveryMinute', 'Minute'),
@@ -70,7 +70,7 @@ class ScheduledExecutionExtension extends DataExtension {
 
 	public function onBeforeWrite() {
 		parent::onBeforeWrite();
-		
+
 		if ($this->owner->FirstExecution) {
 			$changed = $this->owner->getChangedFields();
 			$changed = (
@@ -84,7 +84,7 @@ class ScheduledExecutionExtension extends DataExtension {
 				if ($this->owner->ScheduledJob()->exists()) {
 					$this->owner->ScheduledJob()->delete();
 				}
-				
+
 				$this->owner->ScheduledJobID = 0;
 			}
 
@@ -102,10 +102,10 @@ class ScheduledExecutionExtension extends DataExtension {
 
 
 	/**
-	 * Define your own version of this method in your data objects to be executed EVERY time 
-	 * the scheduled job triggers. 
+	 * Define your own version of this method in your data objects to be executed EVERY time
+	 * the scheduled job triggers.
 	 */
 	public function onScheduledExecution() {
-		
+
 	}
 }

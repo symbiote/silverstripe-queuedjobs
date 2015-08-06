@@ -34,9 +34,9 @@ class GenerateGoogleSitemapJob extends AbstractQueuedJob {
 
 	/**
 	 * Return a signature for this queued job
-	 * 
+	 *
 	 * For the generate sitemap job, we only ever want one instance running, so just use the class name
-	 * 
+	 *
 	 * @return String
 	 */
 	public function getSignature() {
@@ -65,7 +65,7 @@ class GenerateGoogleSitemapJob extends AbstractQueuedJob {
 	}
 
 	/**
-	 * On any restart, make sure to check that our temporary file is being created still. 
+	 * On any restart, make sure to check that our temporary file is being created still.
 	 */
 	public function prepareForRestart() {
 		parent::prepareForRestart();
@@ -84,7 +84,7 @@ class GenerateGoogleSitemapJob extends AbstractQueuedJob {
 		if (!$this->tempFile) {
 			throw new Exception("Temporary sitemap file has not been set");
 		}
-		
+
 		if (!file_exists($this->tempFile)) {
 			throw new Exception("Temporary file $this->tempFile has been deleted!");
 		}
@@ -98,7 +98,7 @@ class GenerateGoogleSitemapJob extends AbstractQueuedJob {
 			return;
 		}
 
-		
+
 		// lets process our first item - note that we take it off the list of things left to do
 		$ID = array_shift($remainingChildren);
 
@@ -171,7 +171,7 @@ class GenerateGoogleSitemapJob extends AbstractQueuedJob {
 		$content .= '</urlset>';
 
 		$sitemap = Director::baseFolder() .'/sitemap.xml';
-		
+
 		file_put_contents($sitemap, $content);
 
 		if (file_exists($this->tempFile)) {

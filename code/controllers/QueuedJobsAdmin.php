@@ -8,13 +8,13 @@ class QueuedJobsAdmin extends ModelAdmin {
     private static $url_segment = 'queuedjobs';
 	private static $menu_title = 'Jobs';
 	private static $menu_icon = "queuedjobs/images/clipboard.png";
-	
+
 	private static $managed_models = array('QueuedJobDescriptor');
 
 	private static $dependencies = array(
 		'jobQueue'			=> '%$QueuedJobService',
 	);
-	
+
 	private static $allowed_actions = array(
 		'EditForm'
 	);
@@ -23,7 +23,7 @@ class QueuedJobsAdmin extends ModelAdmin {
 	 * @var QueuedJobService
 	 */
 	public $jobQueue;
-	
+
 	public function getEditForm($id = null, $fields = null) {
 		$form = parent::getEditForm($id, $fields);
 
@@ -60,7 +60,7 @@ class QueuedJobsAdmin extends ModelAdmin {
 		);
 		$grid->setForm($form);
 		$form->Fields()->replaceField('QueuedJobDescriptor', $grid);
-		
+
 		if (Permission::check('ADMIN')) {
 			$types = ClassInfo::subclassesFor('AbstractQueuedJob');
 			$types = array_combine($types, $types);
@@ -71,30 +71,30 @@ class QueuedJobsAdmin extends ModelAdmin {
 
 			$jobParams = MultiValueTextField::create('JobParams', _t('QueuedJobs.JOB_TYPE_PARAMS', 'Constructor parameters for job creation'));
 			$form->Fields()->push($jobParams);
-			
+
 			$form->Fields()->push($dt = DatetimeField::create('JobStart', _t('QueuedJobs.START_JOB_TIME', 'Start job at')));
 			$dt->getDateField()->setConfig('showcalendar', true);
 
 			$actions = $form->Actions();
 			$actions->push(FormAction::create('createjob', _t('QueuedJobs.CREATE_NEW_JOB', 'Create new job')));
 		}
-		
+
 		return $form;
 	}
-	
+
 	public function Tools() {
 		return '';
 	}
-	
+
 	public function createjob($data, Form $form) {
 		if (Permission::check('ADMIN')) {
 			$jobType = isset($data['JobType']) ? $data['JobType'] : '';
 			$params = isset($data['JobParams']) ? $data['JobParams'] : array();
 			$time = isset($data['JobStart']) ? $data['JobStart'] : null;
-			
+
 			$js = $form->Fields()->dataFieldByName('JobStart');
 			$time = $js->Value();
-			
+
 			if ($jobType && class_exists($jobType)) {
 				$jobClass = new ReflectionClass($jobType);
 				$job = $jobClass->newInstanceArgs($params);

@@ -12,7 +12,7 @@ if (interface_exists('GearmanHandler')) {
 		 * @var QueuedJobService
 		 */
 		public $queuedJobService;
-		
+
 		public function getName() {
 			return 'jobqueueExecute';
 		}

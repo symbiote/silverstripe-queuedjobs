@@ -14,22 +14,22 @@
  * @subpackage forms
  */
 class GridFieldQueuedJobExecute implements GridField_ColumnProvider, GridField_ActionProvider {
-	
+
 	protected $action = 'execute';
-	
+
 	protected $icons = array(
 		'execute'		=> 'navigation',
 		'pause'			=> 'minus-circle_disabled',
 		'resume'		=> 'arrow-circle-double',
 	);
-	
+
 	/**
-	 * Call back to see if the record's action icon should be shown. 
+	 * Call back to see if the record's action icon should be shown.
 	 *
 	 * @var closure
 	 */
 	protected $viewCheck;
-	
+
 	public function __construct($action = 'execute', $check=null) {
 		$this->action = $action;
 		if (!$check) {
@@ -37,22 +37,22 @@ class GridFieldQueuedJobExecute implements GridField_ColumnProvider, GridField_A
 				return $record->JobStatus == QueuedJob::STATUS_WAIT || $record->JobStatus == QueuedJob::STATUS_NEW;
 			};
 		}
-		
+
 		$this->viewCheck = $check;
 	}
 
 	/**
 	 * Add a column 'Delete'
-	 * 
+	 *
 	 * @param type $gridField
-	 * @param array $columns 
+	 * @param array $columns
 	 */
 	public function augmentColumns($gridField, &$columns) {
 		if(!in_array('Actions', $columns)) {
 			$columns[] = 'Actions';
 		}
 	}
-	
+
 	/**
 	 * Return any special attributes that will be used for FormField::createTag()
 	 *
@@ -64,10 +64,10 @@ class GridFieldQueuedJobExecute implements GridField_ColumnProvider, GridField_A
 	public function getColumnAttributes($gridField, $record, $columnName) {
 		return array('class' => 'col-buttons');
 	}
-	
+
 	/**
-	 * Add the title 
-	 * 
+	 * Add the title
+	 *
 	 * @param GridField $gridField
 	 * @param string $columnName
 	 * @return array
@@ -77,37 +77,37 @@ class GridFieldQueuedJobExecute implements GridField_ColumnProvider, GridField_A
 			return array('title' => '');
 		}
 	}
-	
+
 	/**
 	 * Which columns are handled by this component
-	 * 
+	 *
 	 * @param type $gridField
-	 * @return type 
+	 * @return type
 	 */
 	public function getColumnsHandled($gridField) {
 		return array('Actions');
 	}
-	
+
 	/**
 	 * Which GridField actions are this component handling
 	 *
 	 * @param GridField $gridField
-	 * @return array 
+	 * @return array
 	 */
 	public function getActions($gridField) {
 		return array('execute', 'pause', 'resume');
 	}
-	
+
 	/**
 	 *
 	 * @param GridField $gridField
 	 * @param DataObject $record
 	 * @param string $columnName
-	 * @return string - the HTML for the column 
+	 * @return string - the HTML for the column
 	 */
 	public function getColumnContent($gridField, $record, $columnName) {
 		$icon = $this->icons[$this->action];
-		
+
 		if ($this->viewCheck) {
 			$func = $this->viewCheck;
 			if (!$func($record)) {
@@ -121,7 +121,7 @@ class GridFieldQueuedJobExecute implements GridField_ColumnProvider, GridField_A
 			->setAttribute('data-icon', $icon);
 		return $field->Field();
 	}
-	
+
 	/**
 	 * Handle the actions and apply any changes to the GridField
 	 *
