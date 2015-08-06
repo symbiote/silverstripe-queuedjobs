@@ -52,7 +52,7 @@ interface QueuedJob {
 	/**
 	 * Called whenever a job is restarted for whatever reason.
 	 *
-	 * This is a separate method so that broken jobs can do some fixup before restarting. 
+	 * This is a separate method so that broken jobs can do some fixup before restarting.
 	 */
 	public function prepareForRestart();
 
@@ -98,11 +98,11 @@ interface QueuedJob {
 	 */
 	public function setJobData($totalSteps, $currentStep, $isComplete, $jobData, $messages);
 
-	
+
 	/**
 	 * Add an arbitrary text message into a job
 	 *
-	 * @param String $message 
+	 * @param String $message
 	 */
 	public function addMessage($message);
 }

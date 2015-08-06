@@ -10,7 +10,7 @@ class DefaultQueueHandler {
 	public function startJobOnQueue(QueuedJobDescriptor $job) {
 		$job->activateOnQueue();
 	}
-	
+
 	public function scheduleJob(QueuedJobDescriptor $job, $date) {
 		// noop
 	}
