@@ -16,7 +16,7 @@ You can enable multi-process execution by selecting `doorman` as the engine:
 By default, this will allow a single child process to complete queued jobs. You can increase the number of processes allowed by changing the default rule:
 
 
-:::yaml
+	:::yaml
 	---
 	Name: myqueuedjobsconfig
 	---
