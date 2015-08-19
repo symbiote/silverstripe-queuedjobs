@@ -1,0 +1,33 @@
+de:
+  QueuedJobsAdmin:
+    MENUTITLE: Aufträge
+  DeleteObjectJob:
+    DELETE_JOB: 'Knoten löschen'
+    DELETE_OBJ2: '{title} löschen'
+  QueuedJobs:
+    JOB_PAUSED: 'Auftrag pausiert um %s'
+    JOB_TYPE: 'Auftragstyp'
+    JobsFieldTitle: Aufträge
+    TABLE_ADDE: Hinzugefügt
+    TABLE_MESSAGES: Nachricht
+    TABLE_NUM_PROCESSED: Fertig
+    TABLE_STARTED: Gestartet
+    TABLE_STATUS: Status
+    TABLE_TITLE: Titel
+    TABLE_TOTAL: Insgesamt
+    CREATE_NEW_JOB: 'Neuen Auftrag erstellen'
+    START_JOB_TIME: 'Auftrag starten um'
+  ScheduledExecution:
+    EXECUTE_EVERY: 'Alle ausführen'
+    ExecuteEveryDay: Tag
+    ExecuteEveryFortnight: Zwei Wochen
+    ExecuteEveryHour: Stunde
+    ExecuteEveryMinute: Minute
+    ExecuteEveryMonth: Monat
+    ExecuteEveryWeek: Woche
+    ExecuteEveryYear: Jahr
+    FIRST_EXECUTION: 'Erste Ausführung'
+    NEXT_RUN_DATE: 'Nächstes Ausführungsdatum'
+    ScheduleTabTitle: Planen
+  ScheduledExecutionJob:
+    Title: 'Geplante Ausführung für {title}'

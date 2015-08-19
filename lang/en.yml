@@ -1,6 +1,4 @@
 en:
-  QueuedJobsAdmin:
-    MENUTITLE: Jobs
   CreateQueuedJobTask:
     Description: 'A task used to create a queued job. Pass the queued job class name as the "name" parameter, pass an optional "start" parameter (parseable by strtotime) to set a start time for the job.'
   DeleteObjectJob:
@@ -9,21 +7,28 @@ en:
   GenerateSitemapJob:
     REGENERATE: 'Regenerate Google sitemap .xml file'
   ProcessJobQueueTask:
-    Description: 'Used via a cronjob to execute queued jobs that need running'
+    Description: 'Used via a cron job to execute queued jobs that need to be run.'
   PublishItemsJob:
     Title: 'Publish items beneath {title}'
   QueuedJobDescriptor:
     PLURALNAME: 'Queued Job Descriptors'
     SINGULARNAME: 'Queued Job Descriptor'
+  QueuedJobRule:
+    PLURALNAME: 'Queued Job Rules'
+    SINGULARNAME: 'Queued Job Rule'
   QueuedJobs:
+    CREATE_JOB_TYPE: 'Create job of type'
+    CREATE_NEW_JOB: 'Create new job'
     JOB_EXCEPT: 'Job caused exception %s in %s at line %s'
     JOB_PAUSED: 'Job paused at %s'
     JOB_STALLED: 'Job stalled after %s attempts - please check'
     JOB_TYPE: 'Job Type'
+    JOB_TYPE_PARAMS: 'Constructor parameters for job creation'
     JobsFieldTitle: Jobs
     MEMORY_RELEASE: 'Job releasing memory and waiting (%s used)'
     STALLED_JOB: 'Stalled job'
     STALLED_JOB_MSG: 'A job named %s appears to have stalled. It has been paused, please login to check it'
+    START_JOB_TIME: 'Start job at'
     TABLE_ADDE: Added
     TABLE_MESSAGES: Message
     TABLE_NUM_PROCESSED: Done
@@ -32,11 +37,9 @@ en:
     TABLE_STATUS: Status
     TABLE_TITLE: Title
     TABLE_TOTAL: Total
-    CREATE_JOB_TYPE: 'Create job of type'
-    CREATE_NEW_JOB: 'Create new job'
-    JOB_TYPE_PARAMS: 'Constructor parameters for job creation'
-    START_JOB_TIME: 'Start job at'
     TIME_LIMIT: 'Queue has passed time limit and will restart before continuing'
+  QueuedJobsAdmin:
+    MENUTITLE: Jobs
   ScheduledExecution:
     EXECUTE_EVERY: 'Execute every'
     EXECUTE_FREE: 'Scheduled (in strtotime format from first execution)'
