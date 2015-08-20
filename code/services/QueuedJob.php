@@ -87,7 +87,7 @@ interface QueuedJob {
 	 *		'messages' => a cumulative array of messages that have occurred during this job so far
 	 * )
 	 */
-    public function getJobData();
+	public function getJobData();
 
 	/**
 	 * Sets data about the job
