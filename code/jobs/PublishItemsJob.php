@@ -22,6 +22,11 @@ class PublishItemsJob extends AbstractQueuedJob implements QueuedJob {
 		return DataObject::get_by_id('Page', $this->rootID);
 	}
 
+	/**
+	 * Defines the title of the job
+	 *
+	 * @return string
+	 */
 	public function getTitle() {
 		return _t(
 			'PublishItemsJob.Title',
