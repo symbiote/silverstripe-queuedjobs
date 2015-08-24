@@ -29,10 +29,10 @@ class CreateQueuedJobTask extends BuildTask {
 			$job = new DummyQueuedJob(mt_rand(10, 100));
 		}
 
-        if (isset($request['start'])){
+        if (isset($request['start'])) {
             $start = strtotime($request['start']);
             $now = time();
-            if ($start >= $now){
+            if ($start >= $now) {
                 $friendlyStart = date('Y-m-d H:i:s', $start);
                 echo "Job ".$request['name']. " queued to start at: <b>".$friendlyStart."</b>";
                 singleton('QueuedJobService')->queueJob($job, $start);

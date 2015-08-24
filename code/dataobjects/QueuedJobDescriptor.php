@@ -195,7 +195,7 @@ class QueuedJobDescriptor extends DataObject {
 		}
 	}
 
-	public function getTitle(){
+	public function getTitle() {
 		return $this->JobTitle;
 	}
 
