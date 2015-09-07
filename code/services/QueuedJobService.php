@@ -101,7 +101,7 @@ class QueuedJobService {
 		}
 	}
 
-    /**
+	/**
 	 * Adds a job to the queue to be started
 	 *
 	 * Relevant data about the job will be persisted using a QueuedJobDescriptor

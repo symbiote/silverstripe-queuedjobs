@@ -5,7 +5,7 @@
  * @license BSD http://silverstripe.org/bsd-license/
  */
 class QueuedJobsAdmin extends ModelAdmin {
-    private static $url_segment = 'queuedjobs';
+	private static $url_segment = 'queuedjobs';
 	private static $menu_title = 'Jobs';
 	private static $menu_icon = "queuedjobs/images/clipboard.png";
 
