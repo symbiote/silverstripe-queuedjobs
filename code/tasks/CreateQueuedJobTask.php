@@ -21,7 +21,7 @@ class CreateQueuedJobTask extends BuildTask {
 		);
 	}
 
-    public function run($request) {
+	public function run($request) {
 		if (isset($request['name']) && ClassInfo::exists($request['name'])) {
 			$clz = $request['name'];
 			$job = new $clz;
@@ -29,20 +29,20 @@ class CreateQueuedJobTask extends BuildTask {
 			$job = new DummyQueuedJob(mt_rand(10, 100));
 		}
 
-        if (isset($request['start'])) {
-            $start = strtotime($request['start']);
-            $now = time();
-            if ($start >= $now) {
-                $friendlyStart = date('Y-m-d H:i:s', $start);
-                echo "Job ".$request['name']. " queued to start at: <b>".$friendlyStart."</b>";
-                singleton('QueuedJobService')->queueJob($job, $start);
-            } else {
-                echo "'start' parameter must be a date/time in the future, parseable with strtotime";
-            }
-        } else {
-            echo "Job Queued";
-            singleton('QueuedJobService')->queueJob($job);
-        }
+		if (isset($request['start'])) {
+			$start = strtotime($request['start']);
+			$now = time();
+			if ($start >= $now) {
+				$friendlyStart = date('Y-m-d H:i:s', $start);
+				echo "Job ".$request['name']. " queued to start at: <b>".$friendlyStart."</b>";
+				singleton('QueuedJobService')->queueJob($job, $start);
+			} else {
+				echo "'start' parameter must be a date/time in the future, parseable with strtotime";
+			}
+		} else {
+			echo "Job Queued";
+			singleton('QueuedJobService')->queueJob($job);
+		}
 
 	}
 }

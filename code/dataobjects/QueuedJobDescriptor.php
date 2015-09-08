@@ -29,7 +29,7 @@
  * @license BSD http://silverstripe.org/bsd-license/
  */
 class QueuedJobDescriptor extends DataObject {
-    private static $db = array(
+	private static $db = array(
 		'JobTitle' => 'Varchar(255)',
 		'Signature' => 'Varchar(64)',
 		'Implementation' => 'Varchar(64)',

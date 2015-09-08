@@ -10,7 +10,7 @@
  */
 class PublishItemsTask extends BuildTask
 {
-    public function run($request) {
+	public function run($request) {
 		$root = $request->getVar('parent');
 		if (!$root) {
 			throw new Exception("Sorry, you must provide a parent node to publish from");
