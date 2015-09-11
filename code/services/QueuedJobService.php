@@ -366,7 +366,7 @@ class QueuedJobService {
 		$this->copyDescriptorToJob($jobDescriptor, $job);
 
 		// see if it needs 'setup' or 'restart' called
-		if (!$jobDescriptor->StepsProcessed) {
+		if ($jobDescriptor->StepsProcessed <= 0) {
 			$job->setup();
 		} else {
 			$job->prepareForRestart();

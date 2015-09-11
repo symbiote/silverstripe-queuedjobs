@@ -144,9 +144,15 @@ set the notification email address in your config as below:
 	Email:
 	  queued_job_admin_email: support@mycompany.com
 
+**Long running jobs are running multiple times!**
+
+A long running job _may_ fool the system into thinking it has gone away (ie the job health check fails because 
+`currentStep` hasn't been incremented). To avoid this scenario, you can set `$this->currentStep = -1` in your job's
+constructor, to prevent any health checks detecting the job. 
+
 ## Performance configuration
 
-By default this task will run until either 128mb or the limit specified by php_ini('memory_limit') is reached.
+By default this task will run until either 128mb or the limit specified by php\_ini('memory\_limit') is reached.
 
 You can adjust this with the below config change
 
