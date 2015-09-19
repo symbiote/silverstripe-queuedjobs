@@ -8,7 +8,6 @@
  * When the queues are scanned, a job is reloaded and processed. Ignoring the persistence and reloading, it looks
  * something like
  *
-
  * job->getJobType();
  * job->getJobData();
  * data->write();
