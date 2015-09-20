@@ -748,7 +748,7 @@ class QueuedJobService {
 	 * @param int $includeUpUntil
 	 *			The number of seconds to include jobs that have just finished, allowing a job list to be built that
 	 *			includes recently finished jobs
-	 * @return String
+	 * @return string
 	 */
 	public function getJobListFilter($type = null, $includeUpUntil = 0) {
 		$filter = array('JobStatus <>' => QueuedJob::STATUS_COMPLETE);

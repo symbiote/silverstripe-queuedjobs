@@ -37,7 +37,7 @@ class GenerateGoogleSitemapJob extends AbstractQueuedJob {
 	 *
 	 * For the generate sitemap job, we only ever want one instance running, so just use the class name
 	 *
-	 * @return String
+	 * @return string
 	 */
 	public function getSignature() {
 		return md5(get_class($this));
