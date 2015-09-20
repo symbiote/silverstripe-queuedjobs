@@ -111,6 +111,9 @@ abstract class AbstractQueuedJob implements QueuedJob {
 
 	}
 
+	/**
+	 * @return stdClass
+	 */
 	public function getJobData() {
 		// okay, we NEED to store the subsite ID if there's one available
 		if (!$this->SubsiteID && class_exists('Subsite')) {
@@ -127,14 +130,19 @@ abstract class AbstractQueuedJob implements QueuedJob {
 		return $data;
 	}
 
+	/**
+	 * @param int $totalSteps
+	 * @param int $currentStep
+	 * @param boolean $isComplete
+	 * @param stdClass $jobData
+	 * @param array $messages
+	 */
 	public function setJobData($totalSteps, $currentStep, $isComplete, $jobData, $messages) {
 		$this->totalSteps = $totalSteps;
 		$this->currentStep = $currentStep;
 		$this->isComplete = $isComplete;
 		$this->jobData = $jobData;
 		$this->messages = $messages;
-
-
 	}
 
 	/**
@@ -170,7 +178,11 @@ abstract class AbstractQueuedJob implements QueuedJob {
 		}
 	}
 
-	public function addMessage($message, $severity='INFO') {
+	/**
+	 * @param string $message
+	 * @param string $severity
+	 */
+	public function addMessage($message, $severity = 'INFO') {
 		$severity = strtoupper($severity);
 		$this->messages[] = '[' . date('Y-m-d H:i:s') . "][$severity] $message";
 	}

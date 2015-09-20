@@ -9,12 +9,21 @@ class QueuedJobsAdmin extends ModelAdmin {
 	private static $menu_title = 'Jobs';
 	private static $menu_icon = "queuedjobs/images/clipboard.png";
 
+	/**
+	 * @var array
+	 */
 	private static $managed_models = array('QueuedJobDescriptor');
 
+	/**
+	 * @var array
+	 */
 	private static $dependencies = array(
-		'jobQueue'			=> '%$QueuedJobService',
+		'jobQueue' => '%$QueuedJobService',
 	);
 
+	/**
+	 * @var array
+	 */
 	private static $allowed_actions = array(
 		'EditForm'
 	);
@@ -24,6 +33,11 @@ class QueuedJobsAdmin extends ModelAdmin {
 	 */
 	public $jobQueue;
 
+	/**
+	 * @param  int $id
+	 * @param  FieldList $fields
+	 * @return Form
+	 */
 	public function getEditForm($id = null, $fields = null) {
 		$form = parent::getEditForm($id, $fields);
 
@@ -54,7 +68,7 @@ class QueuedJobsAdmin extends ModelAdmin {
 		// Replace gridfield
 		$grid = new GridField(
 			'QueuedJobDescriptor',
-			_t('QueuedJobs.JobsFieldTitle','Jobs'),
+			_t('QueuedJobs.JobsFieldTitle', 'Jobs'),
 			$list,
 			$gridFieldConfig
 		);
@@ -69,10 +83,15 @@ class QueuedJobsAdmin extends ModelAdmin {
 			$jobType->setEmptyString('(select job to create)');
 			$form->Fields()->push($jobType);
 
-			$jobParams = MultiValueTextField::create('JobParams', _t('QueuedJobs.JOB_TYPE_PARAMS', 'Constructor parameters for job creation'));
+			$jobParams = MultiValueTextField::create(
+				'JobParams',
+				_t('QueuedJobs.JOB_TYPE_PARAMS', 'Constructor parameters for job creation')
+			);
 			$form->Fields()->push($jobParams);
 
-			$form->Fields()->push($dt = DatetimeField::create('JobStart', _t('QueuedJobs.START_JOB_TIME', 'Start job at')));
+			$form->Fields()->push(
+				$dt = DatetimeField::create('JobStart', _t('QueuedJobs.START_JOB_TIME', 'Start job at'))
+			);
 			$dt->getDateField()->setConfig('showcalendar', true);
 
 			$actions = $form->Actions();
@@ -86,6 +105,10 @@ class QueuedJobsAdmin extends ModelAdmin {
 		return '';
 	}
 
+	/**
+	 * @param  array $data
+	 * @param  Form   $form
+	 */
 	public function createjob($data, Form $form) {
 		if (Permission::check('ADMIN')) {
 			$jobType = isset($data['JobType']) ? $data['JobType'] : '';

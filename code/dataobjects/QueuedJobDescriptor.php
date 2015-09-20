@@ -77,8 +77,11 @@ class QueuedJobDescriptor extends DataObject {
 	}
 
 
+	/**
+	 * @return array
+	 */
 	public function summaryFields() {
-		$columns = array(
+		return array(
 			'JobTitle' => _t('QueuedJobs.TABLE_TITLE', 'Title'),
 			'Created' => _t('QueuedJobs.TABLE_ADDE', 'Added'),
 			'JobStarted' => _t('QueuedJobs.TABLE_STARTED', 'Started'),
@@ -90,7 +93,6 @@ class QueuedJobDescriptor extends DataObject {
 			'StepsProcessed' => _t('QueuedJobs.TABLE_NUM_PROCESSED', 'Done'),
 			'TotalSteps' => _t('QueuedJobs.TABLE_TOTAL', 'Total'),
 		);
-		return $columns;
 	}
 
 	/**
@@ -144,7 +146,7 @@ class QueuedJobDescriptor extends DataObject {
 		if ($this->JobType == QueuedJob::IMMEDIATE
 			&& !Config::inst()->get('QueuedJobService', 'use_shutdown_function')
 		) {
-			touch($this->getJobDir() . '/' . 'queuedjob-' . $this->ID);
+			touch($this->getJobDir() . '/queuedjob-' . $this->ID);
 		}
 	}
 
@@ -177,7 +179,7 @@ class QueuedJobDescriptor extends DataObject {
 	 */
 	public function cleanupJob() {
 		// remove the job's temp file if it exists
-		$tmpFile = $this->getJobDir() . '/' . 'queuedjob-' . $this->ID;
+		$tmpFile = $this->getJobDir() . '/queuedjob-' . $this->ID;
 		if (file_exists($tmpFile)) {
 			unlink($tmpFile);
 		}
@@ -188,6 +190,9 @@ class QueuedJobDescriptor extends DataObject {
 		$this->cleanupJob();
 	}
 
+	/**
+	 * @return string
+	 */
 	public function getMessages() {
 		if (strlen($this->SavedJobMessages)) {
 			$msgs = @unserialize($this->SavedJobMessages);
@@ -195,6 +200,9 @@ class QueuedJobDescriptor extends DataObject {
 		}
 	}
 
+	/**
+	 * @return string
+	 */
 	public function getTitle() {
 		return $this->JobTitle;
 	}
@@ -223,7 +231,6 @@ class QueuedJobDescriptor extends DataObject {
 			'JobStatus',
 			new DropdownField('JobStatus', $this->fieldLabel('JobStatus'), array_combine($statuses, $statuses))
 		);
-
 
 		if (Permission::check('ADMIN')) {
 			return $fields;
