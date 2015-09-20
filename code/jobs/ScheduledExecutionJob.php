@@ -11,7 +11,7 @@
 class ScheduledExecutionJob extends AbstractQueuedJob {
 	/**
 	 * @param DataObject $dataObject
-	 * @param integer $timesExecuted
+	 * @param int $timesExecuted
 	 */
 	public function __construct($dataObject = null, $timesExecuted = 0) {
 		if ($dataObject) {
