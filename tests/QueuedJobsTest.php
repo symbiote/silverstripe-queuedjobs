@@ -361,7 +361,7 @@ class TestQJService extends QueuedJobService {
 class TestQueuedJob extends AbstractQueuedJob implements QueuedJob {
 	private $type = QueuedJob::QUEUED;
 
-	public function __construct($type=null) {
+	public function __construct($type = null) {
 		if ($type) {
 			$this->type = $type;
 		}

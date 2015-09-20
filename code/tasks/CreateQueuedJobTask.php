@@ -1,7 +1,6 @@
 <?php
 
 /**
- *
  * A task that can be used to create a queued job.
  *
  * Useful to hook a queued job in to place that needs to exist if it doesn't already.
@@ -13,7 +12,9 @@
  * @license BSD http://silverstripe.org/bsd-license/
  */
 class CreateQueuedJobTask extends BuildTask {
-
+	/**
+	 * @return string
+	 */
 	public function getDescription() {
 		return _t(
 			'CreateQueuedJobTask.Description',
@@ -21,6 +22,9 @@ class CreateQueuedJobTask extends BuildTask {
 		);
 	}
 
+	/**
+	 * @param SS_HTTPRequest $request
+	 */
 	public function run($request) {
 		if (isset($request['name']) && ClassInfo::exists($request['name'])) {
 			$clz = $request['name'];

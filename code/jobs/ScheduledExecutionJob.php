@@ -9,7 +9,10 @@
  * @license BSD License http://silverstripe.org/bsd-license/
  */
 class ScheduledExecutionJob extends AbstractQueuedJob {
-
+	/**
+	 * @param DataObject $dataObject
+	 * @param int $timesExecuted
+	 */
 	public function __construct($dataObject = null, $timesExecuted = 0) {
 		if ($dataObject) {
 			$this->objectID = $dataObject->ID;
@@ -21,10 +24,16 @@ class ScheduledExecutionJob extends AbstractQueuedJob {
 		}
 	}
 
+	/**
+	 * @return DataObject
+	 */
 	public function getDataObject() {
 		return DataObject::get_by_id($this->objectType, $this->objectID);
 	}
 
+	/**
+	 * @return string
+	 */
 	public function getTitle() {
 		return _t(
 			'ScheduledExecutionJob.Title',
@@ -57,11 +66,13 @@ class ScheduledExecutionJob extends AbstractQueuedJob {
 			if ($next > time()) {
 				// in the future
 				$nextGen = date('Y-m-d H:i:s', $next);
-				$nextId = singleton('QueuedJobService')->queueJob(new ScheduledExecutionJob($object, $this->timesExecuted + 1), $nextGen);
+				$nextId = singleton('QueuedJobService')->queueJob(
+					new ScheduledExecutionJob($object, $this->timesExecuted + 1),
+					$nextGen
+				);
 				$object->ScheduledJobID = $nextId;
 				$object->write();
 			}
-
 		}
 
 		$this->currentStep++;

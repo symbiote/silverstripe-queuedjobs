@@ -17,6 +17,9 @@ class GridFieldQueuedJobExecute implements GridField_ColumnProvider, GridField_A
 
 	protected $action = 'execute';
 
+	/**
+	 * @var array
+	 */
 	protected $icons = array(
 		'execute'		=> 'navigation',
 		'pause'			=> 'minus-circle_disabled',
@@ -30,7 +33,7 @@ class GridFieldQueuedJobExecute implements GridField_ColumnProvider, GridField_A
 	 */
 	protected $viewCheck;
 
-	public function __construct($action = 'execute', $check=null) {
+	public function __construct($action = 'execute', $check = null) {
 		$this->action = $action;
 		if (!$check) {
 			$check = function ($record) {
@@ -99,7 +102,6 @@ class GridFieldQueuedJobExecute implements GridField_ColumnProvider, GridField_A
 	}
 
 	/**
-	 *
 	 * @param GridField $gridField
 	 * @param DataObject $record
 	 * @param string $columnName
@@ -115,8 +117,14 @@ class GridFieldQueuedJobExecute implements GridField_ColumnProvider, GridField_A
 			}
 		}
 
-		$field = GridField_FormAction::create($gridField,  'ExecuteJob'.$record->ID, false, $this->action, array('RecordID' => $record->ID))
-			->addExtraClass('gridfield-button-job' . $this->action)
+		$field = GridField_FormAction::create(
+			$gridField,
+			'ExecuteJob' . $record->ID,
+			false,
+			$this->action,
+			array('RecordID' => $record->ID)
+		);
+		$field->addExtraClass('gridfield-button-job' . $this->action)
 			->setAttribute('title', ucfirst($this->action))
 			->setAttribute('data-icon', $icon);
 		return $field->Field();
