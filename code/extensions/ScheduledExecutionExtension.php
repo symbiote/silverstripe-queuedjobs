@@ -10,24 +10,31 @@
  * @license BSD License http://silverstripe.org/bsd-license/
  */
 class ScheduledExecutionExtension extends DataExtension {
-
+	/**
+	 * @var array
+	 */
 	private static $db = array(
-		'FirstExecution'		=> 'SS_Datetime',
-		'ExecuteInterval'		=> 'Int',
-		'ExecuteEvery'			=> "Enum(',Minute,Hour,Day,Week,Fortnight,Month,Year')",
-		'ExecuteFree'			=> 'Varchar',
+		'FirstExecution' => 'SS_Datetime',
+		'ExecuteInterval' => 'Int',
+		'ExecuteEvery' => "Enum(',Minute,Hour,Day,Week,Fortnight,Month,Year')",
+		'ExecuteFree' => 'Varchar',
 	);
 
+	/**
+	 * @var array
+	 */
 	private static $defaults = array(
 		'ExecuteInterval' => 1,
 	);
 
+	/**
+	 * @var array
+	 */
 	private static $has_one = array(
-		'ScheduledJob'			=> 'QueuedJobDescriptor',
+		'ScheduledJob' => 'QueuedJobDescriptor',
 	);
 
 	/**
-	 *
 	 * @param FieldSet $fields
 	 */
 	public function updateCMSFields(FieldList $fields) {
@@ -54,7 +61,10 @@ class ScheduledExecutionExtension extends DataExtension {
 					)
 				)
 			)->setTitle(_t('ScheduledExecution.EXECUTE_EVERY', 'Execute every')),
-			new TextField('ExecuteFree', _t('ScheduledExecution.EXECUTE_FREE','Scheduled (in strtotime format from first execution)'))
+			new TextField(
+				'ExecuteFree',
+				_t('ScheduledExecution.EXECUTE_FREE', 'Scheduled (in strtotime format from first execution)')
+			)
 		));
 
 		if ($this->owner->ScheduledJobID) {

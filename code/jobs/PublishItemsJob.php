@@ -42,10 +42,8 @@ class PublishItemsJob extends AbstractQueuedJob implements QueuedJob {
 	 * We want to make sure we also set how many steps we think we might need to take to
 	 * process everything - note that this does not need to be 100% accurate, but it's nice
 	 * to give a reasonable approximation
-	 *
 	 */
 	public function getJobType() {
-
 		$this->totalSteps = 'Lots';
 		return QueuedJob::QUEUED;
 	}
@@ -61,7 +59,6 @@ class PublishItemsJob extends AbstractQueuedJob implements QueuedJob {
 	 * we never overload it with content
 	 */
 	public function setup() {
-
 		if (!$this->getRoot()) {
 			// we're missing for some reason!
 			$this->isComplete = true;
@@ -122,5 +119,4 @@ class PublishItemsJob extends AbstractQueuedJob implements QueuedJob {
 			return;
 		}
 	}
-
 }

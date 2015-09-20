@@ -208,7 +208,13 @@ class QueuedJobService {
 			}
 		}
 
-		$job->setJobData($jobDescriptor->TotalSteps, $jobDescriptor->StepsProcessed, $jobDescriptor->JobStatus == QueuedJob::STATUS_COMPLETE, $jobData, $messages);
+		$job->setJobData(
+			$jobDescriptor->TotalSteps,
+			$jobDescriptor->StepsProcessed,
+			$jobDescriptor->JobStatus == QueuedJob::STATUS_COMPLETE,
+			$jobData,
+			$messages
+		);
 	}
 
 	/**
@@ -218,7 +224,7 @@ class QueuedJobService {
 	 * @param string $type Job type
 	 * @return QueuedJobDescriptor
 	 */
-	public function getNextPendingJob($type=null) {
+	public function getNextPendingJob($type = null) {
 		// Filter jobs by type
 		$type = $type ?: QueuedJob::QUEUED;
 		$list = QueuedJobDescriptor::get()
@@ -731,8 +737,7 @@ class QueuedJobService {
 	 *			includes recently finished jobs
 	 */
 	public function getJobList($type = null, $includeUpUntil = 0) {
-		$jobs = DataObject::get('QueuedJobDescriptor', $this->getJobListFilter($type, $includeUpUntil));
-		return $jobs;
+		return DataObject::get('QueuedJobDescriptor', $this->getJobListFilter($type, $includeUpUntil));
 	}
 
 	/**

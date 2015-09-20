@@ -45,7 +45,6 @@ interface QueuedJob {
 	/**
 	 * Setup this queued job. This is only called the first time this job is executed
 	 * (ie when currentStep is 0)
-	 *
 	 */
 	public function setup();
 
@@ -58,7 +57,9 @@ interface QueuedJob {
 
 	/**
 	 * What type of job is this? Options are
-	 *
+	 * - QueuedJob::IMMEDIATE
+	 * - QueuedJob::QUEUED
+	 * - QueuedJob::LARGE
 	 */
 	public function getJobType();
 
