@@ -110,7 +110,6 @@ class ScheduledExecutionExtension extends DataExtension {
 		}
 	}
 
-
 	/**
 	 * Define your own version of this method in your data objects to be executed EVERY time
 	 * the scheduled job triggers.

@@ -42,6 +42,8 @@ class PublishItemsJob extends AbstractQueuedJob implements QueuedJob {
 	 * We want to make sure we also set how many steps we think we might need to take to
 	 * process everything - note that this does not need to be 100% accurate, but it's nice
 	 * to give a reasonable approximation
+	 *
+	 * @return int
 	 */
 	public function getJobType() {
 		$this->totalSteps = 'Lots';
@@ -85,7 +87,6 @@ class PublishItemsJob extends AbstractQueuedJob implements QueuedJob {
 			$this->isComplete = true;
 			return;
 		}
-
 
 		// we need to always increment! This is important, because if we don't then our container
 		// that executes around us thinks that the job has died, and will stop it running.

@@ -50,8 +50,7 @@ class DoormanQueuedJobTask implements Task, Expires, Process, Cancellable {
 	/**
 	 * @return QueuedJobDescriptor
 	 */
-	public function getDescriptor()
-	{
+	public function getDescriptor() {
 		return $this->descriptor;
 	}
 
@@ -75,6 +74,9 @@ class DoormanQueuedJobTask implements Task, Expires, Process, Cancellable {
 
 	/**
 	 * @inheritdoc
+	 *
+	 * @throws InvalidArgumentException
+	 * @param string
 	 */
 	public function unserialize($serialized) {
 		$data = unserialize($serialized);
@@ -149,7 +151,6 @@ class DoormanQueuedJobTask implements Task, Expires, Process, Cancellable {
 	 * @inheritdoc
 	 *
 	 * @param int $startedAt
-	 *
 	 * @return bool
 	 */
 	public function shouldExpire($startedAt) {
@@ -186,5 +187,4 @@ class DoormanQueuedJobTask implements Task, Expires, Process, Cancellable {
 		$this->refreshDescriptor();
 		return $this->descriptor->JobStatus === QueuedJob::STATUS_CANCELLED;
 	}
-
 }

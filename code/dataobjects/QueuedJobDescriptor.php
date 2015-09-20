@@ -29,6 +29,9 @@
  * @license BSD http://silverstripe.org/bsd-license/
  */
 class QueuedJobDescriptor extends DataObject {
+	/**
+	 * @var array
+	 */
 	private static $db = array(
 		'JobTitle' => 'Varchar(255)',
 		'Signature' => 'Varchar(64)',
@@ -47,35 +50,52 @@ class QueuedJobDescriptor extends DataObject {
 		'JobType' => 'Varchar(16)',
 	);
 
+	/**
+	 * @var array
+	 */
 	private static $has_one = array(
 		'RunAs' => 'Member',
 	);
 
+	/**
+	 * @var array
+	 */
 	private static $defaults = array(
 		'JobStatus' => 'New',
 		'ResumeCounts' => 0,
 		'LastProcessedCount' => -1 // -1 means never checked, 0 means checked and none were processed
 	);
 
+	/**
+	 * @var array
+	 */
 	private static $indexes = array(
 		'JobStatus' => true,
 	);
 
+	/**
+	 * @var array
+	 */
 	private static $casting = array(
 		'Messages' => 'HTMLText'
 	);
 
+	/**
+	 * @var array
+	 */
 	private static $searchable_fields = array(
 		'JobTitle',
 	);
 
+	/**
+	 * @var string
+	 */
 	private static $default_sort = 'Created DESC';
 
 	public function requireDefaultRecords() {
 		parent::requireDefaultRecords();
 		$this->getJobDir();
 	}
-
 
 	/**
 	 * @return array

@@ -106,8 +106,8 @@ class QueuedJobsAdmin extends ModelAdmin {
 	}
 
 	/**
-	 * @param  array $data
-	 * @param  Form   $form
+	 * @param array $data
+	 * @param Form $form
 	 */
 	public function createjob($data, Form $form) {
 		if (Permission::check('ADMIN')) {

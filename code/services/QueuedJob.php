@@ -95,10 +95,15 @@ interface QueuedJob {
 	 *
 	 * is an inverse of the getJobData() method, but being explicit about what data is set
 	 *
+	 * @param int $totalSteps
+	 * @param int $currentStep
+	 * @param boolean $isComplete
+	 * @param stdClass $jobData
+	 * @param array $messages
+	 *
 	 * @see QueuedJob::getJobData();
 	 */
 	public function setJobData($totalSteps, $currentStep, $isComplete, $jobData, $messages);
-
 
 	/**
 	 * Add an arbitrary text message into a job

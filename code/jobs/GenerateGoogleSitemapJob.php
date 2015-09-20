@@ -20,6 +20,8 @@ class GenerateGoogleSitemapJob extends AbstractQueuedJob {
 
 	/**
 	 * Sitemap job is going to run for a while...
+	 *
+	 * @return int
 	 */
 	public function getJobType() {
 		return QueuedJob::QUEUED;
@@ -98,7 +100,6 @@ class GenerateGoogleSitemapJob extends AbstractQueuedJob {
 			return;
 		}
 
-
 		// lets process our first item - note that we take it off the list of things left to do
 		$ID = array_shift($remainingChildren);
 
@@ -124,17 +125,17 @@ class GenerateGoogleSitemapJob extends AbstractQueuedJob {
 				$period = $timediff / ($versions + 1);
 
 				if($period > 60*60*24*365) { // > 1 year
-					$page->ChangeFreq='yearly';
+					$page->ChangeFreq = 'yearly';
 				} elseif($period > 60*60*24*30) { // > ~1 month
-					$page->ChangeFreq='monthly';
+					$page->ChangeFreq = 'monthly';
 				} elseif($period > 60*60*24*7) { // > 1 week
-					$page->ChangeFreq='weekly';
+					$page->ChangeFreq = 'weekly';
 				} elseif($period > 60*60*24) { // > 1 day
-					$page->ChangeFreq='daily';
+					$page->ChangeFreq = 'daily';
 				} elseif($period > 60*60) { // > 1 hour
-					$page->ChangeFreq='hourly';
+					$page->ChangeFreq = 'hourly';
 				} else { // < 1 hour
-					$page->ChangeFreq='always';
+					$page->ChangeFreq = 'always';
 				}
 
 				// do the generation of the file in a temporary location
@@ -164,8 +165,7 @@ class GenerateGoogleSitemapJob extends AbstractQueuedJob {
 	 * Outputs the completed file to the site's webroot
 	 */
 	protected function completeJob() {
-
-		$content = '<?xml version="1.0" encoding="UTF-8"?>'.
+		$content = '<?xml version="1.0" encoding="UTF-8"?>' .
 					'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
 		$content .= file_get_contents($this->tempFile);
 		$content .= '</urlset>';

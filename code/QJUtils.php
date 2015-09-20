@@ -75,7 +75,7 @@ class QJUtils {
 		return $val;
 	}
 
-	function log($message, $level=null) {
+	function log($message, $level = null) {
 		if (!$level) {
 			$level = SS_Log::NOTICE;
 		}
@@ -97,4 +97,3 @@ class QJUtils {
 		));
 	}
 }
-?>

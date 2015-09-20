@@ -5,7 +5,7 @@ use AsyncPHP\Doorman\Task;
 
 class ProcessJobQueueChildTask extends BuildTask {
 	/**
-	 * @param SS_HttpRequest $request
+	 * @param SS_HTTPRequest $request
 	 */
 	public function run($request) {
 		if (!isset($_SERVER['argv'][2])) {
