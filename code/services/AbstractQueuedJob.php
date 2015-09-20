@@ -48,7 +48,7 @@ abstract class AbstractQueuedJob implements QueuedJob {
 	/**
 	 * Return a signature for this queued job
 	 *
-	 * @return String
+	 * @return string
 	 */
 	public function getSignature() {
 		return md5(get_class($this) . serialize($this->jobData));
@@ -66,7 +66,7 @@ abstract class AbstractQueuedJob implements QueuedJob {
 	/**
 	 * By default jobs should just go into the default processing queue
 	 *
-	 * @return String
+	 * @return string
 	 */
 	public function getJobType() {
 		return QueuedJob::QUEUED;

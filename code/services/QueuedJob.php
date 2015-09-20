@@ -103,7 +103,7 @@ interface QueuedJob {
 	/**
 	 * Add an arbitrary text message into a job
 	 *
-	 * @param String $message
+	 * @param string $message
 	 */
 	public function addMessage($message);
 }
