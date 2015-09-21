@@ -211,7 +211,7 @@ class QueuedJobDescriptor extends DataObject {
 	}
 
 	/**
-	 * @return string
+	 * @return string|void
 	 */
 	public function getMessages() {
 		if (strlen($this->SavedJobMessages)) {
@@ -227,6 +227,9 @@ class QueuedJobDescriptor extends DataObject {
 		return $this->JobTitle;
 	}
 
+	/**
+	 * @return FieldList
+	 */
 	public function getCMSFields() {
 		$fields = parent::getCMSFields();
 		$fields->replaceField(
