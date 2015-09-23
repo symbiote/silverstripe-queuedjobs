@@ -67,7 +67,7 @@ class QueuedJobService {
 	/**
 	 * The location for immediate jobs to be stored in
 	 *
-	 * @var String
+	 * @var string
 	 */
 	private static $cache_dir = 'queuedjobs';
 
