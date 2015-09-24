@@ -11,13 +11,34 @@
  * @license BSD http://silverstripe.org/bsd-license/
  */
 abstract class AbstractQueuedJob implements QueuedJob {
-
+	/**
+	 * @var stdClass
+	 */
 	protected $jobData;
+
+	/**
+	 * @var array
+	 */
 	protected $messages = array();
+
+	/**
+	 * @var int
+	 */
 	protected $totalSteps = 0;
+
+	/**
+	 * @var int
+	 */
 	protected $currentStep = 0;
+
+	/**
+	 * @var boolean
+	 */
 	protected $isComplete = false;
 
+	/**
+	 * @return string
+	 */
 	public function getTitle() {
 		return "This needs a title!";
 	}
@@ -26,8 +47,7 @@ abstract class AbstractQueuedJob implements QueuedJob {
 	 * Sets a data object for persisting by adding its id and type to the serialised vars
 	 *
 	 * @param DataObject $object
-	 * @param string $name
-	 * 				A name to give it, if you want to store more than one
+	 * @param string $name A name to give it, if you want to store more than one
 	 */
 	protected function setObject(DataObject $object, $name = 'Object') {
 		$this->{$name . 'ID'} = $object->ID;
@@ -36,6 +56,7 @@ abstract class AbstractQueuedJob implements QueuedJob {
 
 	/**
 	 * @param string $name
+	 * @return DataObject|void
 	 */
 	protected function getObject($name = 'Object') {
 		$id = $this->{$name . 'ID'};
@@ -58,6 +79,8 @@ abstract class AbstractQueuedJob implements QueuedJob {
 	 * Generate a somewhat random signature
 	 *
 	 * useful if you're want to make sure something is always added
+	 *
+	 * @return string
 	 */
 	protected function randomSignature() {
 		return md5(get_class($this) . time() . mt_rand(0, 100000));
@@ -209,5 +232,4 @@ abstract class AbstractQueuedJob implements QueuedJob {
 	public function __get($name) {
 		return isset($this->jobData->$name) ? $this->jobData->$name : null;
 	}
-
 }

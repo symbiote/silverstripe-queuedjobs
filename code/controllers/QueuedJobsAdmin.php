@@ -1,12 +1,22 @@
 <?php
-
 /**
  * @author Marcus Nyeholt <marcus@silverstripe.com.au>
  * @license BSD http://silverstripe.org/bsd-license/
  */
 class QueuedJobsAdmin extends ModelAdmin {
+	/**
+	 * @var string
+	 */
 	private static $url_segment = 'queuedjobs';
+
+	/**
+	 * @var string
+	 */
 	private static $menu_title = 'Jobs';
+
+	/**
+	 * @var string
+	 */
 	private static $menu_icon = "queuedjobs/images/clipboard.png";
 
 	/**
@@ -101,6 +111,9 @@ class QueuedJobsAdmin extends ModelAdmin {
 		return $form;
 	}
 
+	/**
+	 * @return string
+	 */
 	public function Tools() {
 		return '';
 	}
@@ -108,6 +121,7 @@ class QueuedJobsAdmin extends ModelAdmin {
 	/**
 	 * @param array $data
 	 * @param Form $form
+	 * @return SS_HTTPResponse
 	 */
 	public function createjob($data, Form $form) {
 		if (Permission::check('ADMIN')) {
