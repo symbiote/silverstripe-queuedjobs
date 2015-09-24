@@ -44,8 +44,8 @@ class QueuedJobsAdmin extends ModelAdmin {
 	public $jobQueue;
 
 	/**
-	 * @param  int $id
-	 * @param  FieldList $fields
+	 * @param int $id
+	 * @param FieldList $fields
 	 * @return Form
 	 */
 	public function getEditForm($id = null, $fields = null) {
