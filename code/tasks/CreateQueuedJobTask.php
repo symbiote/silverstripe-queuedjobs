@@ -52,6 +52,9 @@ class CreateQueuedJobTask extends BuildTask {
 }
 
 class DummyQueuedJob extends AbstractQueuedJob implements QueuedJob {
+	/**
+	 * @param int $number
+	 */
 	public function __construct($number = 0) {
 		if ($number) {
 			$this->startNumber = $number;
@@ -59,10 +62,16 @@ class DummyQueuedJob extends AbstractQueuedJob implements QueuedJob {
 		}
 	}
 
+	/**
+	 * @return string
+	 */
 	public function getTitle() {
 		return "Some test job for ".$this->startNumber.' seconds';
 	}
 
+	/**
+	 * @return string
+	 */
 	public function getJobType() {
 		return QueuedJob::QUEUED;
 	}

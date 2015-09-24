@@ -26,6 +26,8 @@ interface QueuedJob {
 
 	/**
 	 * Gets a title for the job that can be used in listings
+	 *
+	 * @return string
 	 */
 	public function getTitle();
 
@@ -39,6 +41,8 @@ interface QueuedJob {
 	 *
 	 * If you have a job that absolutely must run multiple times, the AbstractQueuedJob class provides a time sensitive
 	 * randomSignature() method that can be used for returning a random signature each time
+	 *
+	 * @return string
 	 */
 	public function getSignature();
 

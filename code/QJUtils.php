@@ -9,16 +9,14 @@
 class QJUtils {
 	public function __construct() {}
 
-
 	/**
 	 * Quote up a filter of the form
 	 *
 	 * array ("ParentID =" => 1)
 	 *
-	 *
-	 *
-	 * @param unknown_type $filter
-	 * @return unknown_type
+	 * @param array $filter
+	 * @param string $join
+	 * @return string
 	 */
 	function dbQuote($filter = array(), $join = " AND ") {
 		$QUOTE_CHAR = defined('DB::USE_ANSI_SQL') ? '"' : '';
@@ -52,6 +50,10 @@ class QJUtils {
 		return $string;
 	}
 
+	/**
+	 * @param mixed $val
+	 * @return string
+	 */
 	protected function recursiveQuote($val) {
 		if (is_array($val)) {
 			$return = array();
@@ -75,6 +77,10 @@ class QJUtils {
 		return $val;
 	}
 
+	/**
+	 * @param string $message
+	 * @param int $level
+	 */
 	function log($message, $level = null) {
 		if (!$level) {
 			$level = SS_Log::NOTICE;
@@ -90,6 +96,11 @@ class QJUtils {
 		SS_Log::log($message, $level);
 	}
 
+	/**
+	 * @param string $message [description]
+	 * @param string $status  [description]
+	 * @return string
+	 */
 	public function ajaxResponse($message, $status) {
 		return Convert::raw2json(array(
 			'message' => $message,

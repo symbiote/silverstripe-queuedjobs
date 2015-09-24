@@ -7,7 +7,6 @@
  * @license BSD http://silverstripe.org/bsd-license/
  */
 class ProcessJobQueueTask extends BuildTask {
-
 	/**
 	 * @return string
 	 */
@@ -49,7 +48,6 @@ class ProcessJobQueueTask extends BuildTask {
 	 * @todo Solve the "Queued"/"queued" mystery!
 	 *
 	 * @param SS_HTTPRequest $request
-	 *
 	 * @return string
 	 */
 	protected function getQueue($request) {

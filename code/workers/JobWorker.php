@@ -13,10 +13,17 @@ if (interface_exists('GearmanHandler')) {
 		 */
 		public $queuedJobService;
 
+		/**
+		 * @return string
+		 */
 		public function getName() {
 			return 'jobqueueExecute';
 		}
 
+		/**
+		 * @param int $jobId
+		 * @return void
+		 */
 		public function jobqueueExecute($jobId) {
 			$this->queuedJobService->checkJobHealth();
 			$job = DataList::create('QueuedJobDescriptor')->byID($jobId);
