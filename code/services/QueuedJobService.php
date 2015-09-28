@@ -22,7 +22,9 @@
  * @license BSD http://silverstripe.org/bsd-license/
  */
 class QueuedJobService {
-
+	/**
+	 * @var int
+	 */
 	private static $stall_threshold = 3;
 
 	/**
@@ -111,6 +113,7 @@ class QueuedJobService {
 	 *			The date (in Y-m-d H:i:s format) to start execution after
 	 * @param int $userId
 	 *			The ID of a user to execute the job as. Defaults to the current user
+	 * @return int
 	 */
 	public function queueJob(QueuedJob $job, $startAfter = null, $userId = null, $queueName = null) {
 
@@ -256,6 +259,7 @@ class QueuedJobService {
 				SS_DateTime::now()->getValue()
 			))
 			->first();
+
 		return $newJob;
 	}
 

@@ -9,7 +9,9 @@
  * @license BSD License http://silverstripe.org/bsd-license/
  */
 class DeleteObjectJob extends AbstractQueuedJob {
-
+	/**
+	 * @param DataObject $node
+	 */
 	public function __construct($node = null) {
 		if ($node) {
 			$this->TargetClass = get_class($node);
@@ -19,10 +21,17 @@ class DeleteObjectJob extends AbstractQueuedJob {
 		}
 	}
 
+	/**
+	 * @param string (default: Object)
+	 * @return DataObject
+	 */
 	protected function getObject($name = 'Object') {
 		return DataObject::get_by_id($this->TargetClass, $this->TargetID);
 	}
 
+	/**
+	 * @return string
+	 */
 	public function getJobType() {
 		return QueuedJob::IMMEDIATE;
 	}

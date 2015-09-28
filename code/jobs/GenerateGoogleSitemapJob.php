@@ -9,7 +9,9 @@
  * @license http://silverstripe.org/bsd-license/
  */
 class GenerateGoogleSitemapJob extends AbstractQueuedJob {
-
+	/**
+	 * @var int
+	 */
 	private static $regenerate_time = 43200;
 
 	public function __construct() {

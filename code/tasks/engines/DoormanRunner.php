@@ -8,22 +8,21 @@ use AsyncPHP\Doorman\Rule;
 class DoormanRunner extends BaseRunner implements TaskRunnerEngine {
 
 	/**
-	 *
-	 * @var Rule[]
+	 * @var string
 	 */
 	protected $defaultRules = array();
 
 	/**
 	 * Assign default rules for this task
 	 *
-	 * @param Rule[] $rules
+	 * @param array $rules
 	 */
 	public function setDefaultRules($rules) {
 		$this->defaultRules = $rules;
 	}
 
 	/**
-	 * @return Rule[] List of rules
+	 * @return array List of rules
 	 */
 	public function getDefaultRules() {
 		return $this->defaultRules;
@@ -67,7 +66,6 @@ class DoormanRunner extends BaseRunner implements TaskRunnerEngine {
 
 	/**
 	 * @param string $queue
-	 *
 	 * @return null|QueuedJobDescriptor
 	 */
 	protected function getNextJobDescriptorWithoutMutex($queue) {

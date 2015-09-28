@@ -9,7 +9,9 @@
  * @license BSD http://silverstripe.org/bsd-license/
  */
 class PublishItemsJob extends AbstractQueuedJob implements QueuedJob {
-
+	/**
+	 * @param DataObject $rootNodeID
+	 */
 	public function __construct($rootNodeID = null) {
 		// this value is automatically persisted between processing requests for
 		// this job
