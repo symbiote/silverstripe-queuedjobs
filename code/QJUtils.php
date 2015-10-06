@@ -18,7 +18,7 @@ class QJUtils {
 	 * @param string $join
 	 * @return string
 	 */
-	function dbQuote($filter = array(), $join = " AND ") {
+	public function dbQuote($filter = array(), $join = " AND ") {
 		$QUOTE_CHAR = defined('DB::USE_ANSI_SQL') ? '"' : '';
 
 		$string = '';
@@ -81,7 +81,7 @@ class QJUtils {
 	 * @param string $message
 	 * @param int $level
 	 */
-	function log($message, $level = null) {
+	public function log($message, $level = null) {
 		if (!$level) {
 			$level = SS_Log::NOTICE;
 		}
