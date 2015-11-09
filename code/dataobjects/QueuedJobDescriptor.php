@@ -255,6 +255,9 @@ class QueuedJobDescriptor extends DataObject {
 			new DropdownField('JobStatus', $this->fieldLabel('JobStatus'), array_combine($statuses, $statuses))
 		);
 
+		$fields->removeByName('SavedJobData');
+		$fields->removeByName('SavedJobMessages');
+
 		if (Permission::check('ADMIN')) {
 			return $fields;
 		} else {
