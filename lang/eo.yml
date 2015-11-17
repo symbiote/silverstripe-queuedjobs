@@ -1,6 +1,4 @@
 eo:
-  QueuedJobsAdmin:
-    MENUTITLE: Taskoj
   CreateQueuedJobTask:
     Description: 'Tasko uzota por krei atendovican taskon. Pasu la klasnomon de la atendovican tasko kiel la parametron "nomo", pasu malnepran parametron "starto" (analizeblan de strtotime) por agordi startotempon por la tasko.'
   DeleteObjectJob:
@@ -9,21 +7,28 @@ eo:
   GenerateSitemapJob:
     REGENERATE: 'Regeneri xml-dosieron de Guglo-paĝarmapo'
   ProcessJobQueueTask:
-    Description: 'Uzota per planita tasko por plenumi envicigitajn taskojn rulotajn'
+    Description: 'Uzebla per ''cron''-tasko por plenumi envicigitajn taskojn rulotajn.'
   PublishItemsJob:
     Title: 'Publikigi erojn sub {title}'
   QueuedJobDescriptor:
     PLURALNAME: 'Atendovicaj priaĵoj'
     SINGULARNAME: 'Atendovica priaĵo'
+  QueuedJobRule:
+    PLURALNAME: 'Atendovicaj reguloj'
+    SINGULARNAME: 'Atendovica regulo'
   QueuedJobs:
+    CREATE_JOB_TYPE: 'Krei taskon de la tipo'
+    CREATE_NEW_JOB: 'Krei novan taskon'
     JOB_EXCEPT: 'Tasko kaŭzis escepton %s en %s ĉe linio %s'
     JOB_PAUSED: 'Tasko paŭzis ĉe %s'
     JOB_STALLED: 'Tasko haltis post %s provoj - bonvole kontrolu'
     JOB_TYPE: 'Tipo de tasko'
+    JOB_TYPE_PARAMS: 'Konstruaj parametroj por taskokreo'
     JobsFieldTitle: Taskoj
     MEMORY_RELEASE: 'Tasko liberigas memoron kaj atendas (%s uzita)'
     STALLED_JOB: 'Haltinta tasko'
     STALLED_JOB_MSG: 'Ŝajnas ke haltis tasko nomita %s. Ĝi estas paŭzigita. Bonvolu ensaluti por kontroli ĝin.'
+    START_JOB_TIME: 'Startigi taskon je'
     TABLE_ADDE: Aldonita
     TABLE_MESSAGES: Mesaĝo
     TABLE_NUM_PROCESSED: Farita
@@ -32,12 +37,16 @@ eo:
     TABLE_STATUS: Stato
     TABLE_TITLE: Titolo
     TABLE_TOTAL: Totalo
+    TIME_LIMIT: 'Atendovico pasis la tempolimon kaj restartos antaŭ ol daŭri'
+  QueuedJobsAdmin:
+    MENUTITLE: Taskoj
   ScheduledExecution:
     EXECUTE_EVERY: 'Plenumi ĉiun'
     EXECUTE_FREE: 'Planita (en strtotime-formato ek de unua plenumo)'
     ExecuteEveryDay: Tago
     ExecuteEveryFortnight: Du semajnoj
     ExecuteEveryHour: Horo
+    ExecuteEveryMinute: Minuto
     ExecuteEveryMonth: Monato
     ExecuteEveryWeek: Semajno
     ExecuteEveryYear: Jaro

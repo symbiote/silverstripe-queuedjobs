@@ -1,6 +1,4 @@
 fi:
-  QueuedJobsAdmin:
-    MENUTITLE: Tehtävät
   DeleteObjectJob:
     DELETE_JOB: 'Poista solmu'
     DELETE_OBJ2: 'Poista {title}'
@@ -23,6 +21,8 @@ fi:
     TABLE_STATUS: Tila
     TABLE_TITLE: Otsikko
     TABLE_TOTAL: Yhteensä
+  QueuedJobsAdmin:
+    MENUTITLE: Tehtävät
   ScheduledExecution:
     EXECUTE_EVERY: 'Suorita joka'
     ExecuteEveryDay: Päivä

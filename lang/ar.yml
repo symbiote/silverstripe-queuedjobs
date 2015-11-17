@@ -1,6 +1,4 @@
 ar:
-  QueuedJobsAdmin:
-    MENUTITLE: وظائف
   CreateQueuedJobTask:
     Description: 'مهمة تستخدم لإنشاء وظيفة مجدولة. قم بتمرير اسم تصنيف الوظيفة المجدولة ك "اسم" العامل المتغير, قم بتمرير عامل متغير "بادئ" (قابل للقراءة عن طريق إس تى آر تو تايم) لتحديد وقت بدء الوظيفة.'
   DeleteObjectJob:
@@ -8,8 +6,6 @@ ar:
     DELETE_OBJ2: 'حذف {title}'
   GenerateSitemapJob:
     REGENERATE: 'إعادة إنتاج ملف جوجل سايت ماب.إكس إم إل'
-  ProcessJobQueueTask:
-    Description: 'تم استخدامه بواسطة المهام المجدولة لتنفيذ المهام التى تحتاج للتشغيل'
   PublishItemsJob:
     Title: 'قم بإعلان العناصر تحت عنوان {title}'
   QueuedJobDescriptor:
@@ -32,6 +28,8 @@ ar:
     TABLE_STATUS: الحالة
     TABLE_TITLE: عنوان
     TABLE_TOTAL: الكلى
+  QueuedJobsAdmin:
+    MENUTITLE: وظائف
   ScheduledExecution:
     EXECUTE_EVERY: 'قم بتنفيذ كل'
     EXECUTE_FREE: 'محددة (بصيغة إس تى آر تو تايم من التنفيذ الأول)'

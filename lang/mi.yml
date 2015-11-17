@@ -1,6 +1,4 @@
 mi:
-  QueuedJobsAdmin:
-    MENUTITLE: Ngā Mahi
   CreateQueuedJobTask:
     Description: 'He taumahi e whakamahia ana hei hanga mahi kua tūtirahia. Tukuna te ingoa tauaha mahi kua tūtirahia hei tawhā "ingoa", tukuna he tawhā "tīmata" kōwhiringa (ka taea te poroporo mā te strtotime) hei tautuhi i te wā tīmata mō te mahi.'
   DeleteObjectJob:
@@ -8,8 +6,6 @@ mi:
     DELETE_OBJ2: 'Muku {title}'
   GenerateSitemapJob:
     REGENERATE: 'Whakatupuriā anō te kōnae .xml maherepae Google'
-  ProcessJobQueueTask:
-    Description: 'Ka whakamahia mā tētahi mahi whakarite hei kawe i ērā mahi kua tūtiratia mō te whakahaere'
   PublishItemsJob:
     Title: 'Whakaputa tuemi ki raro i {title}'
   QueuedJobDescriptor:
@@ -32,6 +28,8 @@ mi:
     TABLE_STATUS: Tūnga
     TABLE_TITLE: Taitara
     TABLE_TOTAL: Tapeke
+  QueuedJobsAdmin:
+    MENUTITLE: Ngā Mahi
   ScheduledExecution:
     EXECUTE_EVERY: 'Kawea Te Katoa'
     EXECUTE_FREE: 'Kua whakaritea ( i te hōputu strtotime mai i te kawenga tuatahi)'

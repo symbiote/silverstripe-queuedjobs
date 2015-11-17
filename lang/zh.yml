@@ -1,6 +1,4 @@
 zh:
-  QueuedJobsAdmin:
-    MENUTITLE: 作业
   CreateQueuedJobTask:
     Description: '用于创建一个排队作业的任务。将排队作业的类名作为 “name” 参数传递，欲设置作业的开始时间，可传递一个可选的 “start" 参数（由 strtotime 解析）。'
   DeleteObjectJob:
@@ -8,8 +6,6 @@ zh:
     DELETE_OBJ2: '删除 {title}'
   GenerateSitemapJob:
     REGENERATE: '重新生成谷歌网站地图 .xml 文件'
-  ProcessJobQueueTask:
-    Description: '通过使用 Cronjob 执行队列中需要运行的作业'
   PublishItemsJob:
     Title: '发布下列项 {title}'
   QueuedJobDescriptor:
@@ -32,6 +28,8 @@ zh:
     TABLE_STATUS: 状态
     TABLE_TITLE: 标题
     TABLE_TOTAL: 全部
+  QueuedJobsAdmin:
+    MENUTITLE: 作业
   ScheduledExecution:
     EXECUTE_EVERY: '执行每'
     EXECUTE_FREE: '已调度（以首次执行的时间戳格式显示）'
