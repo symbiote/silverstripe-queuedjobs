@@ -21,14 +21,15 @@ class ProcessJobQueueTask extends BuildTask {
 	 * @param SS_HTTPRequest $request
 	 */
 	public function run($request) {
+		$service = $this->getService();
+
 		if($request->getVar('list')) {
 			// List helper
-			$this->listJobs();
+			$service->queueRunner->listJobs();
 			return;
 		}
 
 		// Check if there is a job to run
-		$service = $this->getService();
 		if(($job = $request->getVar('job')) && strpos($job, '-')) {
 			// Run from a isngle job
 			$parts = explode('-', $job);

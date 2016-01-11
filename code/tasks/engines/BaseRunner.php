@@ -53,4 +53,16 @@ class BaseRunner {
 			$this->writeLogLine('Running ' . $descriptor->JobTitle . ' and others from ' . $queue . '.');
 		}
 	}
+
+	/**
+	 * Logs the number of current jobs per queue
+	 */
+	public function listJobs() {
+		$service = $this->getService();
+		for($i = 1; $i <= 3; $i++) {
+			$jobs = $service->getJobList($i);
+			$num = $jobs ? $jobs->Count() : 0;
+			$this->writeLogLine('Found ' . $num . ' jobs for mode ' . $i . '.');
+		}
+	}
 }
