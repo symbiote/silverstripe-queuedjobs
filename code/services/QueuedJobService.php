@@ -82,7 +82,7 @@ class QueuedJobService {
 	 *
 	 * @var TaskRunnerEngine
 	 */
-	public $queuedRunner;
+	public $queueRunner;
 
 	/**
 	 * Register our shutdown handler
