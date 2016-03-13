@@ -97,8 +97,8 @@ class QueuedJobService {
 			}
 
 		}
-		if (Config::inst()->get('Email', 'queued_jobs_admin_email') == '') {
-			Config::inst()->update('Email', 'queued_jobs_admin_email', Config::inst()->get('Email', 'admin_email'));
+		if (Config::inst()->get('Email', 'queued_job_admin_email') == '') {
+			Config::inst()->update('Email', 'queued_job_admin_email', Config::inst()->get('Email', 'admin_email'));
 		}
 	}
 
