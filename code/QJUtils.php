@@ -90,7 +90,7 @@ class QJUtils {
 			'errstr' => $message,
 			'errfile' => dirname(__FILE__),
 			'errline' => '',
-			'errcontext' => array('')
+			'errcontext' => array()
 		);
 
 		SS_Log::log($message, $level);
