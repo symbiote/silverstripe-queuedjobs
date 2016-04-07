@@ -51,7 +51,7 @@ same user as your webserver - this prevents any problems with file permissions.
 * If your code is to make use of the 'long' jobs, ie that could take days to process, also install another task
 that processes this queue. Its time of execution can be left a little longer.
 
-> */15 * * * * php /path/to/silverstripe/framework/cli-script.php dev/tasks/ProcessJobQueueTask queue=2
+> */15 * * * * php /path/to/silverstripe/framework/cli-script.php dev/tasks/ProcessJobQueueTask queue=large
 
 * From your code, add a new job for execution.
 
