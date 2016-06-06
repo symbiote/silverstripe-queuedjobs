@@ -7,6 +7,13 @@
  */
 class QueuedJobsTest extends SapphireTest {
 
+    /**
+     * We need the DB for this test
+     *
+     * @var bool
+     */
+    protected $usesDatabase = true;
+
 	public function setUp() {
 		parent::setUp();
 
