@@ -270,17 +270,20 @@ class QueuedJobService {
 	 * This typically happens when a PHP fatal error is thrown, which can't be picked up by the error
 	 * handler or exception checker; in this case, we detect these stalled jobs later and fix (try) to
 	 * fix them
+     *
+     * @param int $queue The queue to check against
 	 */
-	public function checkJobHealth() {
+	public function checkJobHealth($queue = null) {
+        $queue = $queue ?: QueuedJob::QUEUED;
 		// Select all jobs currently marked as running
 		$runningJobs = QueuedJobDescriptor::get()
-			->filter(
-				'JobStatus',
-				array(
+			->filter(array(
+				'JobStatus' => array(
 					QueuedJob::STATUS_RUN,
-					QueuedJob::STATUS_INIT
-				)
-			);
+					QueuedJob::STATUS_INIT,
+				),
+                'JobType' => $queue,
+			));
 
 		// If no steps have been processed since the last run, consider it a broken job
 		// Only check jobs that have been viewed before. LastProcessedCount defaults to -1 on new jobs.
@@ -775,7 +778,7 @@ class QueuedJobService {
 	 * @param string $queue
 	 */
 	public function runQueue($queue) {
-		$this->checkJobHealth();
+		$this->checkJobHealth($queue);
 		$this->queueRunner->runQueue($queue);
 	}
 

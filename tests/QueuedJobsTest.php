@@ -264,7 +264,7 @@ class QueuedJobsTest extends SapphireTest {
 
 		// Loop 1 - Pick up new job and attempt to run it
 		// Job health should not attempt to cleanup unstarted jobs
-		$svc->checkJobHealth();
+		$svc->checkJobHealth(QueuedJob::IMMEDIATE);
 		$nextJob = $svc->getNextPendingJob(QueuedJob::IMMEDIATE);
 
 		// Ensure that this is the next job ready to go
@@ -283,7 +283,7 @@ class QueuedJobsTest extends SapphireTest {
 		// the task is re-initiated somewhere down the track
 
 		// Loop 2 - Detect broken job, and mark it for future checking.
-		$svc->checkJobHealth();
+		$svc->checkJobHealth(QueuedJob::IMMEDIATE);
 		$nextJob = $svc->getNextPendingJob(QueuedJob::IMMEDIATE);
 
 		// Note that we don't immediately try to restart it until StepsProcessed = LastProcessedCount
@@ -297,7 +297,7 @@ class QueuedJobsTest extends SapphireTest {
 		// Loop 3 - We've previously marked this job as broken, so restart it this round
 		// If no more work has been done on the job at this point, assume that we are able to
 		// restart it
-		$svc->checkJobHealth();
+		$svc->checkJobHealth(QueuedJob::IMMEDIATE);
 		$nextJob = $svc->getNextPendingJob(QueuedJob::IMMEDIATE);
 
 		// This job is resumed and exeuction is attempted this round
@@ -320,7 +320,7 @@ class QueuedJobsTest extends SapphireTest {
 		// Because the last time the loop ran, StepsProcessed was incremented,
 		// this indicates that it's likely that another task could be working on this job, so
 		// don't run this.
-		$svc->checkJobHealth();
+		$svc->checkJobHealth(QueuedJob::IMMEDIATE);
 		$nextJob = $svc->getNextPendingJob(QueuedJob::IMMEDIATE);
 
 		$descriptor = QueuedJobDescriptor::get()->byID($id);
@@ -332,7 +332,7 @@ class QueuedJobsTest extends SapphireTest {
 
 		// Loop 5 - Job is again found to not have been restarted since last iteration, so perform second
 		// restart. The job should be attempted to run this loop
-		$svc->checkJobHealth();
+		$svc->checkJobHealth(QueuedJob::IMMEDIATE);
 		$nextJob = $svc->getNextPendingJob(QueuedJob::IMMEDIATE);
 
 		// This job is resumed and exeuction is attempted this round
@@ -348,7 +348,7 @@ class QueuedJobsTest extends SapphireTest {
 		$descriptor->write();
 
 		// Loop 6 - As no progress has been made since loop 3, we can mark this as dead
-		$svc->checkJobHealth();
+		$svc->checkJobHealth(QueuedJob::IMMEDIATE);
 		$nextJob = $svc->getNextPendingJob(QueuedJob::IMMEDIATE);
 
 		// Since no StepsProcessed has been done, don't wait another loop to mark this as dead
