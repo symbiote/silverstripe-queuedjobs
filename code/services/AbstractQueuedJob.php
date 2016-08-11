@@ -35,13 +35,20 @@ abstract class AbstractQueuedJob implements QueuedJob {
 	 * @var boolean
 	 */
 	protected $isComplete = false;
+	
+	/**
+	 * Extensions can have a construct but don't have too.
+	 * Without a construct, it's impossible to create a job in the CMS
+	 * @var array params
+	 */
+	public function __construct($params = array()) {
+	    
+	}
 
 	/**
 	 * @return string
 	 */
-	public function getTitle() {
-		return "This needs a title!";
-	}
+	public abstract function getTitle();
 
 	/**
 	 * Sets a data object for persisting by adding its id and type to the serialised vars
@@ -115,9 +122,7 @@ abstract class AbstractQueuedJob implements QueuedJob {
 	/**
 	 * Do some processing yourself!
 	 */
-	public function process() {
-
-	}
+	public abstract function process();
 
 	/**
 	 * Method for determining whether the job is finished - you may override it if there's
