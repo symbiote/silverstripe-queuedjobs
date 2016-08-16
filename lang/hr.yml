@@ -1,0 +1,44 @@
+hr:
+  DeleteObjectJob:
+    DELETE_JOB: 'Obriši čvor'
+    DELETE_OBJ2: 'Obriši {title}'
+  GenerateSitemapJob:
+    REGENERATE: 'Regeneriraj Google sitemap .xml datoteku'
+  QueuedJobs:
+    CREATE_JOB_TYPE: 'Kreiraj posao tipa'
+    CREATE_NEW_JOB: 'Kreiraj novi posao'
+    JOB_EXCEPT: 'Posao uzrokovao izuzetak %s u %s na linijama %s'
+    JOB_PAUSED: 'Posao pauziran u %s'
+    JOB_STALLED: 'Posao zaustavljen nakon %s pokušaja - molimo provjerite'
+    JOB_TYPE: 'Tip posla'
+    JOB_TYPE_PARAMS: 'Konstruktorski parametri za kreiranje posla'
+    JobsFieldTitle: Poslovi
+    STALLED_JOB: 'Zaglavljen posao'
+    STALLED_JOB_MSG: 'Čini se da posao %s je zaglavljen. Pauziran je, molimo vas logirajte se da provjerite'
+    START_JOB_TIME: 'Pokreni posao u'
+    TABLE_ADDE: Dodano
+    TABLE_MESSAGES: Poruka
+    TABLE_NUM_PROCESSED: Gotovo
+    TABLE_STARTED: Započeto
+    TABLE_START_AFTER: 'Započni nakon'
+    TABLE_STATUS: Status
+    TABLE_TITLE: Naslov
+    TABLE_TOTAL: Ukupno
+    TIME_LIMIT: 'Red je prešao vremenski limit i resetirat će se prije započinjanja'
+  QueuedJobsAdmin:
+    MENUTITLE: Poslovi
+  ScheduledExecution:
+    EXECUTE_EVERY: 'Izvrši svaki'
+    EXECUTE_FREE: 'Planirano (u strtotime formatu od prvog pokretanja)'
+    ExecuteEveryDay: dan
+    ExecuteEveryFortnight: dve nedjelje
+    ExecuteEveryHour: sat
+    ExecuteEveryMinute: minuta
+    ExecuteEveryMonth: mjesec
+    ExecuteEveryWeek: tjedan
+    ExecuteEveryYear: godina
+    FIRST_EXECUTION: 'Prvo pokretanje'
+    NEXT_RUN_DATE: 'Sljedeći datum pokretanja'
+    ScheduleTabTitle: Raspored
+  ScheduledExecutionJob:
+    Title: 'Planirano izvršenje za {title}'
