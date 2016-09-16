@@ -38,8 +38,9 @@ developers set these processes to be executed in the future.
 The module comes with
 
 * A section in the CMS for viewing a list of currently running jobs or scheduled jobs.
-* An abstract skeleton class for defining your own jobs
+* An abstract skeleton class for defining your own jobs.
 * A task that is executed as a cronjob for collecting and executing jobs.
+* A pre-configured job to cleanup the QueuedJobDescriptor database table.
 
 ## Quick Usage Overview
 
@@ -120,6 +121,36 @@ inotifywait and then call the ProcessJobQueueTask when a new job is ready to run
 Note - if you do NOT have this running, make sure to set `QueuedJobService::$use_shutdown_function = true;`
 so that immediate mode jobs don't stall. By setting this to true, immediate jobs will be executed after
 the request finishes as the php script ends. 
+
+## Configuring the CleanupJob
+
+By default the CleanupJob is disabled. To enable it, set the following in your YML:
+
+```yaml
+CleanupJob:
+  is_enabled: true
+```
+This will ensure that the CleanupJob is run once a day.
+
+You can configure this job to clean up based on the number of jobs, or the age of the jobs. This is
+configured with the `cleanup_method` setting - current valid values are "age" (default)  and "number".
+Each of these methods will have a value associated with it - this is an integer, set with `cleanup_value`.
+For "age", this will be converted into days; for "number", it is the minimum number of records to keep, sorted by LastEdited.
+The default value is 30, as we are expecting days.
+
+You can also determine which JobStatuses are allowed to be cleaned up. The default setting is to clean up "Broken" and "Complete" jobs. All other statuses can be configured with `cleanup_statuses`.
+
+The default configuration looks like this:
+
+```yaml
+CleanupJob:
+  is_enabled: false
+  cleanup_method: "age"
+  cleanup_value: 30
+  cleanup_statuses:
+    - Broken
+	- Complete
+``` 
 
 
 ## Troubleshooting
