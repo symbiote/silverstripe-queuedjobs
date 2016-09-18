@@ -171,7 +171,7 @@ class QueuedJobsTest extends SapphireTest {
 		$this->assertTrue($result);
 
 		// we want to make sure that the current user is the runas user of the job
-		$descriptor = DataObject::get_by_id('QueuedJobDescriptor', $id);
+		$descriptor = DataObject::get_by_id('FinishedJob', $id);
 		$this->assertEquals('Complete', $descriptor->JobStatus);
 	}
 
