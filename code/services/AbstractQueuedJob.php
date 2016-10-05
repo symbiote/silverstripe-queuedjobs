@@ -35,14 +35,14 @@ abstract class AbstractQueuedJob implements QueuedJob {
 	 * @var boolean
 	 */
 	protected $isComplete = false;
-	
+
 	/**
 	 * Extensions can have a construct but don't have too.
 	 * Without a construct, it's impossible to create a job in the CMS
 	 * @var array params
 	 */
 	public function __construct($params = array()) {
-	    
+
 	}
 
 	/**
@@ -136,7 +136,7 @@ abstract class AbstractQueuedJob implements QueuedJob {
 	 * Called when the job is determined to be 'complete'
 	 */
 	public function afterComplete() {
-
+        $this->ClassName = 'FinishedJobs';
 	}
 
 	/**
@@ -200,10 +200,11 @@ abstract class AbstractQueuedJob implements QueuedJob {
 		if (!is_array($custom)) {
 			return;
 		}
-
-		foreach ($custom as $class => $settings) {
-			foreach ($settings as $setting => $value) Config::inst()->update($class, $setting, $value);
-		}
+        else {
+            foreach ($custom as $class => $settings) {
+                foreach ($settings as $setting => $value) Config::inst()->update($class, $setting, $value);
+            }
+        }
 	}
 
 	/**

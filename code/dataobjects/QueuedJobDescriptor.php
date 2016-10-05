@@ -205,6 +205,8 @@ class QueuedJobDescriptor extends DataObject {
 		if (file_exists($tmpFile)) {
 			unlink($tmpFile);
 		}
+		$this->ClassName = 'FinishedJob';
+        $this->write();
 	}
 
 	public function onBeforeDelete() {
@@ -218,7 +220,7 @@ class QueuedJobDescriptor extends DataObject {
 	public function getMessages() {
 		if (strlen($this->SavedJobMessages)) {
 			$msgs = @unserialize($this->SavedJobMessages);
-			return is_array($msgs) ? '<ul><li>'.implode('</li><li>', $msgs).'</li></ul>' : '';
+            return is_array($msgs) ? '<ul><li>'.implode('</li><li>', $msgs).'</li></ul>' : '';
 		}
 	}
 
