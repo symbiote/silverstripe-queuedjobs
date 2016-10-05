@@ -71,6 +71,8 @@ class QueuedJobDescriptor extends DataObject {
 	 */
 	private static $indexes = array(
 		'JobStatus' => true,
+        'StartAfter' => true,
+        'Signature' => true
 	);
 
 	/**
