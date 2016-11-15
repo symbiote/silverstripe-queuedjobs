@@ -1,0 +1,19 @@
+QueuedJobDescriptor:
+  first:
+    JobStatus: Complete
+    LastEdited: "01-01-01 01:01:01"
+  second:
+    JobStatus: Broken
+    LastEdited: "01-01-01 01:01:01"
+  third:
+    JobStatus: New
+    LastEdited: "01-01-01 01:01:01"
+  fourth:
+    JobStatus: Complete
+    LastEdited: "02-02-02 02:02:02"
+  fifth:
+    JobStatus: Broken
+    LastEdited: "02-02-02 02:02:02"
+  sixth:
+    JobStatus: New
+    LastEdited: "02-02-02 02:02:02"
