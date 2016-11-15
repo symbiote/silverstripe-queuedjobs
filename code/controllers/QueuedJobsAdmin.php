@@ -107,6 +107,8 @@ class QueuedJobsAdmin extends ModelAdmin {
 			$actions = $form->Actions();
 			$actions->push(FormAction::create('createjob', _t('QueuedJobs.CREATE_NEW_JOB', 'Create new job')));
 		}
+        
+        $this->extend('updateEditForm', $form);
 
 		return $form;
 	}
