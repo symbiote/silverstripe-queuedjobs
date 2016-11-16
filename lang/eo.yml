@@ -44,7 +44,7 @@ eo:
     EXECUTE_EVERY: 'Plenumi ĉiun'
     EXECUTE_FREE: 'Planita (en strtotime-formato ek de unua plenumo)'
     ExecuteEveryDay: Tago
-    ExecuteEveryFortnight: Du semajnoj
+    ExecuteEveryFortnight: 'Du semajnoj'
     ExecuteEveryHour: Horo
     ExecuteEveryMinute: Minuto
     ExecuteEveryMonth: Monato
