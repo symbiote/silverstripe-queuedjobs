@@ -8,6 +8,10 @@
 		{
 			"name": "Marcus Nyeholt",
 			"email": "marcus@silverstripe.com.au"
+		},
+		{
+			"name": "Damian Mooyman",
+			"email": "damian@silverstripe.com"
 		}
 	],
 	"require":
