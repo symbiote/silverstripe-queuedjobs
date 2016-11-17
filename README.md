@@ -130,7 +130,7 @@ By default the CleanupJob is disabled. To enable it, set the following in your Y
 CleanupJob:
   is_enabled: true
 ```
-This will ensure that the CleanupJob is run once a day.
+You will need to trigger the first run manually in the UI. After that the CleanupJob is run once a day.
 
 You can configure this job to clean up based on the number of jobs, or the age of the jobs. This is
 configured with the `cleanup_method` setting - current valid values are "age" (default)  and "number".
