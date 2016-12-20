@@ -1,5 +1,13 @@
 <?php
 
+use SilverStripe\Dev\SapphireTest;
+use SilverStripe\Core\Config\Config;
+use SilverStripe\ORM\DataObject;
+use SilverStripe\QueuedJobs\DataObjects\QueuedJobDescriptor;
+use SilverStripe\QueuedJobs\Services\AbstractQueuedJob;
+use SilverStripe\QueuedJobs\Services\QueuedJob;
+use SilverStripe\QueuedJobs\Services\QueuedJobService;
+
 /**
  *
  *
@@ -19,7 +27,7 @@ class QueuedJobsTest extends SapphireTest {
 
 		Config::nest();
 		// Two restarts are allowed per job
-		Config::inst()->update('QueuedJobService', 'stall_threshold', 2);
+		Config::inst()->update('SilverStripe\\QueuedJobs\\Services\\QueuedJobService', 'stall_threshold', 2);
 	}
 
 	public function tearDown() {
@@ -144,12 +152,12 @@ class QueuedJobsTest extends SapphireTest {
 		$job = new TestQueuedJob();
 		$id = $svc->queueJob($job);
 
-		$descriptor = DataObject::get_by_id('QueuedJobDescriptor', $id);
+		$descriptor = DataObject::get_by_id('SilverStripe\\QueuedJobs\\DataObjects\\QueuedJobDescriptor', $id);
 
 		$job = $svc->testInit($descriptor);
 		$this->assertInstanceOf('TestQueuedJob', $job, 'Job has been triggered');
 
-		$descriptor = DataObject::get_by_id('QueuedJobDescriptor', $id);
+		$descriptor = DataObject::get_by_id('SilverStripe\\QueuedJobs\\DataObjects\\QueuedJobDescriptor', $id);
 
 		$this->assertEquals(QueuedJob::STATUS_INIT, $descriptor->JobStatus);
 	}
@@ -171,7 +179,7 @@ class QueuedJobsTest extends SapphireTest {
 		$this->assertTrue($result);
 
 		// we want to make sure that the current user is the runas user of the job
-		$descriptor = DataObject::get_by_id('QueuedJobDescriptor', $id);
+		$descriptor = DataObject::get_by_id('SilverStripe\\QueuedJobs\\DataObjects\\QueuedJobDescriptor', $id);
 		$this->assertEquals('Complete', $descriptor->JobStatus);
 	}
 
@@ -195,7 +203,7 @@ class QueuedJobsTest extends SapphireTest {
 		$svc->onShutdown();
 
 		$jobs = $svc->getJobList(QueuedJob::IMMEDIATE);
-		$this->assertInstanceOf('DataList', $jobs);
+		$this->assertInstanceOf('SilverStripe\\ORM\\DataList', $jobs);
 		$this->assertEquals(0, $jobs->count());
 	}
 

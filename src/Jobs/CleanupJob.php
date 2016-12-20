@@ -1,5 +1,13 @@
 <?php
 
+namespace SilverStripe\QueuedJobs\Jobs;
+
+use SilverStripe\Core\Config\Config;
+use SilverStripe\ORM\DB;
+use SilverStripe\ORM\FieldType\DBDatetime;
+use SilverStripe\QueuedJobs\Services\AbstractQueuedJob;
+use SilverStripe\QueuedJobs\Services\QueuedJob;
+
 /**
  * An queued job to clean out the QueuedJobDescriptor Table
  * which often gets too full
@@ -84,16 +92,16 @@ class CleanupJob extends AbstractQueuedJob implements QueuedJob {
 			// If Age, we need to get jobs that are at least n days old
 			case "age":
 				$cutOff = date("Y-m-d H:i:s",
-					strtotime(SS_Datetime::now() .
+					strtotime(DBDatetime::now() .
 						" - " .
 						$this->config()->cleanup_value .
 						" days"
 					)
 				);
 				$stale = DB::query(
-					'SELECT "ID" 
-					FROM "QueuedJobDescriptor" 
-					WHERE "JobStatus" 
+					'SELECT "ID"
+					FROM "QueuedJobDescriptor"
+					WHERE "JobStatus"
 					IN (\'' . $statusList . '\')
 					AND "LastEdited" < \'' . $cutOff .'\''
 				);
@@ -102,19 +110,19 @@ class CleanupJob extends AbstractQueuedJob implements QueuedJob {
 			// If Number, we need to save n records, then delete from the rest
 			case "number":
 				$fresh = DB::query(
-					'SELECT "ID" 
-					FROM "QueuedJobDescriptor" 
-					ORDER BY "LastEdited" 
+					'SELECT "ID"
+					FROM "QueuedJobDescriptor"
+					ORDER BY "LastEdited"
 					ASC LIMIT ' . $this->config()->cleanup_value
 				);
 				$freshJobIDs = implode('\', \'', $fresh->column("ID"));
 
 				$stale = DB::query(
-					'SELECT "ID" 
-					FROM "QueuedJobDescriptor" 
-					WHERE "ID" 
-					NOT IN (\'' . $freshJobIDs . '\') 
-					AND "JobStatus" 
+					'SELECT "ID"
+					FROM "QueuedJobDescriptor"
+					WHERE "ID"
+					NOT IN (\'' . $freshJobIDs . '\')
+					AND "JobStatus"
 					IN (\'' . $statusList . '\')'
 				);
 				$staleJobs = $stale->column("ID");
@@ -137,10 +145,10 @@ class CleanupJob extends AbstractQueuedJob implements QueuedJob {
 		);
 		$this->addMessage($numJobs . " jobs cleaned up.");
 		// let's make sure there is a cleanupJob in the queue
-		if (Config::inst()->get('CleanupJob', 'is_enabled')) {
+		if (Config::inst()->get('SilverStripe\\QueuedJobs\\Jobs\\CleanupJob', 'is_enabled')) {
 		    $this->addMessage("Queueing the next Cleanup Job.");
 			$cleanup = new CleanupJob();
-			singleton('QueuedJobService')->queueJob($cleanup, date('Y-m-d H:i:s', time() + 86400));
+			singleton('SilverStripe\\QueuedJobs\\Services\\QueuedJobService')->queueJob($cleanup, date('Y-m-d H:i:s', time() + 86400));
 		}
 		$this->isComplete = true;
 		return;

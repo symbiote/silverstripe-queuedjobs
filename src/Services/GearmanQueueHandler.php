@@ -1,4 +1,9 @@
 <?php
+
+namespace SilverStripe\QueuedJobs\Services;
+
+use SilverStripe\QueuedJobs\DataObjects\QueuedJobDescriptor;
+
 /**
  * @author marcus@silverstripe.com.au
  * @license BSD License http://silverstripe.org/bsd-license/
@@ -8,7 +13,7 @@ class GearmanQueueHandler {
 	 * @var array
 	 */
 	private static $dependencies = array(
-		'gearmanService' => '%$GearmanService'
+		'gearmanService' => '%$SilverStripe\\QueuedJobs\\Services\\GearmanService'
 	);
 
 	/**

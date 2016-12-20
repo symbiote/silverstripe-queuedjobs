@@ -1,4 +1,22 @@
 <?php
+
+namespace SilverStripe\QueuedJobs\Controllers;
+
+use ReflectionClass;
+use SilverStripe\Admin\ModelAdmin;
+use SilverStripe\Core\ClassInfo;
+use SilverStripe\Forms\DatetimeField;
+use SilverStripe\Forms\DropdownField;
+use SilverStripe\Forms\Form;
+use SilverStripe\Forms\FormAction;
+use SilverStripe\Forms\GridField\GridField;
+use SilverStripe\Forms\GridField\GridFieldConfig_RecordEditor;
+use SilverStripe\MultiValueField\Forms\MultiValueTextField;
+use SilverStripe\ORM\DataList;
+use SilverStripe\QueuedJobs\Forms\GridFieldQueuedJobExecute;
+use SilverStripe\QueuedJobs\Services\QueuedJob;
+use SilverStripe\Security\Permission;
+
 /**
  * @author Marcus Nyeholt <marcus@silverstripe.com.au>
  * @license BSD http://silverstripe.org/bsd-license/
@@ -22,13 +40,13 @@ class QueuedJobsAdmin extends ModelAdmin {
 	/**
 	 * @var array
 	 */
-	private static $managed_models = array('QueuedJobDescriptor');
+	private static $managed_models = array('SilverStripe\\QueuedJobs\\DataObjects\\QueuedJobDescriptor');
 
 	/**
 	 * @var array
 	 */
 	private static $dependencies = array(
-		'jobQueue' => '%$QueuedJobService',
+		'jobQueue' => '%$SilverStripe\\QueuedJobs\\Services\\QueuedJobService',
 	);
 
 	/**
@@ -53,7 +71,7 @@ class QueuedJobsAdmin extends ModelAdmin {
 
 		$filter = $this->jobQueue->getJobListFilter(null, 300);
 
-		$list = DataList::create('QueuedJobDescriptor');
+		$list = DataList::create('SilverStripe\\QueuedJobs\\DataObjects\\QueuedJobDescriptor');
 		$list = $list->where($filter)->sort('Created', 'DESC');
 
 		$gridFieldConfig = GridFieldConfig_RecordEditor::create()
@@ -64,7 +82,7 @@ class QueuedJobsAdmin extends ModelAdmin {
 			->addComponent(new GridFieldQueuedJobExecute('resume', function ($record) {
 				return $record->JobStatus == QueuedJob::STATUS_PAUSED || $record->JobStatus == QueuedJob::STATUS_BROKEN;
 			}))
-			->removeComponentsByType('GridFieldAddNewButton');
+			->removeComponentsByType('SilverStripe\\Forms\\GridField\\GridFieldAddNewButton');
 
 
 		// Set messages to HTML display format
@@ -73,22 +91,22 @@ class QueuedJobsAdmin extends ModelAdmin {
 				return "<div style='max-width: 300px; max-height: 200px; overflow: auto;'>$obj->Messages</div>";
 			},
 		);
-		$gridFieldConfig->getComponentByType('GridFieldDataColumns')->setFieldFormatting($formatting);
+		$gridFieldConfig->getComponentByType('SilverStripe\\Forms\\GridField\\GridFieldDataColumns')->setFieldFormatting($formatting);
 
 		// Replace gridfield
 		$grid = new GridField(
-			'QueuedJobDescriptor',
+			'SilverStripe\\QueuedJobs\\DataObjects\\QueuedJobDescriptor',
 			_t('QueuedJobs.JobsFieldTitle', 'Jobs'),
 			$list,
 			$gridFieldConfig
 		);
 		$grid->setForm($form);
-		$form->Fields()->replaceField('QueuedJobDescriptor', $grid);
+		$form->Fields()->replaceField('SilverStripe\\QueuedJobs\\DataObjects\\QueuedJobDescriptor', $grid);
 
 		if (Permission::check('ADMIN')) {
-			$types = ClassInfo::subclassesFor('AbstractQueuedJob');
+			$types = ClassInfo::subclassesFor('SilverStripe\\QueuedJobs\\Services\\AbstractQueuedJob');
 			$types = array_combine($types, $types);
-			unset($types['AbstractQueuedJob']);
+			unset($types['SilverStripe\\QueuedJobs\\Services\\AbstractQueuedJob']);
 			$jobType = DropdownField::create('JobType', _t('QueuedJobs.CREATE_JOB_TYPE', 'Create job of type'), $types);
 			$jobType->setEmptyString('(select job to create)');
 			$form->Fields()->push($jobType);
@@ -107,7 +125,7 @@ class QueuedJobsAdmin extends ModelAdmin {
 			$actions = $form->Actions();
 			$actions->push(FormAction::create('createjob', _t('QueuedJobs.CREATE_NEW_JOB', 'Create new job')));
 		}
-        
+
         $this->extend('updateEditForm', $form);
 
 		return $form;

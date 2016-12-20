@@ -1,5 +1,17 @@
 <?php
 
+namespace SilverStripe\QueuedJobs\Extensions;
+
+use SilverStripe\Forms\DatetimeField;
+use SilverStripe\Forms\DropdownField;
+use SilverStripe\Forms\FieldGroup;
+use SilverStripe\Forms\FieldList;
+use SilverStripe\Forms\NumericField;
+use SilverStripe\Forms\ReadonlyField;
+use SilverStripe\Forms\TextField;
+use SilverStripe\ORM\DataExtension;
+use SilverStripe\QueuedJobs\Jobs\ScheduledExecutionJob;
+
 /**
  * An extension that can be added to objects that automatically
  * adds scheduled execution capabilities to data objects.
@@ -14,7 +26,7 @@ class ScheduledExecutionExtension extends DataExtension {
 	 * @var array
 	 */
 	private static $db = array(
-		'FirstExecution' => 'SS_Datetime',
+		'FirstExecution' => 'DBDatetime',
 		'ExecuteInterval' => 'Int',
 		'ExecuteEvery' => "Enum(',Minute,Hour,Day,Week,Fortnight,Month,Year')",
 		'ExecuteFree' => 'Varchar',
@@ -31,7 +43,7 @@ class ScheduledExecutionExtension extends DataExtension {
 	 * @var array
 	 */
 	private static $has_one = array(
-		'ScheduledJob' => 'QueuedJobDescriptor',
+		'ScheduledJob' => 'SilverStripe\\QueuedJobs\\DataObjects\\QueuedJobDescriptor',
 	);
 
 	/**
@@ -43,10 +55,10 @@ class ScheduledExecutionExtension extends DataExtension {
 			_t('ScheduledExecution.ScheduleTabTitle', 'Schedule')
 		);
 		$fields->addFieldsToTab('Root.Schedule', array(
-			$dt = new Datetimefield('FirstExecution', _t('ScheduledExecution.FIRST_EXECUTION', 'First Execution')),
+			$dt = DatetimeField::create('FirstExecution', _t('ScheduledExecution.FIRST_EXECUTION', 'First Execution')),
 			FieldGroup::create(
-				new NumericField('ExecuteInterval', ''),
-				new DropdownField(
+				NumericField::create('ExecuteInterval', ''),
+				DropdownField::create(
 					'ExecuteEvery',
 					'',
 					array(
@@ -61,7 +73,7 @@ class ScheduledExecutionExtension extends DataExtension {
 					)
 				)
 			)->setTitle(_t('ScheduledExecution.EXECUTE_EVERY', 'Execute every')),
-			new TextField(
+			TextField::create(
 				'ExecuteFree',
 				_t('ScheduledExecution.EXECUTE_FREE', 'Scheduled (in strtotime format from first execution)')
 			)
@@ -105,7 +117,7 @@ class ScheduledExecutionExtension extends DataExtension {
 					$time = date('Y-m-d H:i:s', strtotime($this->owner->FirstExecution));
 				}
 
-				$this->owner->ScheduledJobID = singleton('QueuedJobService')->queueJob($job, $time);
+				$this->owner->ScheduledJobID = singleton('SilverStripe\\QueuedJobs\\Services\\QueuedJobService')->queueJob($job, $time);
 			}
 		}
 	}

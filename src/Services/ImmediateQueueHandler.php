@@ -1,5 +1,9 @@
 <?php
 
+namespace SilverStripe\QueuedJobs\Services;
+
+use SilverStripe\QueuedJobs\DataObjects\QueuedJobDescriptor;
+
 /**
  * execute jobs immediately in the current request context
  *
@@ -11,7 +15,7 @@ class ImmediateQueueHandler {
 	 * @var array
 	 */
 	private static $dependencies = array(
-		'queuedJobService' => '%$QueuedJobService',
+		'queuedJobService' => '%$SilverStripe\\QueuedJobs\\Services\\QueuedJobService',
 	);
 
 	/**

@@ -1,5 +1,9 @@
 <?php
 
+namespace SilverStripe\QueuedJobs\Services;
+
+use SilverStripe\QueuedJobs\DataObjects\QueuedJobDescriptor;
+
 /**
  * Default method for handling items run via the cron
  *

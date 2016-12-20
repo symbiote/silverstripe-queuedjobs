@@ -1,6 +1,9 @@
 <?php
 
+namespace SilverStripe\QueuedJobs\DataObjects;
+
 use AsyncPHP\Doorman\Rule;
+use SilverStripe\ORM\DataObject;
 
 /**
  * @property int $Processes
@@ -15,6 +18,12 @@ use AsyncPHP\Doorman\Rule;
  * @property float $MaximumSiblingMemoryUsage
  */
 class QueuedJobRule extends DataObject implements Rule {
+    /**
+     * {@inheritDoc}
+     * @var string
+     */
+    private static $table_name = 'QueuedJobRule';
+
 	/**
 	 * @var array
 	 */

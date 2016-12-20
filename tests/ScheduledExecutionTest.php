@@ -1,5 +1,9 @@
 <?php
 
+use SilverStripe\Dev\SapphireTest;
+use SilverStripe\Dev\TestOnly;
+use SilverStripe\ORM\DataObject;
+
 /**
  * @author marcus@silverstripe.com.au
  * @license BSD License http://silverstripe.org/bsd-license/
@@ -118,7 +122,7 @@ class TestScheduledDataObject extends DataObject implements TestOnly {
 	);
 
 	private static $extensions = array(
-		'ScheduledExecutionExtension'
+		'SilverStripe\\QueuedJobs\\Extensions\\ScheduledExecutionExtension'
 	);
 
 	public function onScheduledExecution() {

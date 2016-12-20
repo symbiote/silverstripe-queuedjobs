@@ -15,7 +15,7 @@
         }
     ],
     "require": {
-        "silverstripe/framework": "^4.0",
+        "silverstripe/framework": "^4@dev",
         "silverstripe/multivaluefield": "^3.0",
         "asyncphp/doorman": "~1.2"
     },
@@ -23,7 +23,7 @@
     "prefer-stable": true,
     "extra": {
         "branch-alias": {
-            "dev-3": "3.0.x-dev"
+            "dev-master": "3.x-dev"
         }
     },
     "autoload": {

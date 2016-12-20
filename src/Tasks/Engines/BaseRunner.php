@@ -1,5 +1,11 @@
 <?php
 
+namespace SilverStripe\QueuedJobs\Tasks\Engines;
+
+use SilverStripe\Control\Director;
+use SilverStripe\Core\Convert;
+use SilverStripe\QueuedJobs\DataObjects\QueuedJobDescriptor;
+
 /**
  * Description of BaseRunner
  *
@@ -13,7 +19,7 @@ class BaseRunner {
 	 * @return QueuedJobService
 	 */
 	public function getService() {
-		return singleton('QueuedJobService');
+		return singleton('SilverStripe\\QueuedJobs\\Services\\QueuedJobService');
 	}
 
 	/**

@@ -1,7 +1,11 @@
 <?php
 
+namespace SilverStripe\QueuedJobs\Tasks;
+
+
 use AsyncPHP\Doorman\Handler;
 use AsyncPHP\Doorman\Task;
+use SilverStripe\Dev\BuildTask;
 
 class ProcessJobQueueChildTask extends BuildTask {
 	/**
@@ -26,6 +30,6 @@ class ProcessJobQueueChildTask extends BuildTask {
 	 * @return QueuedJobService
 	 */
 	protected function getService() {
-		return singleton('QueuedJobService');
+		return singleton('SilverStripe\\QueuedJobs\\Services\\QueuedJobService');
 	}
 }

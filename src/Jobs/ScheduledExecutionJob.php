@@ -1,5 +1,10 @@
 <?php
 
+namespace SilverStripe\QueuedJobs\Jobs;
+
+use SilverStripe\ORM\DataObject;
+use SilverStripe\QueuedJobs\Services\AbstractQueuedJob;
+
 /**
  * A job that gets executed on a particular schedule. When it runs,
  * it will call the onScheduledExecution method on the owning
@@ -66,7 +71,7 @@ class ScheduledExecutionJob extends AbstractQueuedJob {
 			if ($next > time()) {
 				// in the future
 				$nextGen = date('Y-m-d H:i:s', $next);
-				$nextId = singleton('QueuedJobService')->queueJob(
+				$nextId = singleton('SilverStripe\\QueuedJobs\\Services\\QueuedJobService')->queueJob(
 					new ScheduledExecutionJob($object, $this->timesExecuted + 1),
 					$nextGen
 				);

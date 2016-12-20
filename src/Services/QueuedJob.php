@@ -1,5 +1,7 @@
 <?php
 
+namespace SilverStripe\QueuedJobs\Services;
+
 /**
  * Interface definition for a queued job
  *

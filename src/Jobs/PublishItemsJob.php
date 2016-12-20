@@ -1,5 +1,11 @@
 <?php
 
+namespace SilverStripe\QueuedJobs\Jobs;
+
+use SilverStripe\ORM\DataObject;
+use SilverStripe\QueuedJobs\Services\AbstractQueuedJob;
+use SilverStripe\QueuedJobs\Services\QueuedJob;
+
 /**
  * An example queued job
  *

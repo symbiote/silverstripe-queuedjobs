@@ -1,5 +1,11 @@
 <?php
 
+namespace SilverStripe\QueuedJobs\Jobs;
+
+use SilverStripe\ORM\DataObject;
+use SilverStripe\QueuedJobs\Services\AbstractQueuedJob;
+use SilverStripe\QueuedJobs\Services\QueuedJob;
+
 /**
  * A job used to delete a data object. Typically used for deletes that need to happen on
  * a schedule, or where the delete may have some onflow affect that takes a while to
@@ -25,7 +31,7 @@ class DeleteObjectJob extends AbstractQueuedJob {
 	 * @param string (default: Object)
 	 * @return DataObject
 	 */
-	protected function getObject($name = 'Object') {
+	protected function getObject($name = 'SilverStripe\\Core\\Object') {
 		return DataObject::get_by_id($this->TargetClass, $this->TargetID);
 	}
 

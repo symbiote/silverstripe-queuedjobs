@@ -1,5 +1,14 @@
 <?php
 
+namespace SilverStripe\QueuedJobs\DataObjects;
+
+use SilverStripe\Assets\Filesystem;
+use SilverStripe\Core\Config\Config;
+use SilverStripe\Forms\DropdownField;
+use SilverStripe\ORM\DataObject;
+use SilverStripe\QueuedJobs\Services\QueuedJob;
+use SilverStripe\Security\Permission;
+
 /**
  * A QueuedJobDescriptor is the stored representation of a piece of work that could take a while to execute,
  * because of which it is desireable to not have it executing in parallel to other jobs.
@@ -30,16 +39,22 @@
  */
 class QueuedJobDescriptor extends DataObject {
 	/**
+     * {@inheritDoc}
+     * @var string
+     */
+    private static $table_name = 'QueuedJobDescriptor';
+
+    /**
 	 * @var array
 	 */
 	private static $db = array(
 		'JobTitle' => 'Varchar(255)',
 		'Signature' => 'Varchar(64)',
 		'Implementation' => 'Varchar(64)',
-		'StartAfter' => 'SS_Datetime',
-		'JobStarted' => 'SS_Datetime',
-		'JobRestarted' => 'SS_Datetime',
-		'JobFinished' => 'SS_Datetime',
+		'StartAfter' => 'DBDatetime',
+		'JobStarted' => 'DBDatetime',
+		'JobRestarted' => 'DBDatetime',
+		'JobFinished' => 'DBDatetime',
 		'TotalSteps' => 'Int',
 		'StepsProcessed' => 'Int',
 		'LastProcessedCount' => 'Int(-1)', // -1 means never checked, 0 means checked but no work is done
@@ -54,7 +69,7 @@ class QueuedJobDescriptor extends DataObject {
 	 * @var array
 	 */
 	private static $has_one = array(
-		'RunAs' => 'Member',
+		'RunAs' => 'SilverStripe\\Security\\Member',
 	);
 
 	/**
@@ -146,7 +161,7 @@ class QueuedJobDescriptor extends DataObject {
 			$this->JobStatus = QueuedJob::STATUS_WAIT;
 			$this->ResumeCounts++;
 			$this->write();
-			singleton('QueuedJobService')->startJob($this);
+			singleton('SilverStripe\\QueuedJobs\\Services\\QueuedJobService')->startJob($this);
 			return true;
 		}
 		return false;
@@ -166,7 +181,7 @@ class QueuedJobDescriptor extends DataObject {
 	public function activateOnQueue() {
 		// if it's an immediate job, lets cache it to disk to be picked up later
 		if ($this->JobType == QueuedJob::IMMEDIATE
-			&& !Config::inst()->get('QueuedJobService', 'use_shutdown_function')
+			&& !Config::inst()->get('SilverStripe\\QueuedJobs\\Services\\QueuedJobService', 'use_shutdown_function')
 		) {
 			touch($this->getJobDir() . '/queuedjob-' . $this->ID);
 		}
@@ -179,7 +194,7 @@ class QueuedJobDescriptor extends DataObject {
 	 */
 	protected function getJobDir() {
 		// make sure our temp dir is in place. This is what will be inotify watched
-		$jobDir = Config::inst()->get('QueuedJobService', 'cache_dir');
+		$jobDir = Config::inst()->get('SilverStripe\\QueuedJobs\\Services\\QueuedJobService', 'cache_dir');
 		if ($jobDir{0} != '/') {
 			$jobDir = TEMP_FOLDER . '/' . $jobDir;
 		}
@@ -191,7 +206,7 @@ class QueuedJobDescriptor extends DataObject {
 	}
 
 	public function execute() {
-		$service = singleton('QueuedJobService');
+		$service = singleton('SilverStripe\\QueuedJobs\\Services\\QueuedJobService');
 		$service->runJob($this->ID);
 	}
 
@@ -254,7 +269,7 @@ class QueuedJobDescriptor extends DataObject {
 		);
 		$fields->replaceField(
 			'JobStatus',
-			new DropdownField('JobStatus', $this->fieldLabel('JobStatus'), array_combine($statuses, $statuses))
+			DropdownField::create('JobStatus', $this->fieldLabel('JobStatus'), array_combine($statuses, $statuses))
 		);
 
 		$fields->removeByName('SavedJobData');

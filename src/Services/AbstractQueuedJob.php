@@ -1,5 +1,11 @@
 <?php
 
+namespace SilverStripe\QueuedJobs\Services;
+
+use stdClass;
+use SilverStripe\Core\Config\Config;
+use SilverStripe\ORM\DataObject;
+
 /**
  * A base implementation of a queued job that provides some convenience for implementations
  *
@@ -35,14 +41,14 @@ abstract class AbstractQueuedJob implements QueuedJob {
 	 * @var boolean
 	 */
 	protected $isComplete = false;
-	
+
 	/**
 	 * Extensions can have a construct but don't have too.
 	 * Without a construct, it's impossible to create a job in the CMS
 	 * @var array params
 	 */
 	public function __construct($params = array()) {
-	    
+
 	}
 
 	/**
@@ -56,7 +62,7 @@ abstract class AbstractQueuedJob implements QueuedJob {
 	 * @param DataObject $object
 	 * @param string $name A name to give it, if you want to store more than one
 	 */
-	protected function setObject(DataObject $object, $name = 'Object') {
+	protected function setObject(DataObject $object, $name = 'SilverStripe\\Core\\Object') {
 		$this->{$name . 'ID'} = $object->ID;
 		$this->{$name . 'Type'} = $object->ClassName;
 	}
@@ -65,7 +71,7 @@ abstract class AbstractQueuedJob implements QueuedJob {
 	 * @param string $name
 	 * @return DataObject|void
 	 */
-	protected function getObject($name = 'Object') {
+	protected function getObject($name = 'SilverStripe\\Core\\Object') {
 		$id = $this->{$name . 'ID'};
 		$type = $this->{$name . 'Type'};
 		if ($id) {
@@ -145,7 +151,10 @@ abstract class AbstractQueuedJob implements QueuedJob {
 	public function getJobData() {
 		// okay, we NEED to store the subsite ID if there's one available
 		if (!$this->SubsiteID && class_exists('Subsite')) {
-			$this->SubsiteID = Subsite::currentSubsiteID();
+            /**
+             * Note: This may need to be checked for 4.x compatibility
+             */
+			$this->SubsiteID = \Subsite::currentSubsiteID();
 		}
 
 		$data = new stdClass();

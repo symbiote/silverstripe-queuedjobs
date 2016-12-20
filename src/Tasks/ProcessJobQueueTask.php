@@ -1,5 +1,10 @@
 <?php
 
+namespace SilverStripe\QueuedJobs\Tasks;
+
+use SilverStripe\QueuedJobs\Services\QueuedJob;
+use SilverStripe\Dev\BuildTask;
+
 /**
  * Task used to process the job queue
  *
@@ -82,6 +87,6 @@ class ProcessJobQueueTask extends BuildTask {
 	 * @return QueuedJobService
 	 */
 	public function getService() {
-		return singleton('QueuedJobService');
+		return singleton('SilverStripe\\QueuedJobs\\Services\\QueuedJobService');
 	}
 }

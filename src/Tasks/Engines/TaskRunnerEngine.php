@@ -1,5 +1,7 @@
 <?php
 
+namespace SilverStripe\QueuedJobs\Tasks\Engines;
+
 /**
  * Runs tasks on a queue
  */

@@ -1,5 +1,17 @@
 <?php
 
+namespace SilverStripe\QueuedJobs\Jobs;
+
+use Exception;
+use Page;
+use SilverStripe\CMS\Model\ErrorPage;
+use SilverStripe\Control\Director;
+use SilverStripe\ORM\DB;
+use SilverStripe\ORM\FieldType\DBDatetime;
+use SilverStripe\ORM\Versioning\Versioned;
+use SilverStripe\QueuedJobs\Services\AbstractQueuedJob;
+use SilverStripe\QueuedJobs\Services\QueuedJob;
+
 /**
  * A job for generating a site's google sitemap
  *
@@ -117,7 +129,7 @@ class GenerateGoogleSitemapJob extends AbstractQueuedJob {
 		if ($page && $page instanceof Page && !($page instanceof ErrorPage)) {
 			if($page->canView() && (!isset($page->Priority) || $page->Priority > 0)) {
 				$created = $page->dbObject('Created');
-				$now = new SS_Datetime();
+				$now = new DBDatetime();
 				$now->value = date('Y-m-d H:i:s');
 				$versions = $page->Version;
 				$timediff = $now->format('U') - $created->format('U');
@@ -181,6 +193,6 @@ class GenerateGoogleSitemapJob extends AbstractQueuedJob {
 		}
 
 		$nextgeneration = new GenerateGoogleSitemapJob();
-		singleton('QueuedJobService')->queueJob($nextgeneration, date('Y-m-d H:i:s', time() + self::$regenerate_time));
+		singleton('SilverStripe\\QueuedJobs\\Services\\QueuedJobService')->queueJob($nextgeneration, date('Y-m-d H:i:s', time() + self::$regenerate_time));
 	}
 }

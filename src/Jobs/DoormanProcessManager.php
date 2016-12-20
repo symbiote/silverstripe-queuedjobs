@@ -1,5 +1,7 @@
 <?php
 
+namespace SilverStripe\QueuedJobs\Jobs;
+
 use AsyncPHP\Doorman\Manager\ProcessManager;
 
 class DoormanProcessManager extends ProcessManager

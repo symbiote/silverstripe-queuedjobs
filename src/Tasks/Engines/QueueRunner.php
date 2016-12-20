@@ -1,5 +1,9 @@
 <?php
 
+namespace SilverStripe\QueuedJobs\Tasks\Engines;
+
+use SilverStripe\QueuedJobs\DataObjects\QueuedJobDescriptor;
+
 /**
  * Runs all jobs in a queue loop in one process
  */

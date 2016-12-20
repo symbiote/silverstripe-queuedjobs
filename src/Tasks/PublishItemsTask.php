@@ -1,5 +1,12 @@
 <?php
 
+namespace SilverStripe\QueuedJobs\Tasks;
+
+use Exception;
+use SilverStripe\Dev\BuildTask;
+use SilverStripe\ORM\DataObject;
+use SilverStripe\QueuedJobs\Jobs\PublishItemsJob;
+
 /**
  * An example build task that publishes a bunch of pages - this demonstrates a realworld example of how the
  * queued jobs project can be used
@@ -10,7 +17,7 @@
 class PublishItemsTask extends BuildTask {
 	/**
 	 * @throws Exception
-	 * @param SS_HTTPRequest $request
+	 * @param HTTPRequest $request
 	 */
 	public function run($request) {
 		$root = $request->getVar('parent');
@@ -22,7 +29,7 @@ class PublishItemsTask extends BuildTask {
 
 		if ($item && $item->exists()) {
 			$job = new PublishItemsJob($root);
-			singleton('QueuedJobService')->queueJob($job);
+			singleton('SilverStripe\\QueuedJobs\\Services\\QueuedJobService')->queueJob($job);
 		}
 	}
 }

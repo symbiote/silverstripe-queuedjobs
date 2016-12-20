@@ -28,5 +28,3 @@ $lang['en_US']['QueuedJobs']['TABLE_STATUS'] = 'Status';
 $lang['en_US']['QueuedJobs']['TABLE_TITLE'] = 'Title';
 $lang['en_US']['QueuedJobs']['TABLE_TOTAL'] = 'Total';
 $lang['en_US']['QueuedJobsAdmin_left.ss']['QUEUED_JOBS'] = 'Queued Jobs';
-
-?>

@@ -1,5 +1,10 @@
 <?php
 
+namespace SilverStripe\QueuedJobs;
+
+use SilverStripe\Core\Convert;
+use SilverStirpe\Core\Injector\Injector;
+
 /**
  * A set of utility functions used by the queued jobs module
  *
@@ -78,27 +83,31 @@ class QJUtils {
 	}
 
 	/**
+     * @deprecated 3.0 Use Injector::inst()->get('Logger') instead
+     *
 	 * @param string $message
 	 * @param int $level
 	 */
 	public function log($message, $level = null) {
-		if (!$level) {
-			$level = SS_Log::NOTICE;
-		}
-		$message = array(
-			'errno' => '',
-			'errstr' => $message,
-			'errfile' => dirname(__FILE__),
-			'errline' => '',
-			'errcontext' => array()
-		);
-
-		SS_Log::log($message, $level);
+        Injector::inst()
+            ->get('Logger')
+            ->debug(
+                print_r(
+                    array(
+            			'errno' => '',
+            			'errstr' => $message,
+            			'errfile' => dirname(__FILE__),
+            			'errline' => '',
+            			'errcontext' => array()
+            		),
+                    true
+                )
+            );
 	}
 
 	/**
-	 * @param string $message [description]
-	 * @param string $status  [description]
+	 * @param string $message
+	 * @param string $status
 	 * @return string
 	 */
 	public function ajaxResponse($message, $status) {

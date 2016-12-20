@@ -1,6 +1,13 @@
 <?php
 
+namespace SilverStripe\QueuedJobs\Tasks\Engines;
+
 use AsyncPHP\Doorman\Rule;
+use SilverStripe\ORM\FieldType\DBDatetime;
+use SilverStripe\QueuedJobs\DataObjects\QueuedJobDescriptor;
+use SilverStripe\QueuedJobs\Jobs\DoormanProcessManager;
+use SilverStripe\QueuedJobs\Jobs\DoormanQueuedJobTask;
+use SilverStripe\QueuedJobs\Services\QueuedJob;
 
 /**
  * Runs all jobs through the doorman engine
@@ -85,7 +92,7 @@ class DoormanRunner extends BaseRunner implements TaskRunnerEngine {
 			->filter('JobStatus', QueuedJob::STATUS_NEW)
 			->where(sprintf(
 				'"StartAfter" < \'%s\' OR "StartAfter" IS NULL',
-				SS_DateTime::now()->getValue()
+				DBDatetime::now()->getValue()
 			))
 			->first();
 	}
