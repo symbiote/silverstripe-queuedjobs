@@ -41,7 +41,8 @@ use SilverStripe\Security\Permission;
  * @author Marcus Nyeholt <marcus@silverstripe.com.au>
  * @license BSD http://silverstripe.org/bsd-license/
  */
-class QueuedJobService {
+class QueuedJobService
+{
     /**
      * @var int
      */
@@ -107,7 +108,8 @@ class QueuedJobService {
     /**
      * Register our shutdown handler
      */
-    public function __construct() {
+    public function __construct()
+    {
         // bind a shutdown function to process all 'immediate' queued jobs if needed, but only in CLI mode
         if (Config::inst()->get(__CLASS__, 'use_shutdown_function') && Director::is_cli()) {
             if (class_exists('PHPUnit_Framework_TestCase') && SapphireTest::is_running_test()) {
@@ -115,10 +117,12 @@ class QueuedJobService {
             } else {
                 register_shutdown_function(array($this, 'onShutdown'));
             }
-
         }
         if (Config::inst()->get('SilverStripe\\Control\\Email\\Email', 'queued_job_admin_email') == '') {
-            Config::inst()->update('SilverStripe\\Control\\Email\\Email', 'queued_job_admin_email', Config::inst()->get('SilverStripe\\Control\\Email\\Email', 'admin_email'));
+            Config::inst()->update(
+                'SilverStripe\\Control\\Email\\Email', 'queued_job_admin_email',
+                Config::inst()->get('SilverStripe\\Control\\Email\\Email', 'admin_email')
+            );
         }
     }
 
@@ -135,7 +139,8 @@ class QueuedJobService {
      *          The ID of a user to execute the job as. Defaults to the current user
      * @return int
      */
-    public function queueJob(QueuedJob $job, $startAfter = null, $userId = null, $queueName = null) {
+    public function queueJob(QueuedJob $job, $startAfter = null, $userId = null, $queueName = null)
+    {
 
         $signature = $job->getSignature();
 
@@ -148,7 +153,9 @@ class QueuedJobService {
             )
         );
 
-        $existing = DataList::create('SilverStripe\\QueuedJobs\\DataObjects\\QueuedJobDescriptor')->filter($filter)->first();
+        $existing = DataList::create('SilverStripe\\QueuedJobs\\DataObjects\\QueuedJobDescriptor')
+            ->filter($filter)
+            ->first();
 
         if ($existing && $existing->ID) {
             return $existing->ID;
@@ -179,7 +186,8 @@ class QueuedJobService {
      * @param JobDescriptor $jobDescriptor
      * @param date $startAfter
      */
-    public function startJob($jobDescriptor, $startAfter = null) {
+    public function startJob($jobDescriptor, $startAfter = null)
+    {
         if ($startAfter && strtotime($startAfter) > time()) {
             $this->queueHandler->scheduleJob($jobDescriptor, $startAfter);
         } else {
@@ -194,7 +202,8 @@ class QueuedJobService {
      * @param QueuedJob $job
      * @param JobDescriptor $jobDescriptor
      */
-    protected function copyJobToDescriptor($job, $jobDescriptor) {
+    protected function copyJobToDescriptor($job, $jobDescriptor)
+    {
         $data = $job->getJobData();
 
         $jobDescriptor->TotalSteps = $data->totalSteps;
@@ -212,7 +221,8 @@ class QueuedJobService {
      * @param QueuedJobDescriptor $jobDescriptor
      * @param QueuedJob $job
      */
-    protected function copyDescriptorToJob($jobDescriptor, $job) {
+    protected function copyDescriptorToJob($jobDescriptor, $job)
+    {
         $jobData = null;
         $messages = null;
 
@@ -247,7 +257,8 @@ class QueuedJobService {
      * @param string $type Job type
      * @return QueuedJobDescriptor
      */
-    public function getNextPendingJob($type = null) {
+    public function getNextPendingJob($type = null)
+    {
         // Filter jobs by type
         $type = $type ?: QueuedJob::QUEUED;
         $list = QueuedJobDescriptor::get()
@@ -293,7 +304,8 @@ class QueuedJobService {
      *
      * @param int $queue The queue to check against
      */
-    public function checkJobHealth($queue = null) {
+    public function checkJobHealth($queue = null)
+    {
         $queue = $queue ?: QueuedJob::QUEUED;
         // Select all jobs currently marked as running
         $runningJobs = QueuedJobDescriptor::get()
@@ -345,7 +357,8 @@ class QueuedJobService {
      * @param QueuedJobDescriptor $stalledJob
      * @return bool True if the job was successfully restarted
      */
-    protected function restartStalledJob($stalledJob) {
+    protected function restartStalledJob($stalledJob)
+    {
         if ($stalledJob->ResumeCounts < Config::inst()->get(__CLASS__, 'stall_threshold')) {
             $stalledJob->restart();
             $message = sprintf(
@@ -387,7 +400,8 @@ class QueuedJobService {
      *
      * @return QueuedJob|boolean
      */
-    protected function initialiseJob(QueuedJobDescriptor $jobDescriptor) {
+    protected function initialiseJob(QueuedJobDescriptor $jobDescriptor)
+    {
         // create the job class
         $impl = $jobDescriptor->Implementation;
         $job = Object::create($impl);
@@ -427,7 +441,8 @@ class QueuedJobService {
      * @param QueuedJobDescriptor $jobDescriptor
      * @return boolean
      */
-    protected function grabMutex(QueuedJobDescriptor $jobDescriptor) {
+    protected function grabMutex(QueuedJobDescriptor $jobDescriptor)
+    {
         // write the status and determine if any rows were affected, for protection against a
         // potential race condition where two or more processes init the same job at once.
         // This deliberately does not use write() as that would always update LastEdited
@@ -438,11 +453,11 @@ class QueuedJobService {
                 QueuedJob::STATUS_INIT,
                 $jobDescriptor->ID
             ));
-        } catch(Exception $e) {
+        } catch (Exception $e) {
             return false;
         }
 
-        if(DB::getConn()->affectedRows() === 0 && $jobDescriptor->JobStatus !== QueuedJob::STATUS_INIT) {
+        if (DB::getConn()->affectedRows() === 0 && $jobDescriptor->JobStatus !== QueuedJob::STATUS_INIT) {
             return false;
         }
 
@@ -459,9 +474,13 @@ class QueuedJobService {
      *          The ID of the job to start executing
      * @return boolean
      */
-    public function runJob($jobId) {
+    public function runJob($jobId)
+    {
         // first retrieve the descriptor
-        $jobDescriptor = DataObject::get_by_id('SilverStripe\\QueuedJobs\\DataObjects\\QueuedJobDescriptor', (int) $jobId);
+        $jobDescriptor = DataObject::get_by_id(
+            'SilverStripe\\QueuedJobs\\DataObjects\\QueuedJobDescriptor',
+            (int) $jobId
+        );
         if (!$jobDescriptor) {
             throw new Exception("$jobId is invalid");
         }
@@ -474,7 +493,9 @@ class QueuedJobService {
         // We need to use $_SESSION directly because SS ties the session to a controller that no longer exists at
         // this point of execution in some circumstances
         $originalUserID = isset($_SESSION['loggedInAs']) ? $_SESSION['loggedInAs'] : 0;
-        $originalUser = $originalUserID ? DataObject::get_by_id('SilverStripe\\Security\\Member', $originalUserID) : null;
+        $originalUser = $originalUserID
+            ? DataObject::get_by_id('SilverStripe\\Security\\Member', $originalUserID)
+            : null;
         $runAsUser = null;
 
         if (Director::is_cli() || !$originalUser || Permission::checkMember($originalUser, 'ADMIN')) {
@@ -507,7 +528,7 @@ class QueuedJobService {
         // Push a config context onto the stack for the duration of this job run.
         Config::nest();
 
-        if($this->grabMutex($jobDescriptor)) {
+        if ($this->grabMutex($jobDescriptor)) {
             try {
                 $job = $this->initialiseJob($jobDescriptor);
 
@@ -544,7 +565,10 @@ class QueuedJobService {
                 // while not finished
                 while (!$job->jobFinished() && !$broken) {
                     // see that we haven't been set to 'paused' or otherwise by another process
-                    $jobDescriptor = DataObject::get_by_id('SilverStripe\\QueuedJobs\\DataObjects\\QueuedJobDescriptor', (int) $jobId);
+                    $jobDescriptor = DataObject::get_by_id(
+                        'SilverStripe\\QueuedJobs\\DataObjects\\QueuedJobDescriptor',
+                        (int) $jobId
+                    );
                     if (!$jobDescriptor || !$jobDescriptor->exists()) {
                         $broken = true;
                         $this->getLogger()->error(
@@ -572,7 +596,15 @@ class QueuedJobService {
                             $job->process();
                         } catch (Exception $e) {
                             // okay, we'll just catch this exception for now
-                            $job->addMessage(sprintf(_t('QueuedJobs.JOB_EXCEPT', 'Job caused exception %s in %s at line %s'), $e->getMessage(), $e->getFile(), $e->getLine()), 'ERROR');
+                            $job->addMessage(
+                                sprintf(
+                                    _t('QueuedJobs.JOB_EXCEPT', 'Job caused exception %s in %s at line %s'),
+                                    $e->getMessage(),
+                                    $e->getFile(),
+                                    $e->getLine()
+                                ),
+                                'ERROR'
+                            );
                             $this->getLogger()->error($e->getMessage());
                             $jobDescriptor->JobStatus =  QueuedJob::STATUS_BROKEN;
                         }
@@ -585,7 +617,13 @@ class QueuedJobService {
 
                         if ($stallCount > Config::inst()->get(__CLASS__, 'stall_threshold')) {
                             $broken = true;
-                            $job->addMessage(sprintf(_t('QueuedJobs.JOB_STALLED', "Job stalled after %s attempts - please check"), $stallCount), 'ERROR');
+                            $job->addMessage(
+                                sprintf(
+                                    _t('QueuedJobs.JOB_STALLED', "Job stalled after %s attempts - please check"),
+                                    $stallCount
+                                ),
+                                'ERROR'
+                            );
                             $jobDescriptor->JobStatus =  QueuedJob::STATUS_BROKEN;
                         }
 
@@ -601,7 +639,7 @@ class QueuedJobService {
                         }
 
                         // Also check if we are running too long
-                        if($this->hasPassedTimeLimit()) {
+                        if ($this->hasPassedTimeLimit()) {
                             $job->addMessage(_t(
                                 'QueuedJobs.TIME_LIMIT',
                                 'Queue has passed time limit and will restart before continuing'
@@ -667,8 +705,9 @@ class QueuedJobService {
     /**
      * Start timer
      */
-    protected function markStarted() {
-        if($this->startedAt) {
+    protected function markStarted()
+    {
+        if ($this->startedAt) {
             $this->startedAt = DBDatetime::now()->Format('U');
         }
     }
@@ -678,10 +717,11 @@ class QueuedJobService {
      *
      * @return bool True if the script has passed the configured time_limit
      */
-    protected function hasPassedTimeLimit() {
+    protected function hasPassedTimeLimit()
+    {
         // Ensure a limit exists
         $limit = Config::inst()->get(__CLASS__, 'time_limit');
-        if(!$limit) {
+        if (!$limit) {
             return false;
         }
 
@@ -698,7 +738,8 @@ class QueuedJobService {
      *
      * @return bool
      */
-    protected function isMemoryTooHigh() {
+    protected function isMemoryTooHigh()
+    {
         $used = $this->getMemoryUsage();
         $limit = $this->getMemoryLimit();
         return $limit && ($used > $limit);
@@ -709,8 +750,10 @@ class QueuedJobService {
      *
      * @return float
      */
-    protected function getMemoryUsage() {
-        // Note we use real_usage = false http://stackoverflow.com/questions/15745385/memory-get-peak-usage-with-real-usage
+    protected function getMemoryUsage()
+    {
+        // Note we use real_usage = false
+        // http://stackoverflow.com/questions/15745385/memory-get-peak-usage-with-real-usage
         // Also we use the safer peak memory usage
         return (float)memory_get_peak_usage(false);
     }
@@ -721,16 +764,17 @@ class QueuedJobService {
      *
      * @return float Memory limit in bytes
      */
-    protected function getMemoryLimit() {
+    protected function getMemoryLimit()
+    {
         // Limit to smaller of explicit limit or php memory limit
         $limit = $this->parseMemory(Config::inst()->get(__CLASS__, 'memory_limit'));
-        if($limit) {
+        if ($limit) {
             return $limit;
         }
 
         // Fallback to php memory limit
         $phpLimit = $this->getPHPMemoryLimit();
-        if($phpLimit) {
+        if ($phpLimit) {
             return $phpLimit;
         }
     }
@@ -740,7 +784,8 @@ class QueuedJobService {
      *
      * @return float
      */
-    protected function getPHPMemoryLimit() {
+    protected function getPHPMemoryLimit()
+    {
         return $this->parseMemory(trim(ini_get("memory_limit")));
     }
 
@@ -751,8 +796,9 @@ class QueuedJobService {
      * @param string $memString
      * @return float
      */
-    protected function parseMemory($memString) {
-        switch(strtolower(substr($memString, -1))) {
+    protected function parseMemory($memString)
+    {
+        switch (strtolower(substr($memString, -1))) {
             case "b":
                 return round(substr($memString, 0, -1));
             case "k":
@@ -766,7 +812,8 @@ class QueuedJobService {
         }
     }
 
-    protected function humanReadable($size) {
+    protected function humanReadable($size)
+    {
         $filesizename = array(" Bytes", " KB", " MB", " GB", " TB", " PB", " EB", " ZB", " YB");
         return $size ? round($size/pow(1024, ($i = floor(log($size, 1024)))), 2) . $filesizename[$i] : '0 Bytes';
     }
@@ -780,9 +827,14 @@ class QueuedJobService {
      * @param int $includeUpUntil
      *          The number of seconds to include jobs that have just finished, allowing a job list to be built that
      *          includes recently finished jobs
+     * @return QueuedJobDescriptor
      */
-    public function getJobList($type = null, $includeUpUntil = 0) {
-        return DataObject::get('SilverStripe\\QueuedJobs\\DataObjects\\QueuedJobDescriptor', $this->getJobListFilter($type, $includeUpUntil));
+    public function getJobList($type = null, $includeUpUntil = 0)
+    {
+        return DataObject::get(
+            'SilverStripe\\QueuedJobs\\DataObjects\\QueuedJobDescriptor',
+            $this->getJobListFilter($type, $includeUpUntil)
+        );
     }
 
     /**
@@ -795,7 +847,8 @@ class QueuedJobService {
      *          includes recently finished jobs
      * @return string
      */
-    public function getJobListFilter($type = null, $includeUpUntil = 0) {
+    public function getJobListFilter($type = null, $includeUpUntil = 0)
+    {
         $filter = array('JobStatus <>' => QueuedJob::STATUS_COMPLETE);
         if ($includeUpUntil) {
             $filter['JobFinished > '] = date('Y-m-d H:i:s', time() - $includeUpUntil);
@@ -804,7 +857,8 @@ class QueuedJobService {
         $filter = singleton('SilverStripe\\QueuedJobs\\QJUtils')->dbQuote($filter, ' OR ');
 
         if ($type) {
-            $filter = singleton('SilverStripe\\QueuedJobs\\QJUtils')->dbQuote(array('JobType =' => (string) $type)) . ' AND ('.$filter.')';
+            $filter = singleton('SilverStripe\\QueuedJobs\\QJUtils')
+                ->dbQuote(array('JobType =' => (string) $type)). ' AND ('.$filter.')';
         }
 
         return $filter;
@@ -815,7 +869,8 @@ class QueuedJobService {
      *
      * @param string $queue
      */
-    public function runQueue($queue) {
+    public function runQueue($queue)
+    {
         $this->checkJobHealth($queue);
         $this->queueRunner->runQueue($queue);
     }
@@ -825,7 +880,8 @@ class QueuedJobService {
      *
      * @param string $name The job queue to completely process
      */
-    public function processJobQueue($name) {
+    public function processJobQueue($name)
+    {
         // Start timer to measure lifetime
         $this->markStarted();
 
@@ -859,7 +915,7 @@ class QueuedJobService {
                     $job = null;
                 }
             }
-        } while($job);
+        } while ($job);
     }
 
     /**
@@ -868,7 +924,8 @@ class QueuedJobService {
      * We use the 'getNextPendingJob' method, instead of just iterating the queue, to ensure
      * we ignore paused or stalled jobs.
      */
-    public function onShutdown() {
+    public function onShutdown()
+    {
         $this->processJobQueue(QueuedJob::IMMEDIATE);
     }
 
@@ -885,16 +942,20 @@ class QueuedJobService {
 /**
  * Class used to handle errors for a single job
  */
-class JobErrorHandler {
-    public function __construct() {
+class JobErrorHandler
+{
+    public function __construct()
+    {
         set_error_handler(array($this, 'handleError'));
     }
 
-    public function clear() {
+    public function clear()
+    {
         restore_error_handler();
     }
 
-    public function handleError($errno, $errstr, $errfile, $errline) {
+    public function handleError($errno, $errstr, $errfile, $errline)
+    {
         if (error_reporting()) {
             // Don't throw E_DEPRECATED in PHP 5.3+
             if (defined('E_DEPRECATED')) {
@@ -906,13 +967,11 @@ class JobErrorHandler {
             switch ($errno) {
                 case E_NOTICE:
                 case E_USER_NOTICE:
-                case E_STRICT: {
+                case E_STRICT:
                     break;
-                }
-                default: {
+                default:
                     throw new Exception($errstr . " in $errfile at line $errline", $errno);
                     break;
-                }
             }
         }
     }

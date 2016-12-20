@@ -10,12 +10,15 @@ use SilverStripe\QueuedJobs\DataObjects\QueuedJobDescriptor;
  * @author marcus@silverstripe.com.au
  * @license BSD License http://silverstripe.org/bsd-license/
  */
-class DefaultQueueHandler {
-	public function startJobOnQueue(QueuedJobDescriptor $job) {
-		$job->activateOnQueue();
-	}
+class DefaultQueueHandler
+{
+    public function startJobOnQueue(QueuedJobDescriptor $job)
+    {
+        $job->activateOnQueue();
+    }
 
-	public function scheduleJob(QueuedJobDescriptor $job, $date) {
-		// noop
-	}
+    public function scheduleJob(QueuedJobDescriptor $job, $date)
+    {
+        // noop
+    }
 }

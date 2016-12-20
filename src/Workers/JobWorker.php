@@ -14,34 +14,37 @@ use SilverStripe\ORM\DataList;
  * @todo Test and implement against it for SilverStripe 4.x compatibility
  */
 if (interface_exists('GearmanHandler')) {
-	class JobWorker implements \GearmanHandler {
-		/**
-		 * @var QueuedJobService
-		 */
-		public $queuedJobService;
+    class JobWorker implements \GearmanHandler
+    {
+        /**
+         * @var QueuedJobService
+         */
+        public $queuedJobService;
 
-		/**
-		 * @return string
-		 */
-		public function getName() {
-			return 'jobqueueExecute';
-		}
+        /**
+         * @return string
+         */
+        public function getName()
+        {
+            return 'jobqueueExecute';
+        }
 
-		/**
-		 * @param int $jobId
-		 * @return void
-		 */
-		public function jobqueueExecute($jobId) {
-			$this->queuedJobService->checkJobHealth();
-			$job = DataList::create('SilverStripe\\QueuedJobs\\DataObjects\\QueuedJobDescriptor')->byID($jobId);
-			if ($job) {
-				// check that we're not trying to execute something tooo soon
-				if (strtotime($job->StartAfter) > time()) {
-					return;
-				}
+        /**
+         * @param int $jobId
+         * @return void
+         */
+        public function jobqueueExecute($jobId)
+        {
+            $this->queuedJobService->checkJobHealth();
+            $job = DataList::create('SilverStripe\\QueuedJobs\\DataObjects\\QueuedJobDescriptor')->byID($jobId);
+            if ($job) {
+                // check that we're not trying to execute something tooo soon
+                if (strtotime($job->StartAfter) > time()) {
+                    return;
+                }
 
-				$this->queuedJobService->runJob($jobId);
-			}
-		}
-	}
+                $this->queuedJobService->runJob($jobId);
+            }
+        }
+    }
 }

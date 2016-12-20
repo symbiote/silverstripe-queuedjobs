@@ -8,125 +8,131 @@ use SilverStripe\ORM\DataObject;
  * @author marcus@silverstripe.com.au
  * @license BSD License http://silverstripe.org/bsd-license/
  */
-class ScheduledExecutionTest extends SapphireTest {
+class ScheduledExecutionTest extends SapphireTest
+{
+    /**
+     * {@inheritDoc}
+     * @var array
+     */
+    protected $extraDataObjects = array(
+        'TestScheduledDataObject',
+    );
 
-	protected $extraDataObjects = array(
-		'TestScheduledDataObject',
-	);
+    public function testScheduledExecutionTimes()
+    {
+        $test = new TestScheduledDataObject;
 
-	public function testScheduledExecutionTimes() {
+        $test->Title = 'Test execute of stuff';
+        $test->write();
 
-		$test = new TestScheduledDataObject;
+        $test->FirstExecution = '1980-09-22 09:15:00';
+        $test->ExecuteEvery = 'Hour';
 
-		$test->Title = 'Test execute of stuff';
-		$test->write();
+        $test->write();
 
-		$test->FirstExecution = '1980-09-22 09:15:00';
-		$test->ExecuteEvery = 'Hour';
+        // should now have a job
+        $this->assertTrue($test->ScheduledJobID > 0, 'Scheduled job has not been created');
 
-		$test->write();
+        $jobId = $test->ScheduledJobID;
 
-		// should now have a job
-		$this->assertTrue($test->ScheduledJobID > 0, 'Scheduled job has not been created');
+        // execute said job
+        $job = $test->ScheduledJob();
 
-		$jobId = $test->ScheduledJobID;
+        $job->execute();
 
-		// execute said job
-		$job = $test->ScheduledJob();
+        // reload the test object and make sure its job has now changed
+        $test = DataObject::get_by_id('TestScheduledDataObject', $test->ID);
 
-		$job->execute();
+        $this->assertNotEquals($test->ScheduledJobID, $jobId);
+        $this->assertEquals('EXECUTED', $test->Message);
+    }
 
-		// reload the test object and make sure its job has now changed
-		$test = DataObject::get_by_id('TestScheduledDataObject', $test->ID);
+    public function testScheduledExecutionInterval()
+    {
+        $test = new TestScheduledDataObject;
 
-		$this->assertNotEquals($test->ScheduledJobID, $jobId);
-		$this->assertEquals('EXECUTED', $test->Message);
-	}
+        $test->Title = 'Test execute at custom interval sizes';
+        $test->write();
 
-	public function testScheduledExecutionInterval() {
+        $test->FirstExecution = '1980-09-22 09:15:00';
+        $test->ExecuteEvery = 'Minute';
 
-		$test = new TestScheduledDataObject;
+        $test->write();
 
-		$test->Title = 'Test execute at custom interval sizes';
-		$test->write();
+        // should now have a job
+        $this->assertTrue($test->ScheduledJobID > 0, 'Scheduled job has not been created');
+        // should default the ExecuteInterval
+        $this->assertEquals(1, $test->ExecuteInterval, 'ExecuteInterval did not default to 1');
 
-		$test->FirstExecution = '1980-09-22 09:15:00';
-		$test->ExecuteEvery = 'Minute';
+        // should check the interval in code also
+        $test->ExecuteInterval = 0;
+        $test->write();
 
-		$test->write();
+        $jobId = $test->ScheduledJobID;
 
-		// should now have a job
-		$this->assertTrue($test->ScheduledJobID > 0, 'Scheduled job has not been created');
-		// should default the ExecuteInterval
-		$this->assertEquals(1, $test->ExecuteInterval, 'ExecuteInterval did not default to 1');
+        // execute said job
+        $job = $test->ScheduledJob();
+        $job->execute();
 
-		// should check the interval in code also
-		$test->ExecuteInterval = 0;
-		$test->write();
+        // reload the test object and make sure its job has now changed
+        $test = DataObject::get_by_id('TestScheduledDataObject', $test->ID);
 
-		$jobId = $test->ScheduledJobID;
+        $this->assertNotEquals($test->ScheduledJobID, $jobId);
+        $this->assertEquals('EXECUTED', $test->Message);
 
-		// execute said job
-		$job = $test->ScheduledJob();
-		$job->execute();
+        $job = $test->ScheduledJob();
 
-		// reload the test object and make sure its job has now changed
-		$test = DataObject::get_by_id('TestScheduledDataObject', $test->ID);
+        // should reschedule in 1 minute time
+        $expectedMinutes = date('i', time());
+        $expectedMinutes = intval($expectedMinutes, 10);
+        if ($expectedMinutes + 1 > 59) { // Wrap around the hour
+            $expectedMinutes = $expectedMinutes - 59;
+        }
+        $scheduledMinutes = substr($job->StartAfter, 14, 2);
+        $scheduledMinutes = intval($scheduledMinutes, 10);
 
-		$this->assertNotEquals($test->ScheduledJobID, $jobId);
-		$this->assertEquals('EXECUTED', $test->Message);
+        $this->assertEquals($expectedMinutes + 1, $scheduledMinutes, 'Did not reschedule 1 minute later');
 
-		$job = $test->ScheduledJob();
+        // test a custom interval of 3 minutes
 
-		// should reschedule in 1 minute time
-		$expectedMinutes = date('i', time());
-		$expectedMinutes = intval($expectedMinutes, 10);
-		if ($expectedMinutes + 1 > 59) { // Wrap around the hour
-			$expectedMinutes = $expectedMinutes - 59;
-		}
-		$scheduledMinutes = substr($job->StartAfter, 14, 2);
-		$scheduledMinutes = intval($scheduledMinutes, 10);
+        $test->ExecuteInterval = 3;
+        $test->write();
 
-		$this->assertEquals($expectedMinutes + 1, $scheduledMinutes, 'Did not reschedule 1 minute later');
+        $job = $test->ScheduledJob();
+        $job->execute();
 
-		// test a custom interval of 3 minutes
+        $test = DataObject::get_by_id('TestScheduledDataObject', $test->ID);
 
-		$test->ExecuteInterval = 3;
-		$test->write();
+        $job = $test->ScheduledJob();
 
-		$job = $test->ScheduledJob();
-		$job->execute();
+        // should reschedule in 3 minutes time
+        $expectedMinutes = date('i', time());
+        $expectedMinutes = intval($expectedMinutes, 10);
+        if ($expectedMinutes + 3 > 59) {
+            $expectedMinutes = $expectedMinutes - 59;
+        }
+        $scheduledMinutes = substr($job->StartAfter, 14, 2);
+        $scheduledMinutes = intval($scheduledMinutes, 10);
 
-		$test = DataObject::get_by_id('TestScheduledDataObject', $test->ID);
-
-		$job = $test->ScheduledJob();
-
-		// should reschedule in 3 minutes time
-		$expectedMinutes = date('i', time());
-		$expectedMinutes = intval($expectedMinutes, 10);
-		if ($expectedMinutes + 3 > 59) {
-			$expectedMinutes = $expectedMinutes - 59;
-		}
-		$scheduledMinutes = substr($job->StartAfter, 14, 2);
-		$scheduledMinutes = intval($scheduledMinutes, 10);
-
-		$this->assertEquals($expectedMinutes + 3, $scheduledMinutes, 'Did not reschedule 3 minutes later');
-	}
+        $this->assertEquals($expectedMinutes + 3, $scheduledMinutes, 'Did not reschedule 3 minutes later');
+    }
 }
 
 
-class TestScheduledDataObject extends DataObject implements TestOnly {
-	private static $db = array(
-		'Title' => 'Varchar',
-		'Message' => 'Varchar',
-	);
+class TestScheduledDataObject extends DataObject implements TestOnly
+{
+    private static $db = array(
+        'Title' => 'Varchar',
+        'Message' => 'Varchar',
+    );
 
-	private static $extensions = array(
-		'SilverStripe\\QueuedJobs\\Extensions\\ScheduledExecutionExtension'
-	);
+    private static $extensions = array(
+        'SilverStripe\\QueuedJobs\\Extensions\\ScheduledExecutionExtension'
+    );
 
-	public function onScheduledExecution() {
-		$this->Message = 'EXECUTED';
-		$this->write();
-	}
+    public function onScheduledExecution()
+    {
+        $this->Message = 'EXECUTED';
+        $this->write();
+    }
 }
