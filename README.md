@@ -48,23 +48,32 @@ The module comes with
 * Install the cronjob needed to manage all the jobs within the system. It is best to have this execute as the
 same user as your webserver - this prevents any problems with file permissions.
 
-> */1 * * * * php /path/to/silverstripe/framework/cli-script.php dev/tasks/ProcessJobQueueTask
+```
+*/1 * * * * php /path/to/silverstripe/framework/cli-script.php dev/tasks/ProcessJobQueueTask
+```
 
 * If your code is to make use of the 'long' jobs, ie that could take days to process, also install another task
 that processes this queue. Its time of execution can be left a little longer.
 
-> */15 * * * * php /path/to/silverstripe/framework/cli-script.php dev/tasks/ProcessJobQueueTask queue=large
+```
+*/15 * * * * php /path/to/silverstripe/framework/cli-script.php dev/tasks/ProcessJobQueueTask queue=large
+```
 
 * From your code, add a new job for execution.
 
-    $publish = new PublishItemsJob(21);
-    singleton('QueuedJobService')->queueJob($publish);
+```php
+$publish = new PublishItemsJob(21);
+singleton('SilverStripe\\QueuedJobs\\Services\\QueuedJobService')->queueJob($publish);
+```
 
 * To schedule a job to be executed at some point in the future, pass a date through with the call to queueJob
 The following will run the publish job in 1 day's time from now.
 
-    $publish = new PublishItemsJob(21);
-    singleton('QueuedJobService')->queueJob($publish, date('Y-m-d H:i:s', time() + 86400));
+```php
+$publish = new PublishItemsJob(21);
+singleton('SilverStripe\\QueuedJobs\\Services\\QueuedJobService')
+    ->queueJob($publish, date('Y-m-d H:i:s', time() + 86400));
+```
 
 ## Using Doorman for running jobs
 
