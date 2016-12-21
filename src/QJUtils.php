@@ -3,7 +3,7 @@
 namespace SilverStripe\QueuedJobs;
 
 use SilverStripe\Core\Convert;
-use SilverStirpe\Core\Injector\Injector;
+use SilverStripe\Core\Injector\Injector;
 
 /**
  * A set of utility functions used by the queued jobs module

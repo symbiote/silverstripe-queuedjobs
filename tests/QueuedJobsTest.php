@@ -48,7 +48,7 @@ class QueuedJobsTest extends SapphireTest
      */
     protected function getService()
     {
-        return singleton("TestQJService");
+        return singleton('TestQJService');
     }
 
     public function testQueueJob()
@@ -387,6 +387,14 @@ class QueuedJobsTest extends SapphireTest
 // stub class to be able to call init from an external context
 class TestQJService extends QueuedJobService
 {
+    /**
+     * Not inherited from QueuedJobService unfortunately...
+     * @var array
+     */
+    private static $dependencies = [
+        'queueHandler' => '%$QueueHandler'
+    ];
+
     public function testInit($descriptor)
     {
         return $this->initialiseJob($descriptor);
