@@ -17,6 +17,12 @@ use SilverStripe\QueuedJobs\Jobs\PublishItemsJob;
 class PublishItemsTask extends BuildTask
 {
     /**
+     * {@inheritDoc}
+     * @var string
+     */
+    private static $segment = 'PublishItemsTask';
+
+    /**
      * @throws Exception
      * @param HTTPRequest $request
      */

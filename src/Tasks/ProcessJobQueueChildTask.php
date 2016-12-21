@@ -9,6 +9,12 @@ use SilverStripe\Dev\BuildTask;
 class ProcessJobQueueChildTask extends BuildTask
 {
     /**
+     * {@inheritDoc}
+     * @var string
+     */
+    private static $segment = 'ProcessJobQueueChildTask';
+
+    /**
      * @param HTTPRequest $request
      */
     public function run($request)

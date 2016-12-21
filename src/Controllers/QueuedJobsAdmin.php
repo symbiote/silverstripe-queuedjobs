@@ -11,7 +11,7 @@ use SilverStripe\Forms\Form;
 use SilverStripe\Forms\FormAction;
 use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Forms\GridField\GridFieldConfig_RecordEditor;
-use SilverStripe\MultiValueField\Forms\MultiValueTextField;
+use SilverStripe\Forms\TextareaField;
 use SilverStripe\ORM\DataList;
 use SilverStripe\QueuedJobs\Forms\GridFieldQueuedJobExecute;
 use SilverStripe\QueuedJobs\Services\QueuedJob;
@@ -114,9 +114,9 @@ class QueuedJobsAdmin extends ModelAdmin
             $jobType->setEmptyString('(select job to create)');
             $form->Fields()->push($jobType);
 
-            $jobParams = MultiValueTextField::create(
+            $jobParams = TextareaField::create(
                 'JobParams',
-                _t('QueuedJobs.JOB_TYPE_PARAMS', 'Constructor parameters for job creation')
+                _t('QueuedJobs.JOB_TYPE_PARAMS', 'Constructor parameters for job creation (one per line)')
             );
             $form->Fields()->push($jobParams);
 
@@ -143,19 +143,16 @@ class QueuedJobsAdmin extends ModelAdmin
     }
 
     /**
-     * @param array $data
-     * @param Form $form
-     * @return SS_HTTPResponse
+     * @param  array $data
+     * @param  Form $form
+     * @return HTTPResponse
      */
     public function createjob($data, Form $form)
     {
         if (Permission::check('ADMIN')) {
             $jobType = isset($data['JobType']) ? $data['JobType'] : '';
-            $params = isset($data['JobParams']) ? $data['JobParams'] : array();
+            $params = isset($data['JobParams']) ? explode(PHP_EOL, $data['JobParams']) : array();
             $time = isset($data['JobStart']) ? $data['JobStart'] : null;
-
-            $js = $form->Fields()->dataFieldByName('JobStart');
-            $time = $js->Value();
 
             if ($jobType && class_exists($jobType)) {
                 $jobClass = new ReflectionClass($jobType);
@@ -163,6 +160,6 @@ class QueuedJobsAdmin extends ModelAdmin
                 $this->jobQueue->queueJob($job, $time);
             }
         }
-        return $this->responseNegotiator->respond($this->getRequest());
+        return $this->getResponseNegotiator()->respond($this->getRequest());
     }
 }

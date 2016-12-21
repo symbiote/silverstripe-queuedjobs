@@ -21,6 +21,12 @@ use SilverStripe\QueuedJobs\Services\QueuedJob;
 class CreateQueuedJobTask extends BuildTask
 {
     /**
+     * {@inheritDoc}
+     * @var string
+     */
+    private static $segment = 'CreateQueuedJobTask';
+
+    /**
      * @return string
      */
     public function getDescription()

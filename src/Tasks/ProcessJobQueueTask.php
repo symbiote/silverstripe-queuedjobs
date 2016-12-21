@@ -14,6 +14,12 @@ use SilverStripe\Dev\BuildTask;
 class ProcessJobQueueTask extends BuildTask
 {
     /**
+     * {@inheritDoc}
+     * @var string
+     */
+    private static $segment = 'ProcessJobQueueTask';
+
+    /**
      * @return string
      */
     public function getDescription()
