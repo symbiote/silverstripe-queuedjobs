@@ -849,16 +849,17 @@ class QueuedJobService
      */
     public function getJobListFilter($type = null, $includeUpUntil = 0)
     {
+        $util = singleton('SilverStripe\\QueuedJobs\\QJUtils');
+
         $filter = array('JobStatus <>' => QueuedJob::STATUS_COMPLETE);
         if ($includeUpUntil) {
             $filter['JobFinished > '] = date('Y-m-d H:i:s', time() - $includeUpUntil);
         }
 
-        $filter = singleton('SilverStripe\\QueuedJobs\\QJUtils')->dbQuote($filter, ' OR ');
+        $filter = $util->dbQuote($filter, ' OR ');
 
         if ($type) {
-            $filter = singleton('SilverStripe\\QueuedJobs\\QJUtils')
-                ->dbQuote(array('JobType =' => (string) $type)). ' AND ('.$filter.')';
+            $filter = $util->dbQuote(array('JobType =' => (string) $type)). ' AND ('.$filter.')';
         }
 
         return $filter;

@@ -4,6 +4,7 @@ namespace SilverStripe\QueuedJobs;
 
 use SilverStripe\Core\Convert;
 use SilverStripe\Core\Injector\Injector;
+use SilverStripe\ORM\DB;
 
 /**
  * A set of utility functions used by the queued jobs module
@@ -24,7 +25,7 @@ class QJUtils
      */
     public function dbQuote($filter = array(), $join = " AND ")
     {
-        $quoteChar = defined('DB::USE_ANSI_SQL') ? '"' : '';
+        $quoteChar = defined(DB::class . '::USE_ANSI_SQL') && DB::USE_ANSI_SQL  ? '"' : '';
 
         $string = '';
         $sep = '';
