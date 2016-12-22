@@ -15,7 +15,6 @@ Marcus Nyeholt
 
 * SilverStripe 4.x
 * Access to create cron jobs
-* https://github.com/silverstripe-australia/silverstripe-multivaluefield
 
 ## Version info
 
@@ -79,7 +78,7 @@ singleton('SilverStripe\\QueuedJobs\\Services\\QueuedJobService')
 
 Doorman is included by default, and allows for asynchronous task processing.
 
-This requires that you are running an a *nix based system, or within some kind of environment
+This requires that you are running an a unix based system, or within some kind of environment
 emulator such as cygwin.
 
 In order to enable this, configure the ProcessJobQueueTask to use this backend.
@@ -105,7 +104,7 @@ SilverStripe\Core\Injector\Injector:
 * Get the gearman module from https://github.com/nyeholt/silverstripe-gearman
 * Create a `_config/queuedjobs.yml` file in your project with the following declaration
 
-```
+```yaml
 ---
 Name: localproject
 After: '#queuedjobsettings'
@@ -222,7 +221,7 @@ SilverStripe\QueuedJobs\Services\QueuedJobService\QueuedJobsService:
 
 ## Indexes
 
-```
+```sql
 ALTER TABLE `QueuedJobDescriptor` ADD INDEX ( `JobStatus` , `JobType` )
 ```
 
