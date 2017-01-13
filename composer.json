@@ -19,10 +19,5 @@
 		"silverstripe/framework": "~3.1",
 		"silverstripe/multivaluefield": "~2.0",
 		"asyncphp/doorman": "~1.2"
-	},
-	"extra": {
-		"branch-alias": {
-			"dev-master": "2.9.x-dev"
-		}
 	}
 }
