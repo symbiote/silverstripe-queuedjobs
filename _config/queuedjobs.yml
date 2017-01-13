@@ -1,21 +1,21 @@
 ---
 Name: queuedjobsettings
 ---
-Injector:
-  QueueHandler: 
-    class: DefaultQueueHandler
-  QueuedJobService:
-    properties: 
+SilverStripe\Core\Injector\Injector:
+  QueueHandler:
+    class: SilverStripe\QueuedJobs\Services\DefaultQueueHandler
+  SilverStripe\QueuedJobs\Services\QueuedJobService:
+    properties:
       queueHandler: %$QueueHandler
       # Change to %$DoormanRunner for async processing (requires *nix)
-      queueRunner: %$QueueRunner
+      queueRunner: %$SilverStripe\QueuedJobs\Tasks\Engines\QueueRunner
   DefaultRule:
     class: 'AsyncPHP\Doorman\Rule\InMemoryRule'
     properties:
       Processes: 1
       MinimumProcessorUsage: 0
       MaximumProcessorUsage: 100
-  DoormanRunner:
+  SilverStripe\QueuedJobs\Tasks\Engines\DoormanRunner:
     properties:
       DefaultRules:
         - '%$DefaultRule'
@@ -25,12 +25,12 @@ Name: gearman_queue_settings
 Only:
   moduleexists: gearman
 ---
-Injector:
-  GearmanQueueHandler:
-    properties: 
-      gearmanService: %$GearmanService
-  JobWorker:
+SilverStripe\Core\Injector\Injector:
+  SilverStripe\QueuedJobs\Services\GearmanQueueHandler:
     properties:
-      queuedJobService: %$QueuedJobService
-  QueueHandler: 
+      gearmanService: %$GearmanService
+  SilverStripe\QueuedJobs\Workers\JobWorker:
+    properties:
+      queuedJobService: %$SilverStripe\QueuedJobs\Services\QueuedJobService
+  QueueHandler:
     class: GearmanQueueHandler

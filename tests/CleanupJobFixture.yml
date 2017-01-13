@@ -1,4 +1,4 @@
-QueuedJobDescriptor:
+SilverStripe\QueuedJobs\DataObjects\QueuedJobDescriptor:
   first:
     JobStatus: Complete
     LastEdited: "01-01-01 01:01:01"

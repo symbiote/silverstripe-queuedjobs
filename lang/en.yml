@@ -23,7 +23,7 @@ en:
     JOB_PAUSED: 'Job paused at %s'
     JOB_STALLED: 'Job stalled after %s attempts - please check'
     JOB_TYPE: 'Job Type'
-    JOB_TYPE_PARAMS: 'Constructor parameters for job creation'
+    JOB_TYPE_PARAMS: 'Constructor parameters for job creation (one per line)'
     JobsFieldTitle: Jobs
     MEMORY_RELEASE: 'Job releasing memory and waiting (%s used)'
     STALLED_JOB: 'Stalled job'
