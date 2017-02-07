@@ -563,7 +563,11 @@ class QueuedJobService {
 								_t('QueuedJobs.MEMORY_RELEASE', 'Job releasing memory and waiting (%s used)'),
 								$this->humanReadable($this->getMemoryUsage())
 							));
-							$jobDescriptor->JobStatus = QueuedJob::STATUS_WAIT;
+
+                            if ($jobDescriptor->JobStatus != QueuedJob::STATUS_BROKEN) {
+                                $jobDescriptor->JobStatus = QueuedJob::STATUS_WAIT;
+                            }
+
 							$broken = true;
 						}
 
@@ -573,7 +577,9 @@ class QueuedJobService {
 								'QueuedJobs.TIME_LIMIT',
 								'Queue has passed time limit and will restart before continuing'
 							));
-							$jobDescriptor->JobStatus = QueuedJob::STATUS_WAIT;
+							if ($jobDescriptor->JobStatus != QueuedJob::STATUS_BROKEN) {
+                                $jobDescriptor->JobStatus = QueuedJob::STATUS_WAIT;
+                            }
 							$broken = true;
 						}
 					}
