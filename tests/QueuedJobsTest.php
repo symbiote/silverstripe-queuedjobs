@@ -356,12 +356,57 @@ class QueuedJobsTest extends SapphireTest {
 		$this->assertEquals(QueuedJob::STATUS_PAUSED, $descriptor->JobStatus);
 		$this->assertEmpty($nextJob);
 	}
+
+    public function testExceptionWithMemoryExhaustion() {
+        $svc = $this->getService();
+        $job = new TestExceptingJob();
+		$job->firstJob = true;
+		$id = $svc->queueJob($job);
+		$descriptor = QueuedJobDescriptor::get()->byID($id);
+
+        // we want to set the memory limit _really_ low so that our first run triggers
+        $mem = Config::inst()->get('QueuedJobService', 'memory_limit');
+        Config::inst()->update('QueuedJobService', 'memory_limit', 1);
+
+        $svc->runJob($id);
+
+        Config::inst()->update('QueuedJobService', 'memory_limit', $mem);
+
+        $descriptor = QueuedJobDescriptor::get()->byID($id);
+
+        $this->assertEquals(QueuedJob::STATUS_BROKEN, $descriptor->JobStatus);
+    }
 }
 
 // stub class to be able to call init from an external context
 class TestQJService extends QueuedJobService {
 	public function testInit($descriptor) {
 		return $this->initialiseJob($descriptor);
+	}
+}
+
+class TestExceptingJob extends  AbstractQueuedJob implements QueuedJob {
+    private $type = QueuedJob::QUEUED;
+
+	public function __construct($type = null) {
+        $this->type = QueuedJob::IMMEDIATE;
+		$this->times = array();
+	}
+
+	public function getJobType() {
+		return $this->type;
+	}
+
+	public function getTitle() {
+		return "A Test job throwing exceptions";
+	}
+
+	public function setup() {
+		$this->totalSteps = 1;
+	}
+
+	public function process() {
+		throw new Exception("just excepted");
 	}
 }
 
