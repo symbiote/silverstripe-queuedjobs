@@ -376,6 +376,89 @@ class QueuedJobsTest extends SapphireTest {
 
         $this->assertEquals(QueuedJob::STATUS_BROKEN, $descriptor->JobStatus);
     }
+
+	public function testCheckdefaultJobs() {
+		// Create a job and add it to the queue
+		$svc = $this->getService();
+		$testDefaultJobsArray = array(
+			'ArbitraryName' => array(
+				# I'll get restarted and create an alert email
+				'type' => 'TestQueuedJob',
+				'filter' => array(
+					'JobTitle' => "A Test job"
+				),
+				'recreate' => 1,
+				'construct' => array(
+					'queue' => QueuedJob::QUEUED
+				),
+				'startDateFormat' => 'Y-m-d 02:00:00',
+				'startTimeString' => 'tomorrow',
+				'email' => 'test@queuejobtest.com'
+		));
+		$svc->defaultJobs = $testDefaultJobsArray;
+		$jobConfig = $testDefaultJobsArray['ArbitraryName'];
+
+		$activeJobs = QueuedJobDescriptor::get()->filter(
+				'JobStatus', array(
+					QueuedJob::STATUS_NEW,
+					QueuedJob::STATUS_INIT,
+					QueuedJob::STATUS_RUN,
+					QueuedJob::STATUS_WAIT,
+				)
+		);
+		//assert no jobs currently active
+		$this->assertEquals(0, $activeJobs->count());
+
+		//add a default job to the queue
+		$svc->checkdefaultJobs();
+		$this->assertEquals(1, $activeJobs->count());
+		$descriptor = $activeJobs->filter(array_merge(
+								array('Implementation' => $jobConfig['type']), $jobConfig['filter']
+				))->first();
+		// Verify initial state is new
+		$this->assertEquals(QueuedJob::STATUS_NEW, $descriptor->JobStatus);
+
+		//update Job to broken
+		$descriptor->JobStatus = QueuedJob::STATUS_BROKEN;
+		$descriptor->write();
+		//check and add job for broken job
+		$svc->checkdefaultJobs();
+		$this->assertEquals(1, $activeJobs->count());
+		//assert we now have 2 of our job (one good one broken)
+		$this->assertEquals(2, QueuedJobDescriptor::get()->count());
+
+		//test not adding a job when job is there already
+		$svc->checkdefaultJobs();
+		$this->assertEquals(1, $activeJobs->count());
+		//assert we now have 2 of our job (one good one broken)
+		$this->assertEquals(2, QueuedJobDescriptor::get()->count());
+
+		//test add jobs with various start dates
+		$job = $activeJobs->first();
+		date('Y-m-d 02:00:00', strtotime('+1 day'));
+		$this->assertEquals(date('Y-m-d 02:00:00', strtotime('+1 day')), $job->StartAfter);
+		//swap start time to midday
+		$testDefaultJobsArray['ArbitraryName']['startDateFormat'] = 'Y-m-d 12:00:00';
+		//clean up then add new jobs
+		$svc->defaultJobs = $testDefaultJobsArray;
+		$activeJobs->removeAll();
+		$svc->checkdefaultJobs();
+		//assert one jobs currently active
+		$this->assertEquals(1, $activeJobs->count());
+		$job = $activeJobs->first();
+		$this->assertEquals(date('Y-m-d 12:00:00', strtotime('+1 day')), $job->StartAfter);
+		//test alert email
+		$email = $this->findEmail('test@queuejobtest.com');
+		$this->assertNotNull($email);
+
+		//test broken job config
+		unset($testDefaultJobsArray['ArbitraryName']['startDateFormat']);
+		//clean up then add new jobs
+		$svc->defaultJobs = $testDefaultJobsArray;
+		$activeJobs->removeAll();
+		$svc->checkdefaultJobs();
+	}
+
 }
 
 // stub class to be able to call init from an external context
