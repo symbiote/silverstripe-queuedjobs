@@ -351,7 +351,7 @@ class QueuedJobService {
 					Email::create()
 						->setTo(isset($jobConfig['email']) ? $jobConfig['email'] : Email::config()->admin_email)
 						->setSubject('Default Job "' . $title . '" missing')
-						->populateTemplate(array('title' => $title))
+						->populateTemplate(array('Title' => $title, 'Site' => Director::absoluteBaseURL()))
 						->populateTemplate($jobConfig)
 						->setTemplate('QueuedJobsDefaultJob')
 						->send();
