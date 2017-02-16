@@ -39,6 +39,12 @@ class QueuedJobsAdmin extends ModelAdmin {
 	);
 
 	/**
+	 * European date format 
+	 * @var string
+	 */
+	private static $date_format_european = 'dd/MM/yyyy';
+
+	/**
 	 * @var QueuedJobService
 	 */
 	public $jobQueue;
@@ -133,6 +139,12 @@ class QueuedJobsAdmin extends ModelAdmin {
 
 			$js = $form->Fields()->dataFieldByName('JobStart');
 			$time = $js->Value();
+
+			// If the user has select the European date format as their setting then replace '/' with '-' in the date string so PHP
+			// treats the date as this format.
+			if (Member::currentUser()->DateFormat == self::$date_format_european) {
+				$time = str_replace('/', '-', $time);
+			}
 
 			if ($jobType && class_exists($jobType)) {
 				$jobClass = new ReflectionClass($jobType);
