@@ -338,7 +338,7 @@ class QueuedJobService {
 			));
 
 			foreach ($this->defaultJobs as $title => $jobConfig) {
-				if(count(array_intersect(array('filter', 'type'), array_keys($jobConfig))) !== 2) {
+				if (!isset($jobConfig['filter']) || !isset($jobConfig['type'])) {
 					SS_Log::log("Default Job config: $title incorrectly set up. Please check the readme for examples", SS_Log::ERR);
 					continue;
 				}
@@ -357,7 +357,7 @@ class QueuedJobService {
 						->send();
 
 					if (isset($jobConfig['recreate']) && $jobConfig['recreate']) {
-						if (count(array_intersect(array('construct', 'startDateFormat', 'startTimeString'), array_keys($jobConfig))) !== 3) {
+						if (!isset($jobConfig['construct']) || !isset($jobConfig['startDateFormat']) || !isset($jobConfig['startTimeString'])) {
 							SS_Log::log("Default Job config: $title incorrectly set up. Please check the readme for examples", SS_Log::ERR);
 							continue;
 						}
