@@ -85,6 +85,12 @@ class QueuedJobService {
 	public $queueRunner;
 
 	/**
+	 * Config controlled list of default/required jobs
+	 * @var Array
+	 */
+	public $defaultJobs;
+
+	/**
 	 * Register our shutdown handler
 	 */
 	public function __construct() {
@@ -311,6 +317,57 @@ class QueuedJobService {
 				'errline' => __LINE__,
 				'errcontext' => array()
 			), SS_Log::ERR);
+		}
+	}
+
+	/**
+	 * Checks through all the scheduled jobs that are expected to exist
+	 */
+	public function checkdefaultJobs($queue = null) {
+		$queue = $queue ?: QueuedJob::QUEUED;
+		if (count($this->defaultJobs)) {
+
+			$activeJobs = QueuedJobDescriptor::get()->filter(array(
+					'JobStatus' => array(
+					QueuedJob::STATUS_NEW,
+					QueuedJob::STATUS_INIT,
+					QueuedJob::STATUS_RUN,
+					QueuedJob::STATUS_WAIT,
+				),
+				'JobType' => $queue
+			));
+
+			foreach ($this->defaultJobs as $title => $jobConfig) {
+				if (!isset($jobConfig['filter']) || !isset($jobConfig['type'])) {
+					SS_Log::log("Default Job config: $title incorrectly set up. Please check the readme for examples", SS_Log::ERR);
+					continue;
+				}
+
+				$job = $activeJobs->filter(array_merge(
+					array('Implementation' => $jobConfig['type']), $jobConfig['filter']
+				));
+
+				if (!$job->count()) {
+					Email::create()
+						->setTo(isset($jobConfig['email']) ? $jobConfig['email'] : Email::config()->admin_email)
+						->setSubject('Default Job "' . $title . '" missing')
+						->populateTemplate(array('Title' => $title, 'Site' => Director::absoluteBaseURL()))
+						->populateTemplate($jobConfig)
+						->setTemplate('QueuedJobsDefaultJob')
+						->send();
+
+					if (isset($jobConfig['recreate']) && $jobConfig['recreate']) {
+						if (!isset($jobConfig['construct']) || !isset($jobConfig['startDateFormat']) || !isset($jobConfig['startTimeString'])) {
+							SS_Log::log("Default Job config: $title incorrectly set up. Please check the readme for examples", SS_Log::ERR);
+							continue;
+						}
+						singleton('QueuedJobService')->queueJob(
+							Injector::inst()->createWithArgs($jobConfig['type'], $jobConfig['construct']),
+							date($jobConfig['startDateFormat'], strtotime($jobConfig['startTimeString']))
+						);
+					}
+				}
+			}
 		}
 	}
 
@@ -785,6 +842,7 @@ class QueuedJobService {
 	 */
 	public function runQueue($queue) {
 		$this->checkJobHealth($queue);
+		$this->checkdefaultJobs($queue);
 		$this->queueRunner->runQueue($queue);
 	}
 
