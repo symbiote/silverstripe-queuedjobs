@@ -333,6 +333,7 @@ class QueuedJobService {
 					QueuedJob::STATUS_INIT,
 					QueuedJob::STATUS_RUN,
 					QueuedJob::STATUS_WAIT,
+					QueuedJob::STATUS_PAUSED
 				),
 				'JobType' => $queue
 			));
