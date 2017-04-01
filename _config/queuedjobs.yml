@@ -1,5 +1,6 @@
 ---
 Name: queuedjobsettings
+After: 'framework/*', 'cms/*'
 ---
 Injector:
   QueueHandler: 
@@ -19,7 +20,13 @@ Injector:
     properties:
       DefaultRules:
         - '%$DefaultRule'
-
+DevelopmentAdmin:
+  registered_controllers:
+    jobs:
+      controller: 'QueuedJobsDevAdmin'
+      links:
+        jobs: 'See a list of queued jobs to run'
+        #'jobs/all': 'Run all tests'
 ---
 Name: gearman_queue_settings
 Only:
