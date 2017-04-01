@@ -48,6 +48,12 @@ class QueuedJobsAdmin extends ModelAdmin {
 	 * @var QueuedJobService
 	 */
 	public $jobQueue;
+    
+    /**
+     * @config The number of seconds to include jobs that have finished
+     * default: 300 (5 minutes), examples: 3600(1h), 86400(1d)
+     */
+    private static $max_finished_jobs_age = 300;
 
 	/**
 	 * @param int $id
@@ -57,7 +63,7 @@ class QueuedJobsAdmin extends ModelAdmin {
 	public function getEditForm($id = null, $fields = null) {
 		$form = parent::getEditForm($id, $fields);
 
-		$filter = $this->jobQueue->getJobListFilter(null, 300);
+		$filter = $this->jobQueue->getJobListFilter(null, self::config()->max_finished_jobs_age);
 
 		$list = DataList::create('QueuedJobDescriptor');
 		$list = $list->where($filter)->sort('Created', 'DESC');
