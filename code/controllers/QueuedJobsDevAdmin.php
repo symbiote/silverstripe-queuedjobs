@@ -3,12 +3,12 @@
 class QueuedJobsDevAdmin extends Controller {
 	private static $url_handlers = array(
 		'' => 'index',
-		'$JobClassName!/$ID' => 'runjob'
+		'$JobClassName!/$ID' => 'job'
 	);
 
 	private static $allowed_actions = array(
 		'index',
-		'runjob',
+		'job',
 	);
 
 	/**
@@ -24,8 +24,6 @@ class QueuedJobsDevAdmin extends Controller {
 		$isRunningTests = (class_exists('SapphireTest', false) && SapphireTest::is_running_test());
 		$canAccess = (
 			Director::isDev()
-			// We need to ensure that DevelopmentAdminTest can simulate permission failures when running
-			// "dev/jobs" from CLI.
 			|| (Director::is_cli() && !$isRunningTests)
 			|| Permission::check("ADMIN")
 		);
@@ -54,92 +52,131 @@ class QueuedJobsDevAdmin extends Controller {
 		}
 	}
 
-	public function runjob($request) {
-		$class = $request->param('JobClassName');
-		$class = str_replace('-', '\\', $class);
+	public function job($request) {
+		$classSegment = $request->param('JobClassName');
+		$class = str_replace('-', '\\', $classSegment);
+		if (!$class) {
+			return $this->echoTemplate(array(
+				'Content' => 'Cannot provide blank class name',
+			));
+		}
 		if (!class_exists($class)) {
-			//$this->getJobs()->filter(array('Implementation:StartsWith' => $class));
+			// NOTE(Jake): Would be nice to make a "best" guess here or add some
+			//			   sort of partial match execute for command-line UX
 			return $this->echoTemplate(array(
 				'Content' => 'Class "'.$class.'" does not exist.',
 			));
 		}
 		$list = $this->getJobList()->filter(array('Implementation' => $class));
 
-		$id = (int)$request->param('ID');
-		if ($id) {
-			$job = $list->byID($id);
-			if (!$job || !$job->exists()) {
-				return $this->echoTemplate(array(
-					'Content' => 'Cannot find job by ID #'.$id.' of class "'.$class.'"'
-				));
-			}
-			return $this->executeJob($job->ID, 
-					'Ran existing job #{$ID} {$Class} SUCCESSFULLY',
-					'Ran existing job #{$ID} {$Class} but BROKE');
-		}
-
-		$existingCount = $list->count();
-		if ($existingCount == 0) {
-			$params = array();
-			$time = null;
-
-			$reflection = new ReflectionClass($class);
-			$job = $reflection->newInstanceArgs($params);
-			$jobID = $this->jobQueue->queueJob($job, $time = null);
-			if (!$jobID) {
-				return $this->echoTemplate(array(
-					'Content' => 'Failed to queue job '.$class.'.',
-				));
-			}
-			return $this->executeJob($jobID, 
-				'Created new job #{$ID} {$Class} and executed SUCCESSFULLY', 
-				'Created new job #{$ID} {$Class} but BROKE');
-		}
-		if ($existingCount == 1) {
-			$recordSet = $list->toArray();
-			if (count($recordSet) == 0 || count($recordSet) > 1) {
-				return $this->echoTemplate(array(
-					'Content' => 'Unexpected SQL data change during execution.'
-				));
-			}
-			$job = reset($recordSet);
-			return $this->executeJob($job->ID, 
-					'Ran existing job #{$ID} {$Class} SUCCESSFULLY',
-					'Ran existing job #{$ID} {$Class} but BROKE');
-		}
-
-		$jobs = array();
-		foreach ($list->sort('ID') as $jobRecord) {
-			$job = array(
-				'Title' => "#$jobRecord->ID ".$jobRecord->getTitle(),
-				'Segment' => $jobRecord->Implementation.'/'.$jobRecord->ID,
+		$actionOrID = $request->param('ID');
+		if (!$actionOrID) {
+			// View job list
+			$segment = $classSegment.'/any';
+			$jobs = array(
+				array(
+					'Title' => 'Execute "any" job (creates and executes a job if none exist)',
+					'Description' => 'Will execute any item on this list, if none exist, this will create a new job of this type and immediately execute.',
+					'Segment' => $segment,
+					'Link' => $this->Link($segment),
+				)
 			);
-			$job['Link'] = $this->Link($job['Segment']);
-			$jobs[] = $job;
-		}
-
-		if (Director::is_cli()) {
+			foreach ($list->sort('ID') as $jobRecord) {
+				$segment = $classSegment.'/'.$jobRecord->ID;
+				// Show step status if it's used by the job
+				$stepStatus = '';
+				if ($jobRecord->TotalSteps) {
+					$stepStatus = ' (Step: '.(int)$this->StepsProcessed.'/'.(int)$jobRecord->TotalSteps.')';
+				}
+				$jobs[] = array(
+					'Title' => 'Execute #'.$jobRecord->ID.' '.$jobRecord->Implementation,
+					'Description' => $jobRecord->getTitle().$stepStatus,
+					'Segment' => $segment,
+					'Link' => $this->Link($segment),
+				);
+			}
+			if (!Director::is_cli()) {
+				return $this->echoTemplate(array(
+					'Records' => new ArrayList($jobs),
+				), 'QueuedJobsDevAdmin_recordlist');
+			}
 			foreach($jobs as $job) {
 				echo " * ".$job['Title']." : sake dev/jobs/" . $job['Segment'] . "\n";
 			}
+			return;
+		}
+		if (is_numeric($actionOrID)) {
+			$job = $list->byID($actionOrID);
+			if (!$job || !$job->exists()) {
+				return $this->echoTemplate(array(
+					'Content' => 'Cannot find job by ID #'.$actionOrID.' of class "'.$class.'"'
+				));
+			}
+			if (Director::is_cli()) {
+				echo "Starting existing job #$job->ID $job->Implementation \n";
+			}
+			return $this->executeJobAndRender($job->ID, 
+					'Successfully executed existing job #{$ID} "{$Class}"',
+					'Broken job #{$ID} "{$Class}"');
+		}
+		switch ($actionOrID) {
+			case "any":
+				$job = $list->sort('ID')->first();
+				if ($job) {
+					if (Director::is_cli()) {
+						echo "Starting existing job #$job->ID $job->Implementation \n";
+					}
+					return $this->executeJobAndRender($job->ID, 
+					'Successfully ran existing job #{$ID} "{$Class}"',
+					'Broken existing job #{$ID} "{$Class}"');
+				}
+				// If no items exist, create one with default parameters and execute.
+				$job = method_exists($class, 'create') ? $class::create() : new $class;
+				$jobID = $this->jobQueue->queueJob($job, $time = null);
+				if (!$jobID) {
+					return $this->echoTemplate(array(
+						'Content' => 'Failed to queue job '.$class.'.',
+					));
+				}
+				if (Director::is_cli()) {
+					echo "Starting new job #$job->ID $job->Implementation \n";
+				}
+				return $this->executeJobAndRender($jobID, 
+					'Successfully created and executed new job #{$ID} "{$Class}"', 
+					'Broken new job #{$ID} "{$Class}"');
+			break;
 		}
 		return $this->echoTemplate(array(
-			'Records' => new ArrayList($jobs),
-		), 'QueuedJobsDevAdmin_recordlist');
+			'Content' => 'Action "'.$actionOrID.'" is invalid',
+		));
 	}
 
-	protected function executeJob($jobID, $successMessage, $brokeMessage) {
-		ob_start();
-		$isSuccessful = $this->jobQueue->runJob($jobID);
-		$echoMessages = ob_get_contents();
-		ob_end_clean();
-		$jobRecord = QueuedJobDescriptor::get()->byID($jobID);
-		$message = $successMessage;
-		if (!$isSuccessful) {
-			$message = $brokeMessage;
+	/**
+	 * Execute a job and echo / render the results
+	 */
+	protected function executeJobAndRender($jobID, $successMessage, $brokeMessage) {
+		$isSuccessful = false;
+		$echoMessages = '';
+		if (Director::is_cli()) {
+			$isSuccessful = $this->jobQueue->runJob($jobID);
+		} else {
+			ob_start();
+			$isSuccessful = $this->jobQueue->runJob($jobID);
+			$echoMessages = ob_get_contents();
+			ob_end_clean();
 		}
-		$message = str_replace('{$ID}', $jobRecord->ID, $message);
-		$message = str_replace('{$Class}', $jobRecord->class, $message);
+		$jobRecord = QueuedJobDescriptor::get()->byID($jobID);
+		$jobRecordID = $jobRecord->ID ? $jobRecord->ID : 0;
+		$jobRecordClass = $jobRecord->Implementation ? $jobRecord->Implementation : '';
+		$message = ($isSuccessful) ? $successMessage : $brokeMessage;
+		$message = str_replace('{$ID}', $jobRecordID, $message);
+		$message = str_replace('{$Class}', $jobRecordClass, $message);
+		if (Director::is_cli()) {
+			return $this->echoTemplate(array(
+				'Content' => $message,
+			));
+			return;
+		}
 		return $this->echoTemplate(array(
 			'EchoMessage' => $echoMessages,
 			'Content' => $message,
