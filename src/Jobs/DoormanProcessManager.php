@@ -4,15 +4,24 @@ namespace SilverStripe\QueuedJobs\Jobs;
 
 use AsyncPHP\Doorman\Manager\ProcessManager;
 
-class DoormanProcessManager extends ProcessManager
+class DoormanProcessManager
 {
     /**
-     * @inheritdoc
-     *
-     * @return string
+     * @var ProcessManager
      */
-    public function getWorker()
+    protected $manager;
+
+    /**
+     * Get the Doorman ProcessManager with a customised worker path
+     *
+     * @return ProcessManager
+     */
+    public function getManager()
     {
-        return BASE_PATH . "/framework/cli-script.php dev/tasks/ProcessJobQueueChildTask";
+        if ($this->manager === null) {
+            $this->manager = new ProcessManager;
+            $this->manager->setWorker(BASE_PATH . '/framework/cli-script.php dev/tasks/ProcessJobQueueChildTask');
+        }
+        return $this->manager;
     }
 }

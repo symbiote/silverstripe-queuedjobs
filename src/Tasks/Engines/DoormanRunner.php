@@ -47,9 +47,7 @@ class DoormanRunner extends BaseRunner implements TaskRunnerEngine
     {
 
         // split jobs out into multiple tasks...
-
-        $manager = new DoormanProcessManager();
-        // $manager->setLogPath(__DIR__);
+        $manager = Injector::inst()->get(DoormanProcessManager::class)->getManager();
 
         // Assign default rules
         $defaultRules = $this->getDefaultRules();
