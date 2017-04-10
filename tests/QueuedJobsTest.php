@@ -404,6 +404,7 @@ class QueuedJobsTest extends SapphireTest {
 					QueuedJob::STATUS_INIT,
 					QueuedJob::STATUS_RUN,
 					QueuedJob::STATUS_WAIT,
+					QueuedJob::STATUS_PAUSED
 				)
 		);
 		//assert no jobs currently active
@@ -417,6 +418,15 @@ class QueuedJobsTest extends SapphireTest {
 				))->first();
 		// Verify initial state is new
 		$this->assertEquals(QueuedJob::STATUS_NEW, $descriptor->JobStatus);
+
+		//update Job to paused
+		$descriptor->JobStatus = QueuedJob::STATUS_PAUSED;
+		$descriptor->write();
+		//check defaults the paused job shoudl be ignored
+		$svc->checkdefaultJobs();
+		$this->assertEquals(1, $activeJobs->count());
+		//assert we now still have 1 of our job (paused)
+		$this->assertEquals(1, QueuedJobDescriptor::get()->count());
 
 		//update Job to broken
 		$descriptor->JobStatus = QueuedJob::STATUS_BROKEN;
