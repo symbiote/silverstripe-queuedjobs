@@ -21,10 +21,10 @@ class CleanupJobTest extends SapphireTest
      */
     public function setUp()
     {
-        parent::setUp();
         // Have to set a fake time here to work with
         // the LastEdited dates in the fixture
-        DBDatetime::set_mock_now("02-02-03 02:02:02");
+        DBDatetime::set_mock_now("2002-02-03 02:02:02");
+        parent::setUp();
     }
 
     /**
