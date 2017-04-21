@@ -4,9 +4,9 @@ use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\QueuedJobs\DataObjects\QueuedJobDescriptor;
-use SilverStripe\QueuedJobs\Services\AbstractQueuedJob;
 use SilverStripe\QueuedJobs\Services\QueuedJob;
-use SilverStripe\QueuedJobs\Services\QueuedJobService;
+use SilverStripe\QueuedJobs\Tests\TestQueuedJob;
+use SilverStripe\QueuedJobs\Tests\TestQJService;
 
 /**
  *
@@ -48,7 +48,7 @@ class QueuedJobsTest extends SapphireTest
      */
     protected function getService()
     {
-        return singleton('TestQJService');
+        return singleton(TestQJService::class);
     }
 
     public function testQueueJob()
@@ -64,7 +64,7 @@ class QueuedJobsTest extends SapphireTest
 
         $myJob = null;
         foreach ($list as $job) {
-            if ($job->Implementation == 'TestQueuedJob') {
+            if ($job->Implementation == TestQueuedJob::class) {
                 $myJob = $job;
                 break;
             }
@@ -72,7 +72,7 @@ class QueuedJobsTest extends SapphireTest
 
         $this->assertNotNull($myJob);
         $this->assertTrue($jobId > 0);
-        $this->assertEquals('TestQueuedJob', $myJob->Implementation);
+        $this->assertEquals(TestQueuedJob::class, $myJob->Implementation);
         $this->assertNotNull($myJob->SavedJobData);
     }
 
@@ -169,7 +169,7 @@ class QueuedJobsTest extends SapphireTest
         $descriptor = DataObject::get_by_id('SilverStripe\\QueuedJobs\\DataObjects\\QueuedJobDescriptor', $id);
 
         $job = $svc->testInit($descriptor);
-        $this->assertInstanceOf('TestQueuedJob', $job, 'Job has been triggered');
+        $this->assertInstanceOf(TestQueuedJob::class, $job, 'Job has been triggered');
 
         $descriptor = DataObject::get_by_id('SilverStripe\\QueuedJobs\\DataObjects\\QueuedJobDescriptor', $id);
 
@@ -381,69 +381,5 @@ class QueuedJobsTest extends SapphireTest
         $descriptor = QueuedJobDescriptor::get()->byID($id);
         $this->assertEquals(QueuedJob::STATUS_PAUSED, $descriptor->JobStatus);
         $this->assertEmpty($nextJob);
-    }
-}
-
-// stub class to be able to call init from an external context
-class TestQJService extends QueuedJobService
-{
-    /**
-     * Not inherited from QueuedJobService unfortunately...
-     * @var array
-     */
-    private static $dependencies = [
-        'queueHandler' => '%$QueueHandler'
-    ];
-
-    public function testInit($descriptor)
-    {
-        return $this->initialiseJob($descriptor);
-    }
-}
-
-class TestQueuedJob extends AbstractQueuedJob implements QueuedJob
-{
-    private $type = QueuedJob::QUEUED;
-
-    public function __construct($type = null)
-    {
-        if ($type) {
-            $this->type = $type;
-        }
-        $this->times = array();
-    }
-
-    public function getJobType()
-    {
-        return $this->type;
-    }
-
-    public function getTitle()
-    {
-        return "A Test job";
-    }
-
-    public function setup()
-    {
-        $this->totalSteps = 5;
-    }
-
-    public function process()
-    {
-        $times = $this->times;
-        // needed due to quirks with __set
-        $times[] = date('Y-m-d H:i:s');
-        $this->times = $times;
-
-        $this->addMessage("Updated time to " . date('Y-m-d H:i:s'));
-        sleep(1);
-
-        // make sure we're incrementing
-        $this->currentStep++;
-
-        // and checking whether we're complete
-        if ($this->currentStep == 5) {
-            $this->isComplete = true;
-        }
     }
 }

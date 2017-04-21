@@ -5,6 +5,7 @@ namespace SilverStripe\QueuedJobs;
 use SilverStripe\Core\Convert;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\DB;
+use Monolog\Logger;
 
 /**
  * A set of utility functions used by the queued jobs module
@@ -82,30 +83,6 @@ class QJUtils
         }
 
         return $val;
-    }
-
-    /**
-     * @deprecated 3.0 Use Injector::inst()->get('Logger') instead
-     *
-     * @param string $message
-     * @param int $level
-     */
-    public function log($message, $level = null)
-    {
-        Injector::inst()
-            ->get('Logger')
-            ->debug(
-                print_r(
-                    array(
-                        'errno' => '',
-                        'errstr' => $message,
-                        'errfile' => dirname(__FILE__),
-                        'errline' => '',
-                        'errcontext' => array()
-                    ),
-                    true
-                )
-            );
     }
 
     /**
