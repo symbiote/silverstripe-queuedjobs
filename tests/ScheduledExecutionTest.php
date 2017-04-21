@@ -11,11 +11,18 @@ use SilverStripe\ORM\DataObject;
 class ScheduledExecutionTest extends SapphireTest
 {
     /**
+     * We need the DB for this test
+     *
+     * @var bool
+     */
+    protected $usesDatabase = true;
+
+    /**
      * {@inheritDoc}
      * @var array
      */
     protected $extraDataObjects = array(
-        'TestScheduledDataObject',
+        TestScheduledDataObject::class
     );
 
     public function testScheduledExecutionTimes()
@@ -75,7 +82,7 @@ class ScheduledExecutionTest extends SapphireTest
         $job->execute();
 
         // reload the test object and make sure its job has now changed
-        $test = DataObject::get_by_id('TestScheduledDataObject', $test->ID);
+        $test = DataObject::get_by_id(TestScheduledDataObject::class, $test->ID);
 
         $this->assertNotEquals($test->ScheduledJobID, $jobId);
         $this->assertEquals('EXECUTED', $test->Message);
@@ -101,7 +108,7 @@ class ScheduledExecutionTest extends SapphireTest
         $job = $test->ScheduledJob();
         $job->execute();
 
-        $test = DataObject::get_by_id('TestScheduledDataObject', $test->ID);
+        $test = DataObject::get_by_id(TestScheduledDataObject::class, $test->ID);
 
         $job = $test->ScheduledJob();
 
@@ -118,9 +125,10 @@ class ScheduledExecutionTest extends SapphireTest
     }
 }
 
-
-class TestScheduledDataObject extends DataObject implements TestOnly
+class TestScheduledDataObject extends DataObject
 {
+    private static $table_name = 'TestScheduledDataObject';
+
     private static $db = array(
         'Title' => 'Varchar',
         'Message' => 'Varchar',
