@@ -35,7 +35,7 @@ class QueuedJobsAdminTest extends FunctionalTest
         parent::setUp();
         $this->admin = new QueuedJobsAdmin;
 
-        $mockQueue = $this->createMock('SilverStripe\\QueuedJobs\\Services\\QueuedJobService');
+        $mockQueue = $this->getMock('SilverStripe\\QueuedJobs\\Services\\QueuedJobService');
         $this->admin->jobQueue = $mockQueue;
 
         $this->logInWithPermission('ADMIN');
