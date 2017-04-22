@@ -31,7 +31,7 @@ class QueuedJobsTest extends SapphireTest
 
         Config::nest();
         // Two restarts are allowed per job
-        Config::inst()->update('SilverStripe\\QueuedJobs\\Services\\QueuedJobService', 'stall_threshold', 2);
+        Config::modify()->set('SilverStripe\\QueuedJobs\\Services\\QueuedJobService', 'stall_threshold', 2);
     }
 
     /**

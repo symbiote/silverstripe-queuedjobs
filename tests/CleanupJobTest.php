@@ -39,10 +39,10 @@ class CleanupJobTest extends SapphireTest
     public function testByDays()
     {
         $job = new CleanupJob();
-        Config::inst()->update('SilverStripe\\QueuedJobs\\Jobs\\CleanupJob', 'cleanup_method', 'age');
-        Config::inst()->update('SilverStripe\\QueuedJobs\\Jobs\\CleanupJob', 'cleanup_value', 30);
+        Config::modify()->set('SilverStripe\\QueuedJobs\\Jobs\\CleanupJob', 'cleanup_method', 'age');
+        Config::modify()->set('SilverStripe\\QueuedJobs\\Jobs\\CleanupJob', 'cleanup_value', 30);
         Config::inst()->remove('SilverStripe\\QueuedJobs\\Jobs\\CleanupJob', 'cleanup_statuses');
-        Config::inst()->update(
+        Config::modify()->set(
             'SilverStripe\\QueuedJobs\\Jobs\\CleanupJob',
             'cleanup_statuses',
             array('Broken', 'Complete')
@@ -55,10 +55,10 @@ class CleanupJobTest extends SapphireTest
     public function testByNumber()
     {
         $job = new CleanupJob();
-        Config::inst()->update('SilverStripe\\QueuedJobs\\Jobs\\CleanupJob', 'cleanup_method', 'number');
-        Config::inst()->update('SilverStripe\\QueuedJobs\\Jobs\\CleanupJob', 'cleanup_value', 3);
+        Config::modify()->set('SilverStripe\\QueuedJobs\\Jobs\\CleanupJob', 'cleanup_method', 'number');
+        Config::modify()->set('SilverStripe\\QueuedJobs\\Jobs\\CleanupJob', 'cleanup_value', 3);
         Config::inst()->remove('SilverStripe\\QueuedJobs\\Jobs\\CleanupJob', 'cleanup_statuses');
-        Config::inst()->update(
+        Config::modify()->set(
             'SilverStripe\\QueuedJobs\\Jobs\\CleanupJob',
             'cleanup_statuses',
             array('Broken', 'Complete')
@@ -71,10 +71,10 @@ class CleanupJobTest extends SapphireTest
     public function testByStatus()
     {
         $job = new CleanupJob();
-        Config::inst()->update('SilverStripe\\QueuedJobs\\Jobs\\CleanupJob', 'cleanup_method', 'number');
-        Config::inst()->update('SilverStripe\\QueuedJobs\\Jobs\\CleanupJob', 'cleanup_value', 3);
+        Config::modify()->set('SilverStripe\\QueuedJobs\\Jobs\\CleanupJob', 'cleanup_method', 'number');
+        Config::modify()->set('SilverStripe\\QueuedJobs\\Jobs\\CleanupJob', 'cleanup_value', 3);
         Config::inst()->remove('SilverStripe\\QueuedJobs\\Jobs\\CleanupJob', 'cleanup_statuses');
-        Config::inst()->update(
+        Config::modify()->set(
             'SilverStripe\\QueuedJobs\\Jobs\\CleanupJob',
             'cleanup_statuses',
             array('Broken', 'Complete', 'New')
@@ -87,10 +87,10 @@ class CleanupJobTest extends SapphireTest
     public function testNoCleanup()
     {
         $job = new CleanupJob();
-        Config::inst()->update('SilverStripe\\QueuedJobs\\Jobs\\CleanupJob', 'cleanup_method', 'number');
-        Config::inst()->update('SilverStripe\\QueuedJobs\\Jobs\\CleanupJob', 'cleanup_value', 6);
+        Config::modify()->set('SilverStripe\\QueuedJobs\\Jobs\\CleanupJob', 'cleanup_method', 'number');
+        Config::modify()->set('SilverStripe\\QueuedJobs\\Jobs\\CleanupJob', 'cleanup_value', 6);
         Config::inst()->remove('SilverStripe\\QueuedJobs\\Jobs\\CleanupJob', 'cleanup_statuses');
-        Config::inst()->update(
+        Config::modify()->set(
             'SilverStripe\\QueuedJobs\\Jobs\\CleanupJob',
             'cleanup_statuses',
             array('Broken', 'Complete', 'New')

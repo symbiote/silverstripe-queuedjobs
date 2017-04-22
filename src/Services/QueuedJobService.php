@@ -122,7 +122,7 @@ class QueuedJobService
             }
         }
         if (Config::inst()->get('SilverStripe\\Control\\Email\\Email', 'queued_job_admin_email') == '') {
-            Config::inst()->update(
+            Config::modify()->set(
                 'SilverStripe\\Control\\Email\\Email', 'queued_job_admin_email',
                 Config::inst()->get('SilverStripe\\Control\\Email\\Email', 'admin_email')
             );
@@ -144,7 +144,6 @@ class QueuedJobService
      */
     public function queueJob(QueuedJob $job, $startAfter = null, $userId = null, $queueName = null)
     {
-
         $signature = $job->getSignature();
 
         // see if we already have this job in a queue
@@ -561,7 +560,7 @@ class QueuedJobService
                         $domain = $subsite->domain();
                         $base = rtrim(Director::protocol() . $domain, '/') . '/';
 
-                        Config::inst()->update('SilverStripe\\Control\\Director', 'alternate_base_url', $base);
+                        Config::modify()->set('SilverStripe\\Control\\Director', 'alternate_base_url', $base);
                     }
                 }
 

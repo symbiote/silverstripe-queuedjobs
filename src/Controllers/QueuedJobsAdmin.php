@@ -157,7 +157,7 @@ class QueuedJobsAdmin extends ModelAdmin
         if (Permission::check('ADMIN')) {
             $jobType = isset($data['JobType']) ? $data['JobType'] : '';
             $params = isset($data['JobParams']) ? explode(PHP_EOL, $data['JobParams']) : array();
-            $time = isset($data['JobStart']) ? $data['JobStart'] : null;
+            $time = isset($data['JobStart']) && is_array($data['JobStart']) ? implode(" ", $data['JobStart']) : null;
 
             if ($jobType && class_exists($jobType)) {
                 $jobClass = new ReflectionClass($jobType);
