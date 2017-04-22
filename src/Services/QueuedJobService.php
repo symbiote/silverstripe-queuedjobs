@@ -56,6 +56,8 @@ class QueuedJobService
      * this value. This needs to be set to a value lower than the php_ini max_memory as
      * the system will otherwise crash before shutdown can be handled gracefully.
      *
+     * This was increased to 256MB for SilverStripe 4.x as framework uses more memory than 3.x
+     *
      * @var int
      * @config
      */
@@ -337,7 +339,7 @@ class QueuedJobService
         // finally, find the list of broken jobs and send an email if there's some found
         $brokenJobs = QueuedJobDescriptor::get()->filter('JobStatus', QueuedJob::STATUS_BROKEN);
         if ($brokenJobs && $brokenJobs->count()) {
-            $this->getLogger()->debug(
+            $this->getLogger()->error(
                 print_r(
                     array(
                         'errno' => 0,
@@ -380,7 +382,7 @@ class QueuedJobService
             );
         }
 
-        $this->getLogger()->debug($message);
+        $this->getLogger()->error($message);
         $from = Config::inst()->get('SilverStripe\\Control\\Email\\Email', 'admin_email');
         $to = Config::inst()->get('SilverStripe\\Control\\Email\\Email', 'queued_job_admin_email');
         $subject = _t('QueuedJobs.STALLED_JOB', 'Stalled job');
@@ -572,7 +574,7 @@ class QueuedJobService
                     );
                     if (!$jobDescriptor || !$jobDescriptor->exists()) {
                         $broken = true;
-                        $this->getLogger()->debug(
+                        $this->getLogger()->error(
                             print_r(
                                 array(
                                     'errno' => 0,
@@ -606,7 +608,7 @@ class QueuedJobService
                                 ),
                                 'ERROR'
                             );
-                            $this->getLogger()->debug($e->getMessage());
+                            $this->getLogger()->error($e->getMessage());
                             $jobDescriptor->JobStatus =  QueuedJob::STATUS_BROKEN;
                         }
 
@@ -654,7 +656,7 @@ class QueuedJobService
                         $this->copyJobToDescriptor($job, $jobDescriptor);
                         $jobDescriptor->write();
                     } else {
-                        $this->getLogger()->debug(
+                        $this->getLogger()->error(
                             print_r(
                                 array(
                                     'errno' => 0,
@@ -681,7 +683,7 @@ class QueuedJobService
                 }
             } catch (Exception $e) {
                 // okay, we'll just catch this exception for now
-                $this->getLogger()->debug($e->getMessage());
+                $this->getLogger()->error($e->getMessage());
                 $jobDescriptor->JobStatus =  QueuedJob::STATUS_BROKEN;
                 $jobDescriptor->write();
                 $broken = true;
