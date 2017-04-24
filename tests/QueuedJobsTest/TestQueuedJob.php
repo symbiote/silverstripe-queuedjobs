@@ -1,6 +1,6 @@
 <?php
 
-namespace SilverStripe\QueuedJobs\Tests;
+namespace SilverStripe\QueuedJobs\Tests\QueuedJobsTest;
 
 use SilverStripe\QueuedJobs\Services\AbstractQueuedJob;
 use SilverStripe\QueuedJobs\Services\QueuedJob;
