@@ -32,7 +32,6 @@ class QueuedJobsTest extends SapphireTest
         Config::nest();
         // Two restarts are allowed per job
         Config::modify()->set('SilverStripe\\QueuedJobs\\Services\\QueuedJobService', 'stall_threshold', 2);
-        Config::modify()->set('ErrorHandler', 'class', 'Monolog\\Handler\\NullHandler');
     }
 
     /**
@@ -278,6 +277,7 @@ class QueuedJobsTest extends SapphireTest
     {
         // Create a job and add it to the queue
         $svc = $this->getService();
+        $logger = $svc->getLogger();
         $job = new TestQueuedJob(QueuedJob::IMMEDIATE);
         $job->firstJob = true;
         $id = $svc->queueJob($job);
@@ -324,6 +324,7 @@ class QueuedJobsTest extends SapphireTest
         // Loop 3 - We've previously marked this job as broken, so restart it this round
         // If no more work has been done on the job at this point, assume that we are able to
         // restart it
+        $logger->clear();
         $svc->checkJobHealth(QueuedJob::IMMEDIATE);
         $nextJob = $svc->getNextPendingJob(QueuedJob::IMMEDIATE);
 
@@ -334,6 +335,7 @@ class QueuedJobsTest extends SapphireTest
         $this->assertEquals(0, $descriptor->StepsProcessed);
         $this->assertEquals(0, $descriptor->LastProcessedCount);
         $this->assertEquals(1, $descriptor->ResumeCounts);
+        $this->assertContains('A job named A Test job appears to have stalled. It will be stopped and restarted, please login to make sure it has continued', $logger->getMessages());
 
         // Run 2 - First restart (work is done)
         $descriptor->JobStatus = QueuedJob::STATUS_RUN;
@@ -359,6 +361,7 @@ class QueuedJobsTest extends SapphireTest
 
         // Loop 5 - Job is again found to not have been restarted since last iteration, so perform second
         // restart. The job should be attempted to run this loop
+        $logger->clear();
         $svc->checkJobHealth(QueuedJob::IMMEDIATE);
         $nextJob = $svc->getNextPendingJob(QueuedJob::IMMEDIATE);
 
@@ -369,12 +372,14 @@ class QueuedJobsTest extends SapphireTest
         $this->assertEquals(1, $descriptor->StepsProcessed);
         $this->assertEquals(1, $descriptor->LastProcessedCount);
         $this->assertEquals(2, $descriptor->ResumeCounts);
+        $this->assertContains('A job named A Test job appears to have stalled. It will be stopped and restarted, please login to make sure it has continued', $logger->getMessages());
 
         // Run 3 - Second and last restart (no work is done)
         $descriptor->JobStatus = QueuedJob::STATUS_RUN;
         $descriptor->write();
 
         // Loop 6 - As no progress has been made since loop 3, we can mark this as dead
+        $logger->clear();
         $svc->checkJobHealth(QueuedJob::IMMEDIATE);
         $nextJob = $svc->getNextPendingJob(QueuedJob::IMMEDIATE);
 
@@ -382,5 +387,6 @@ class QueuedJobsTest extends SapphireTest
         $descriptor = QueuedJobDescriptor::get()->byID($id);
         $this->assertEquals(QueuedJob::STATUS_PAUSED, $descriptor->JobStatus);
         $this->assertEmpty($nextJob);
+        $this->assertContains('A job named A Test job appears to have stalled. It has been paused, please login to check it', $logger->getMessages());
     }
 }

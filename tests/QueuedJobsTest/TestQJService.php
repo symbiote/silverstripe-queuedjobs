@@ -12,6 +12,8 @@ class TestQJService extends QueuedJobService implements TestOnly
      * Not inherited from QueuedJobService unfortunately...
      * @var array
      */
+    private $logger;
+
     private static $dependencies = [
         'queueHandler' => '%$QueueHandler'
     ];
@@ -19,5 +21,10 @@ class TestQJService extends QueuedJobService implements TestOnly
     public function testInit($descriptor)
     {
         return $this->initialiseJob($descriptor);
+    }
+
+    public function getLogger() 
+    {
+        return isset($this->logger) ? $this->logger : $this->logger = new QueuedJobsTest_RecordingLogger();
     }
 }
