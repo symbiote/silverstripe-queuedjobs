@@ -5,7 +5,6 @@ namespace SilverStripe\QueuedJobs;
 use SilverStripe\Core\Convert;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\DB;
-use Monolog\Logger;
 
 /**
  * A set of utility functions used by the queued jobs module
