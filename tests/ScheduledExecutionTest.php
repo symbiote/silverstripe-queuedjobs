@@ -1,8 +1,8 @@
 <?php
 
 use SilverStripe\Dev\SapphireTest;
-use SilverStripe\Dev\TestOnly;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\QueuedJobs\Tests\ScheduledExecutionTest\TestScheduledDataObject;
 
 /**
  * @author marcus@silverstripe.com.au
@@ -21,7 +21,7 @@ class ScheduledExecutionTest extends SapphireTest
      * {@inheritDoc}
      * @var array
      */
-    protected $extraDataObjects = array(
+    protected static $extra_dataobjects = array(
         TestScheduledDataObject::class
     );
 
@@ -48,7 +48,7 @@ class ScheduledExecutionTest extends SapphireTest
         $job->execute();
 
         // reload the test object and make sure its job has now changed
-        $test = DataObject::get_by_id('TestScheduledDataObject', $test->ID);
+        $test = DataObject::get_by_id(TestScheduledDataObject::class, $test->ID);
 
         $this->assertNotEquals($test->ScheduledJobID, $jobId);
         $this->assertEquals('EXECUTED', $test->Message);
@@ -122,25 +122,5 @@ class ScheduledExecutionTest extends SapphireTest
         $scheduledMinutes = intval($scheduledMinutes, 10);
 
         $this->assertEquals($expectedMinutes + 3, $scheduledMinutes, 'Did not reschedule 3 minutes later');
-    }
-}
-
-class TestScheduledDataObject extends DataObject
-{
-    private static $table_name = 'TestScheduledDataObject';
-
-    private static $db = array(
-        'Title' => 'Varchar',
-        'Message' => 'Varchar',
-    );
-
-    private static $extensions = array(
-        'SilverStripe\\QueuedJobs\\Extensions\\ScheduledExecutionExtension'
-    );
-
-    public function onScheduledExecution()
-    {
-        $this->Message = 'EXECUTED';
-        $this->write();
     }
 }

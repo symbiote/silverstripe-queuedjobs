@@ -5,8 +5,8 @@ use SilverStripe\Core\Config\Config;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\QueuedJobs\DataObjects\QueuedJobDescriptor;
 use SilverStripe\QueuedJobs\Services\QueuedJob;
-use SilverStripe\QueuedJobs\Tests\TestQueuedJob;
-use SilverStripe\QueuedJobs\Tests\TestQJService;
+use SilverStripe\QueuedJobs\Tests\QueuedJobsTest\TestQueuedJob;
+use SilverStripe\QueuedJobs\Tests\QueuedJobsTest\TestQJService;
 
 /**
  *
