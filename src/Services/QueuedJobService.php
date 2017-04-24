@@ -365,7 +365,7 @@ class QueuedJobService
             $stalledJob->restart();
             $message = sprintf(
                 _t(
-                    'QueuedJobs.STALLED_JOB_MSG',
+                    'QueuedJobs.STALLED_JOB_RESTART_MSG',
                     'A job named %s appears to have stalled. It will be stopped and restarted, please login to make sure it has continued'
                 ),
                 $stalledJob->JobTitle
