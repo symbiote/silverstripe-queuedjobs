@@ -35,7 +35,8 @@ class QueuedJobsAdminTest extends FunctionalTest
         parent::setUp();
         $this->admin = new QueuedJobsAdmin;
 
-        $mockQueue = $this->getMock('SilverStripe\\QueuedJobs\\Services\\QueuedJobService');
+        // Compatible with both PHPUnit 3 and PHPUnit 5+
+        $mockQueue = method_exists($this, 'createMock') ? $this->createMock('SilverStripe\\QueuedJobs\\Services\\QueuedJobService') : $this->getMock('SilverStripe\\QueuedJobs\\Services\\QueuedJobService');
         $this->admin->jobQueue = $mockQueue;
 
         $this->logInWithPermission('ADMIN');
