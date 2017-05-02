@@ -85,30 +85,6 @@ class QJUtils
     }
 
     /**
-     * @deprecated 3.0 Use Injector::inst()->get('Logger') instead
-     *
-     * @param string $message
-     * @param int $level
-     */
-    public function log($message, $level = null)
-    {
-        Injector::inst()
-            ->get('Logger')
-            ->debug(
-                print_r(
-                    array(
-                        'errno' => '',
-                        'errstr' => $message,
-                        'errfile' => dirname(__FILE__),
-                        'errline' => '',
-                        'errcontext' => array()
-                    ),
-                    true
-                )
-            );
-    }
-
-    /**
      * @param string $message
      * @param string $status
      * @return string

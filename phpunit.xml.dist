@@ -1,0 +1,9 @@
+<!--
+Standard module phpunit configuration.
+Requires PHPUnit ^5.7
+-->
+<phpunit bootstrap="framework/tests/bootstrap.php" colors="true">
+        <testsuite name="Default">
+                <directory>tests</directory>
+    </testsuite>
+</phpunit>

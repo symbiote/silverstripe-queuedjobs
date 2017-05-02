@@ -196,7 +196,9 @@ constructor, to prevent any health checks detecting the job.
 
 ## Performance configuration
 
-By default this task will run until either 128mb or the limit specified by php\_ini('memory\_limit') is reached.
+By default this task will run until either 256mb or the limit specified by php\_ini('memory\_limit') is reached.
+
+>NOTE: This was increased to 256MB in 4.x to handle the increase in memory usage by framework.
 
 You can adjust this with the below config change
 

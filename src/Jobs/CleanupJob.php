@@ -62,7 +62,7 @@ class CleanupJob extends AbstractQueuedJob implements QueuedJob
      */
     public function config()
     {
-        return Config::inst()->forClass(get_called_class());
+        return Config::forClass(get_called_class());
     }
 
     /**

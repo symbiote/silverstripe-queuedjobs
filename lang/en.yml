@@ -28,6 +28,7 @@ en:
     MEMORY_RELEASE: 'Job releasing memory and waiting (%s used)'
     STALLED_JOB: 'Stalled job'
     STALLED_JOB_MSG: 'A job named %s appears to have stalled. It has been paused, please login to check it'
+    STALLED_JOB_RESTART_MSG: 'A job named %s appears to have stalled. It will be stopped and restarted, please login to make sure it has continued'
     START_JOB_TIME: 'Start job at'
     TABLE_ADDE: Added
     TABLE_MESSAGES: Message

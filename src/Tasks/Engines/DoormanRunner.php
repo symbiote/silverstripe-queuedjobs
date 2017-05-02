@@ -5,7 +5,6 @@ namespace SilverStripe\QueuedJobs\Tasks\Engines;
 use AsyncPHP\Doorman\Rule;
 use SilverStripe\ORM\FieldType\DBDatetime;
 use SilverStripe\QueuedJobs\DataObjects\QueuedJobDescriptor;
-use SilverStripe\QueuedJobs\Jobs\DoormanProcessManager;
 use SilverStripe\QueuedJobs\Jobs\DoormanQueuedJobTask;
 use SilverStripe\QueuedJobs\Services\QueuedJob;
 
@@ -48,7 +47,8 @@ class DoormanRunner extends BaseRunner implements TaskRunnerEngine
 
         // split jobs out into multiple tasks...
 
-        $manager = new DoormanProcessManager();
+        $manager = new ProcessManager();
+        $manager->setWorker(BASE_PATH . "/framework/cli-script.php dev/tasks/ProcessJobQueueChildTask");
         // $manager->setLogPath(__DIR__);
 
         // Assign default rules

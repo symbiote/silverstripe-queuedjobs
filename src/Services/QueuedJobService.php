@@ -19,6 +19,7 @@ use SilverStripe\ORM\FieldType\DBDatetime;
 use SilverStripe\QueuedJobs\DataObjects\QueuedJobDescriptor;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\Permission;
+use Psr\Log\LoggerInterface;
 
 /**
  * A service that can be used for starting, stopping and listing queued jobs.
@@ -51,14 +52,16 @@ class QueuedJobService
     /**
      * How much ram will we allow before pausing and releasing the memory?
      *
-     * For instance, set to 134217728 (128MB) to pause this process if used memory exceeds
+     * For instance, set to 268435456 (256MB) to pause this process if used memory exceeds
      * this value. This needs to be set to a value lower than the php_ini max_memory as
      * the system will otherwise crash before shutdown can be handled gracefully.
+     *
+     * This was increased to 256MB for SilverStripe 4.x as framework uses more memory than 3.x
      *
      * @var int
      * @config
      */
-    private static $memory_limit = 134217728;
+    private static $memory_limit = 268435456;
 
     /**
      * Optional time limit (in seconds) to run the service before restarting to release resources.
@@ -119,7 +122,7 @@ class QueuedJobService
             }
         }
         if (Config::inst()->get('SilverStripe\\Control\\Email\\Email', 'queued_job_admin_email') == '') {
-            Config::inst()->update(
+            Config::modify()->set(
                 'SilverStripe\\Control\\Email\\Email', 'queued_job_admin_email',
                 Config::inst()->get('SilverStripe\\Control\\Email\\Email', 'admin_email')
             );
@@ -141,7 +144,6 @@ class QueuedJobService
      */
     public function queueJob(QueuedJob $job, $startAfter = null, $userId = null, $queueName = null)
     {
-
         $signature = $job->getSignature();
 
         // see if we already have this job in a queue
@@ -363,7 +365,7 @@ class QueuedJobService
             $stalledJob->restart();
             $message = sprintf(
                 _t(
-                    'QueuedJobs.STALLED_JOB_MSG',
+                    'QueuedJobs.STALLED_JOB_RESTART_MSG',
                     'A job named %s appears to have stalled. It will be stopped and restarted, please login to make sure it has continued'
                 ),
                 $stalledJob->JobTitle
@@ -379,7 +381,7 @@ class QueuedJobService
             );
         }
 
-        singleton('SilverStripe\\QueuedJobs\\QJUtils')->log($message);
+        $this->getLogger()->error($message);
         $from = Config::inst()->get('SilverStripe\\Control\\Email\\Email', 'admin_email');
         $to = Config::inst()->get('SilverStripe\\Control\\Email\\Email', 'queued_job_admin_email');
         $subject = _t('QueuedJobs.STALLED_JOB', 'Stalled job');
@@ -558,7 +560,7 @@ class QueuedJobService
                         $domain = $subsite->domain();
                         $base = rtrim(Director::protocol() . $domain, '/') . '/';
 
-                        Config::inst()->update('SilverStripe\\Control\\Director', 'alternate_base_url', $base);
+                        Config::modify()->set('SilverStripe\\Control\\Director', 'alternate_base_url', $base);
                     }
                 }
 
@@ -653,7 +655,7 @@ class QueuedJobService
                         $this->copyJobToDescriptor($job, $jobDescriptor);
                         $jobDescriptor->write();
                     } else {
-                        $this->getLogger()->warn(
+                        $this->getLogger()->error(
                             print_r(
                                 array(
                                     'errno' => 0,
@@ -936,7 +938,7 @@ class QueuedJobService
      */
     public function getLogger()
     {
-        return Injector::inst()->get('Logger');
+        return Injector::inst()->get(LoggerInterface::class);
     }
 }
 

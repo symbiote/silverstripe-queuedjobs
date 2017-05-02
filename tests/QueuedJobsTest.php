@@ -4,9 +4,9 @@ use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\QueuedJobs\DataObjects\QueuedJobDescriptor;
-use SilverStripe\QueuedJobs\Services\AbstractQueuedJob;
 use SilverStripe\QueuedJobs\Services\QueuedJob;
-use SilverStripe\QueuedJobs\Services\QueuedJobService;
+use SilverStripe\QueuedJobs\Tests\QueuedJobsTest\TestQueuedJob;
+use SilverStripe\QueuedJobs\Tests\QueuedJobsTest\TestQJService;
 
 /**
  *
@@ -31,7 +31,7 @@ class QueuedJobsTest extends SapphireTest
 
         Config::nest();
         // Two restarts are allowed per job
-        Config::inst()->update('SilverStripe\\QueuedJobs\\Services\\QueuedJobService', 'stall_threshold', 2);
+        Config::modify()->set('SilverStripe\\QueuedJobs\\Services\\QueuedJobService', 'stall_threshold', 2);
     }
 
     /**
@@ -48,7 +48,7 @@ class QueuedJobsTest extends SapphireTest
      */
     protected function getService()
     {
-        return singleton('TestQJService');
+        return singleton(TestQJService::class);
     }
 
     public function testQueueJob()
@@ -64,7 +64,7 @@ class QueuedJobsTest extends SapphireTest
 
         $myJob = null;
         foreach ($list as $job) {
-            if ($job->Implementation == 'TestQueuedJob') {
+            if ($job->Implementation == TestQueuedJob::class) {
                 $myJob = $job;
                 break;
             }
@@ -72,7 +72,7 @@ class QueuedJobsTest extends SapphireTest
 
         $this->assertNotNull($myJob);
         $this->assertTrue($jobId > 0);
-        $this->assertEquals('TestQueuedJob', $myJob->Implementation);
+        $this->assertEquals(TestQueuedJob::class, $myJob->Implementation);
         $this->assertNotNull($myJob->SavedJobData);
     }
 
@@ -169,7 +169,7 @@ class QueuedJobsTest extends SapphireTest
         $descriptor = DataObject::get_by_id('SilverStripe\\QueuedJobs\\DataObjects\\QueuedJobDescriptor', $id);
 
         $job = $svc->testInit($descriptor);
-        $this->assertInstanceOf('TestQueuedJob', $job, 'Job has been triggered');
+        $this->assertInstanceOf(TestQueuedJob::class, $job, 'Job has been triggered');
 
         $descriptor = DataObject::get_by_id('SilverStripe\\QueuedJobs\\DataObjects\\QueuedJobDescriptor', $id);
 
@@ -277,6 +277,7 @@ class QueuedJobsTest extends SapphireTest
     {
         // Create a job and add it to the queue
         $svc = $this->getService();
+        $logger = $svc->getLogger();
         $job = new TestQueuedJob(QueuedJob::IMMEDIATE);
         $job->firstJob = true;
         $id = $svc->queueJob($job);
@@ -323,6 +324,7 @@ class QueuedJobsTest extends SapphireTest
         // Loop 3 - We've previously marked this job as broken, so restart it this round
         // If no more work has been done on the job at this point, assume that we are able to
         // restart it
+        $logger->clear();
         $svc->checkJobHealth(QueuedJob::IMMEDIATE);
         $nextJob = $svc->getNextPendingJob(QueuedJob::IMMEDIATE);
 
@@ -333,6 +335,7 @@ class QueuedJobsTest extends SapphireTest
         $this->assertEquals(0, $descriptor->StepsProcessed);
         $this->assertEquals(0, $descriptor->LastProcessedCount);
         $this->assertEquals(1, $descriptor->ResumeCounts);
+        $this->assertContains('A job named A Test job appears to have stalled. It will be stopped and restarted, please login to make sure it has continued', $logger->getMessages());
 
         // Run 2 - First restart (work is done)
         $descriptor->JobStatus = QueuedJob::STATUS_RUN;
@@ -358,6 +361,7 @@ class QueuedJobsTest extends SapphireTest
 
         // Loop 5 - Job is again found to not have been restarted since last iteration, so perform second
         // restart. The job should be attempted to run this loop
+        $logger->clear();
         $svc->checkJobHealth(QueuedJob::IMMEDIATE);
         $nextJob = $svc->getNextPendingJob(QueuedJob::IMMEDIATE);
 
@@ -368,12 +372,14 @@ class QueuedJobsTest extends SapphireTest
         $this->assertEquals(1, $descriptor->StepsProcessed);
         $this->assertEquals(1, $descriptor->LastProcessedCount);
         $this->assertEquals(2, $descriptor->ResumeCounts);
+        $this->assertContains('A job named A Test job appears to have stalled. It will be stopped and restarted, please login to make sure it has continued', $logger->getMessages());
 
         // Run 3 - Second and last restart (no work is done)
         $descriptor->JobStatus = QueuedJob::STATUS_RUN;
         $descriptor->write();
 
         // Loop 6 - As no progress has been made since loop 3, we can mark this as dead
+        $logger->clear();
         $svc->checkJobHealth(QueuedJob::IMMEDIATE);
         $nextJob = $svc->getNextPendingJob(QueuedJob::IMMEDIATE);
 
@@ -381,69 +387,6 @@ class QueuedJobsTest extends SapphireTest
         $descriptor = QueuedJobDescriptor::get()->byID($id);
         $this->assertEquals(QueuedJob::STATUS_PAUSED, $descriptor->JobStatus);
         $this->assertEmpty($nextJob);
-    }
-}
-
-// stub class to be able to call init from an external context
-class TestQJService extends QueuedJobService
-{
-    /**
-     * Not inherited from QueuedJobService unfortunately...
-     * @var array
-     */
-    private static $dependencies = [
-        'queueHandler' => '%$QueueHandler'
-    ];
-
-    public function testInit($descriptor)
-    {
-        return $this->initialiseJob($descriptor);
-    }
-}
-
-class TestQueuedJob extends AbstractQueuedJob implements QueuedJob
-{
-    private $type = QueuedJob::QUEUED;
-
-    public function __construct($type = null)
-    {
-        if ($type) {
-            $this->type = $type;
-        }
-        $this->times = array();
-    }
-
-    public function getJobType()
-    {
-        return $this->type;
-    }
-
-    public function getTitle()
-    {
-        return "A Test job";
-    }
-
-    public function setup()
-    {
-        $this->totalSteps = 5;
-    }
-
-    public function process()
-    {
-        $times = $this->times;
-        // needed due to quirks with __set
-        $times[] = date('Y-m-d H:i:s');
-        $this->times = $times;
-
-        $this->addMessage("Updated time to " . date('Y-m-d H:i:s'));
-        sleep(1);
-
-        // make sure we're incrementing
-        $this->currentStep++;
-
-        // and checking whether we're complete
-        if ($this->currentStep == 5) {
-            $this->isComplete = true;
-        }
+        $this->assertContains('A job named A Test job appears to have stalled. It has been paused, please login to check it', $logger->getMessages());
     }
 }

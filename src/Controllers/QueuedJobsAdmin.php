@@ -129,7 +129,6 @@ class QueuedJobsAdmin extends ModelAdmin
             $form->Fields()->push(
                 $dt = DatetimeField::create('JobStart', _t('QueuedJobs.START_JOB_TIME', 'Start job at'))
             );
-            $dt->getDateField()->setConfig('showcalendar', true);
 
             $actions = $form->Actions();
             $actions->push(FormAction::create('createjob', _t('QueuedJobs.CREATE_NEW_JOB', 'Create new job')));
@@ -158,14 +157,16 @@ class QueuedJobsAdmin extends ModelAdmin
         if (Permission::check('ADMIN')) {
             $jobType = isset($data['JobType']) ? $data['JobType'] : '';
             $params = isset($data['JobParams']) ? explode(PHP_EOL, $data['JobParams']) : array();
-            $time = isset($data['JobStart']) ? $data['JobStart'] : null;
+            $time = isset($data['JobStart']) && is_array($data['JobStart']) ? implode(" ", $data['JobStart']) : null;
 
             if ($jobType && class_exists($jobType)) {
                 $jobClass = new ReflectionClass($jobType);
                 $job = $jobClass->newInstanceArgs($params);
-                $this->jobQueue->queueJob($job, $time);
+                if ($this->jobQueue->queueJob($job, $time)) {
+                    $form->sessionMessage('Successfully queued job', 'success');
+                }
             }
         }
-        return $this->getResponseNegotiator()->respond($this->getRequest());
+        return $this->redirectBack();
     }
 }
