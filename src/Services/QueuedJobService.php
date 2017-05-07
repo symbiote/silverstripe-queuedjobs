@@ -541,8 +541,12 @@ class QueuedJobService
                     $jobDescriptor->JobRestarted = date('Y-m-d H:i:s');
                 }
 
-                $jobDescriptor->JobStatus = QueuedJob::STATUS_RUN;
-                $jobDescriptor->write();
+                // Only write to job as "Running" if 'isComplete' was NOT set to true
+                // during setup() or prepareForRestart()
+                if (!$job->jobFinished()) {
+                    $jobDescriptor->JobStatus = QueuedJob::STATUS_RUN;
+                    $jobDescriptor->write();
+                }
 
                 $lastStepProcessed = 0;
                 // have we stalled at all?
