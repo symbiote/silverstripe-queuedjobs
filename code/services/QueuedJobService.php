@@ -603,7 +603,7 @@ class QueuedJobService {
 						} catch (Exception $e) {
 							// okay, we'll just catch this exception for now
 							$job->addMessage(sprintf(_t('QueuedJobs.JOB_EXCEPT', 'Job caused exception %s in %s at line %s'), $e->getMessage(), $e->getFile(), $e->getLine()), 'ERROR');
-							SS_Log::log($e, SS_Log::ERR);
+							$errorHandler->handleException($e);
 							$jobDescriptor->JobStatus =  QueuedJob::STATUS_BROKEN;
 						}
 
@@ -673,7 +673,7 @@ class QueuedJobService {
 				}
 			} catch (Exception $e) {
 				// okay, we'll just catch this exception for now
-				SS_Log::log($e, SS_Log::ERR);
+				$errorHandler->handleException($e);
 				$jobDescriptor->JobStatus =  QueuedJob::STATUS_BROKEN;
 				$jobDescriptor->write();
 				$broken = true;
@@ -914,25 +914,56 @@ class JobErrorHandler {
 		restore_error_handler();
 	}
 
+	/**
+	 * For logging and catching exceptions thrown during AbstractQueuedJob::process()
+	 * and similar.
+	 */ 
+	public function handleException($exception) {
+		$errno = E_USER_ERROR;
+		$type = get_class($exception);
+		$message = "Uncaught " . $type . ": " . $exception->getMessage();
+		$file = $exception->getFile();
+		$line = $exception->getLine();
+		$context = $exception->getTrace();
+
+		// NOTE: This will call SS_Log::log()
+		Debug::fatalHandler($errno, $message, $file, $line, $context);
+	}
+
+	/**
+	 * Works like the core Silverstripe error handler without exiting
+	 * on fatal messages.
+	 */ 
 	public function handleError($errno, $errstr, $errfile, $errline) {
 		if (error_reporting()) {
 			// Don't throw E_DEPRECATED in PHP 5.3+
-			if (defined('E_DEPRECATED')) {
-				if ($errno == E_DEPRECATED || $errno = E_USER_DEPRECATED) {
+			/*if (defined('E_DEPRECATED')) {
+				if ($errno == E_DEPRECATED || $errno == E_USER_DEPRECATED) {
 					return;
 				}
-			}
+			}*/
 
 			switch ($errno) {
 				case E_NOTICE:
 				case E_USER_NOTICE:
-				case E_STRICT: {
-					break;
-				}
-				default: {
-					throw new Exception($errstr . " in $errfile at line $errline", $errno);
-					break;
-				}
+				case E_DEPRECATED:
+				case E_USER_DEPRECATED:
+				case E_STRICT:
+					Debug::noticeHandler($errno, $errstr, $errfile, $errline, debug_backtrace());
+				break;
+
+				case E_WARNING:
+				case E_CORE_WARNING:
+				case E_USER_WARNING:
+				case E_RECOVERABLE_ERROR:
+					Debug::warningHandler($errno, $errstr, $errfile, $errline, debug_backtrace());
+				break;
+
+				default:
+					throw new ErrorException($errstr, $errno, $errno, $errfile, $errline);
+					// Old exception throw
+					//throw new Exception($errstr . " in $errfile at line $errline", $errno);
+				break;
 			}
 		}
 	}
