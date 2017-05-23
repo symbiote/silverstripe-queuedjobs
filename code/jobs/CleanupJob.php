@@ -127,6 +127,7 @@ class CleanupJob extends AbstractQueuedJob implements QueuedJob {
 		if (empty($staleJobs)) {
 			$this->addMessage("No jobs to clean up.");
 			$this->isComplete = true;
+			$this->reenqueue();
 			return;
 		}
 		$numJobs = count($staleJobs);
@@ -136,13 +137,18 @@ class CleanupJob extends AbstractQueuedJob implements QueuedJob {
 			IN (\'' . $staleJobs . '\')'
 		);
 		$this->addMessage($numJobs . " jobs cleaned up.");
-		// let's make sure there is a cleanupJob in the queue
-		if (Config::inst()->get('CleanupJob', 'is_enabled')) {
-		    $this->addMessage("Queueing the next Cleanup Job.");
-			$cleanup = new CleanupJob();
-			singleton('QueuedJobService')->queueJob($cleanup, date('Y-m-d H:i:s', time() + 86400));
-		}
+		$this->reenqueue();
 		$this->isComplete = true;
 		return;
 	}
+
+	private function reenqueue()
+	{
+		if (Config::inst()->get('CleanupJob', 'is_enabled')) {
+			$this->addMessage("Queueing the next Cleanup Job.");
+			$cleanup = new CleanupJob();
+			singleton('QueuedJobService')->queueJob($cleanup, date('Y-m-d H:i:s', time() + 86400));
+		}
+	}
+
 }
