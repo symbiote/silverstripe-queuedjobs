@@ -3,10 +3,10 @@
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\ORM\DataObject;
-use SilverStripe\QueuedJobs\DataObjects\QueuedJobDescriptor;
-use SilverStripe\QueuedJobs\Services\QueuedJob;
-use SilverStripe\QueuedJobs\Tests\QueuedJobsTest\TestQueuedJob;
-use SilverStripe\QueuedJobs\Tests\QueuedJobsTest\TestQJService;
+use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
+use Symbiote\QueuedJobs\Services\QueuedJob;
+use Symbiote\QueuedJobs\Tests\QueuedJobsTest\TestQueuedJob;
+use Symbiote\QueuedJobs\Tests\QueuedJobsTest\TestQJService;
 
 /**
  *
@@ -31,7 +31,7 @@ class QueuedJobsTest extends SapphireTest
 
         Config::nest();
         // Two restarts are allowed per job
-        Config::modify()->set('SilverStripe\\QueuedJobs\\Services\\QueuedJobService', 'stall_threshold', 2);
+        Config::modify()->set('Symbiote\\QueuedJobs\\Services\\QueuedJobService', 'stall_threshold', 2);
     }
 
     /**
@@ -166,12 +166,12 @@ class QueuedJobsTest extends SapphireTest
         $job = new TestQueuedJob();
         $id = $svc->queueJob($job);
 
-        $descriptor = DataObject::get_by_id('SilverStripe\\QueuedJobs\\DataObjects\\QueuedJobDescriptor', $id);
+        $descriptor = DataObject::get_by_id('Symbiote\\QueuedJobs\\DataObjects\\QueuedJobDescriptor', $id);
 
         $job = $svc->testInit($descriptor);
         $this->assertInstanceOf(TestQueuedJob::class, $job, 'Job has been triggered');
 
-        $descriptor = DataObject::get_by_id('SilverStripe\\QueuedJobs\\DataObjects\\QueuedJobDescriptor', $id);
+        $descriptor = DataObject::get_by_id('Symbiote\\QueuedJobs\\DataObjects\\QueuedJobDescriptor', $id);
 
         $this->assertEquals(QueuedJob::STATUS_INIT, $descriptor->JobStatus);
     }
@@ -194,7 +194,7 @@ class QueuedJobsTest extends SapphireTest
         $this->assertTrue($result);
 
         // we want to make sure that the current user is the runas user of the job
-        $descriptor = DataObject::get_by_id('SilverStripe\\QueuedJobs\\DataObjects\\QueuedJobDescriptor', $id);
+        $descriptor = DataObject::get_by_id('Symbiote\\QueuedJobs\\DataObjects\\QueuedJobDescriptor', $id);
         $this->assertEquals('Complete', $descriptor->JobStatus);
     }
 

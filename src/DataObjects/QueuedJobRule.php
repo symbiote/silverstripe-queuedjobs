@@ -1,6 +1,6 @@
 <?php
 
-namespace SilverStripe\QueuedJobs\DataObjects;
+namespace Symbiote\QueuedJobs\DataObjects;
 
 use AsyncPHP\Doorman\Rule;
 use SilverStripe\ORM\DataObject;

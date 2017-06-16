@@ -1,8 +1,8 @@
 <?php
 
-namespace SilverStripe\QueuedJobs\Tests\QueuedJobsTest;
+namespace Symbiote\QueuedJobs\Tests\QueuedJobsTest;
 
-use SilverStripe\QueuedJobs\Services\QueuedJobService;
+use Symbiote\QueuedJobs\Services\QueuedJobService;
 use SilverStripe\Dev\TestOnly;
 
 // stub class to be able to call init from an external context

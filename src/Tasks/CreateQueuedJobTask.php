@@ -1,11 +1,11 @@
 <?php
 
-namespace SilverStripe\QueuedJobs\Tasks;
+namespace Symbiote\QueuedJobs\Tasks;
 
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Dev\BuildTask;
-use SilverStripe\QueuedJobs\Services\AbstractQueuedJob;
-use SilverStripe\QueuedJobs\Services\QueuedJob;
+use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
+use Symbiote\QueuedJobs\Services\QueuedJob;
 
 /**
  * A task that can be used to create a queued job.
@@ -55,13 +55,13 @@ class CreateQueuedJobTask extends BuildTask
             if ($start >= $now) {
                 $friendlyStart = date('Y-m-d H:i:s', $start);
                 echo "Job ".$request['name']. " queued to start at: <b>".$friendlyStart."</b>";
-                singleton('SilverStripe\\QueuedJobs\\Services\\QueuedJobService')->queueJob($job, $start);
+                singleton('Symbiote\\QueuedJobs\\Services\\QueuedJobService')->queueJob($job, $start);
             } else {
                 echo "'start' parameter must be a date/time in the future, parseable with strtotime";
             }
         } else {
             echo "Job Queued";
-            singleton('SilverStripe\\QueuedJobs\\Services\\QueuedJobService')->queueJob($job);
+            singleton('Symbiote\\QueuedJobs\\Services\\QueuedJobService')->queueJob($job);
         }
     }
 }

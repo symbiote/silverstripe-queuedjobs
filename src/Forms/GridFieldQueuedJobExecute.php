@@ -1,12 +1,12 @@
 <?php
 
-namespace SilverStripe\QueuedJobs\Forms;
+namespace Symbiote\QueuedJobs\Forms;
 
 use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Forms\GridField\GridField_ActionProvider;
 use SilverStripe\Forms\GridField\GridField_ColumnProvider;
 use SilverStripe\Forms\GridField\GridField_FormAction;
-use SilverStripe\QueuedJobs\Services\QueuedJob;
+use Symbiote\QueuedJobs\Services\QueuedJob;
 use SilverStripe\View\Requirements;
 
 /**

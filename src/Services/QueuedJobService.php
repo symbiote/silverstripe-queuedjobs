@@ -1,6 +1,6 @@
 <?php
 
-namespace SilverStripe\QueuedJobs\Services;
+namespace Symbiote\QueuedJobs\Services;
 
 use Exception;
 use SilverStripe\Control\Controller;
@@ -16,7 +16,7 @@ use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
 use SilverStripe\ORM\FieldType\DBDatetime;
-use SilverStripe\QueuedJobs\DataObjects\QueuedJobDescriptor;
+use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\Permission;
 use Psr\Log\LoggerInterface;
@@ -155,7 +155,7 @@ class QueuedJobService
             )
         );
 
-        $existing = DataList::create('SilverStripe\\QueuedJobs\\DataObjects\\QueuedJobDescriptor')
+        $existing = DataList::create('Symbiote\\QueuedJobs\\DataObjects\\QueuedJobDescriptor')
             ->filter($filter)
             ->first();
 
@@ -480,7 +480,7 @@ class QueuedJobService
     {
         // first retrieve the descriptor
         $jobDescriptor = DataObject::get_by_id(
-            'SilverStripe\\QueuedJobs\\DataObjects\\QueuedJobDescriptor',
+            'Symbiote\\QueuedJobs\\DataObjects\\QueuedJobDescriptor',
             (int) $jobId
         );
         if (!$jobDescriptor) {
@@ -572,7 +572,7 @@ class QueuedJobService
                 while (!$job->jobFinished() && !$broken) {
                     // see that we haven't been set to 'paused' or otherwise by another process
                     $jobDescriptor = DataObject::get_by_id(
-                        'SilverStripe\\QueuedJobs\\DataObjects\\QueuedJobDescriptor',
+                        'Symbiote\\QueuedJobs\\DataObjects\\QueuedJobDescriptor',
                         (int) $jobId
                     );
                     if (!$jobDescriptor || !$jobDescriptor->exists()) {
@@ -838,7 +838,7 @@ class QueuedJobService
     public function getJobList($type = null, $includeUpUntil = 0)
     {
         return DataObject::get(
-            'SilverStripe\\QueuedJobs\\DataObjects\\QueuedJobDescriptor',
+            'Symbiote\\QueuedJobs\\DataObjects\\QueuedJobDescriptor',
             $this->getJobListFilter($type, $includeUpUntil)
         );
     }
@@ -855,7 +855,7 @@ class QueuedJobService
      */
     public function getJobListFilter($type = null, $includeUpUntil = 0)
     {
-        $util = singleton('SilverStripe\\QueuedJobs\\QJUtils');
+        $util = singleton('Symbiote\\QueuedJobs\\QJUtils');
 
         $filter = array('JobStatus <>' => QueuedJob::STATUS_COMPLETE);
         if ($includeUpUntil) {

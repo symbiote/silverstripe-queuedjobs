@@ -1,14 +1,14 @@
 <?php
 
-namespace SilverStripe\QueuedJobs\Jobs;
+namespace Symbiote\QueuedJobs\Jobs;
 
 use AsyncPHP\Doorman\Cancellable;
 use AsyncPHP\Doorman\Expires;
 use AsyncPHP\Doorman\Process;
 use AsyncPHP\Doorman\Task;
 use InvalidArgumentException;
-use SilverStripe\QueuedJobs\DataObjects\QueuedJobDescriptor;
-use SilverStripe\QueuedJobs\Services\QueuedJob;
+use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
+use Symbiote\QueuedJobs\Services\QueuedJob;
 
 class DoormanQueuedJobTask implements Task, Expires, Process, Cancellable
 {

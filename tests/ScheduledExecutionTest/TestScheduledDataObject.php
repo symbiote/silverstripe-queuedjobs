@@ -1,10 +1,10 @@
 <?php
 
-namespace SilverStripe\QueuedJobs\Tests\ScheduledExecutionTest;
+namespace Symbiote\QueuedJobs\Tests\ScheduledExecutionTest;
 
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Dev\TestOnly;
-use SilverStripe\QueuedJobs\Extensions\ScheduledExecutionExtension;
+use Symbiote\QueuedJobs\Extensions\ScheduledExecutionExtension;
 
 class TestScheduledDataObject extends DataObject implements TestOnly
 {

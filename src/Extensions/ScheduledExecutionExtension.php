@@ -1,6 +1,6 @@
 <?php
 
-namespace SilverStripe\QueuedJobs\Extensions;
+namespace Symbiote\QueuedJobs\Extensions;
 
 use SilverStripe\Forms\DatetimeField;
 use SilverStripe\Forms\DropdownField;
@@ -10,7 +10,7 @@ use SilverStripe\Forms\NumericField;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\Forms\TextField;
 use SilverStripe\ORM\DataExtension;
-use SilverStripe\QueuedJobs\Jobs\ScheduledExecutionJob;
+use Symbiote\QueuedJobs\Jobs\ScheduledExecutionJob;
 
 /**
  * An extension that can be added to objects that automatically
@@ -44,7 +44,7 @@ class ScheduledExecutionExtension extends DataExtension
      * @var array
      */
     private static $has_one = array(
-        'ScheduledJob' => 'SilverStripe\\QueuedJobs\\DataObjects\\QueuedJobDescriptor',
+        'ScheduledJob' => 'Symbiote\\QueuedJobs\\DataObjects\\QueuedJobDescriptor',
     );
 
     /**
@@ -120,7 +120,7 @@ class ScheduledExecutionExtension extends DataExtension
                     $time = date('Y-m-d H:i:s', strtotime($this->owner->FirstExecution));
                 }
 
-                $this->owner->ScheduledJobID = singleton('SilverStripe\\QueuedJobs\\Services\\QueuedJobService')
+                $this->owner->ScheduledJobID = singleton('Symbiote\\QueuedJobs\\Services\\QueuedJobService')
                     ->queueJob($job, $time);
             }
         }

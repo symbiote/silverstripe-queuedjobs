@@ -1,8 +1,8 @@
 <?php
 
-namespace SilverStripe\QueuedJobs\Tasks\Engines;
+namespace Symbiote\QueuedJobs\Tasks\Engines;
 
-use SilverStripe\QueuedJobs\DataObjects\QueuedJobDescriptor;
+use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
 
 /**
  * Runs all jobs in a queue loop in one process

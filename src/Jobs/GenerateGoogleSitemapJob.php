@@ -1,6 +1,6 @@
 <?php
 
-namespace SilverStripe\QueuedJobs\Jobs;
+namespace Symbiote\QueuedJobs\Jobs;
 
 use Exception;
 use Page;
@@ -9,8 +9,8 @@ use SilverStripe\Control\Director;
 use SilverStripe\ORM\DB;
 use SilverStripe\ORM\FieldType\DBDatetime;
 use SilverStripe\ORM\Versioning\Versioned;
-use SilverStripe\QueuedJobs\Services\AbstractQueuedJob;
-use SilverStripe\QueuedJobs\Services\QueuedJob;
+use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
+use Symbiote\QueuedJobs\Services\QueuedJob;
 
 /**
  * A job for generating a site's google sitemap
@@ -202,6 +202,6 @@ class GenerateGoogleSitemapJob extends AbstractQueuedJob
         }
 
         $nextgeneration = new GenerateGoogleSitemapJob();
-        singleton('SilverStripe\\QueuedJobs\\Services\\QueuedJobService')->queueJob($nextgeneration, date('Y-m-d H:i:s', time() + self::$regenerate_time));
+        singleton('Symbiote\\QueuedJobs\\Services\\QueuedJobService')->queueJob($nextgeneration, date('Y-m-d H:i:s', time() + self::$regenerate_time));
     }
 }

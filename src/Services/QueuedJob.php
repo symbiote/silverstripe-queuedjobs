@@ -1,6 +1,6 @@
 <?php
 
-namespace SilverStripe\QueuedJobs\Services;
+namespace Symbiote\QueuedJobs\Services;
 
 /**
  * Interface definition for a queued job

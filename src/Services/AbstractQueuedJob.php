@@ -1,6 +1,6 @@
 <?php
 
-namespace SilverStripe\QueuedJobs\Services;
+namespace Symbiote\QueuedJobs\Services;
 
 use stdClass;
 use SilverStripe\Core\Config\Config;

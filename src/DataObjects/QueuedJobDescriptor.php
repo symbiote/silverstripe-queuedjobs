@@ -1,12 +1,12 @@
 <?php
 
-namespace SilverStripe\QueuedJobs\DataObjects;
+namespace Symbiote\QueuedJobs\DataObjects;
 
 use SilverStripe\Assets\Filesystem;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Forms\DropdownField;
 use SilverStripe\ORM\DataObject;
-use SilverStripe\QueuedJobs\Services\QueuedJob;
+use Symbiote\QueuedJobs\Services\QueuedJob;
 use SilverStripe\Security\Permission;
 
 /**
@@ -166,7 +166,7 @@ class QueuedJobDescriptor extends DataObject
             $this->JobStatus = QueuedJob::STATUS_WAIT;
             $this->ResumeCounts++;
             $this->write();
-            singleton('SilverStripe\\QueuedJobs\\Services\\QueuedJobService')->startJob($this);
+            singleton('Symbiote\\QueuedJobs\\Services\\QueuedJobService')->startJob($this);
             return true;
         }
         return false;
@@ -188,7 +188,7 @@ class QueuedJobDescriptor extends DataObject
     {
         // if it's an immediate job, lets cache it to disk to be picked up later
         if ($this->JobType == QueuedJob::IMMEDIATE
-            && !Config::inst()->get('SilverStripe\\QueuedJobs\\Services\\QueuedJobService', 'use_shutdown_function')
+            && !Config::inst()->get('Symbiote\\QueuedJobs\\Services\\QueuedJobService', 'use_shutdown_function')
         ) {
             touch($this->getJobDir() . '/queuedjob-' . $this->ID);
         }
@@ -202,7 +202,7 @@ class QueuedJobDescriptor extends DataObject
     protected function getJobDir()
     {
         // make sure our temp dir is in place. This is what will be inotify watched
-        $jobDir = Config::inst()->get('SilverStripe\\QueuedJobs\\Services\\QueuedJobService', 'cache_dir');
+        $jobDir = Config::inst()->get('Symbiote\\QueuedJobs\\Services\\QueuedJobService', 'cache_dir');
         if ($jobDir{0} != '/') {
             $jobDir = TEMP_FOLDER . '/' . $jobDir;
         }
@@ -215,7 +215,7 @@ class QueuedJobDescriptor extends DataObject
 
     public function execute()
     {
-        $service = singleton('SilverStripe\\QueuedJobs\\Services\\QueuedJobService');
+        $service = singleton('Symbiote\\QueuedJobs\\Services\\QueuedJobService');
         $service->runJob($this->ID);
     }
 

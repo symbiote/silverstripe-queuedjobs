@@ -1,10 +1,10 @@
 <?php
 
-namespace SilverStripe\QueuedJobs\Jobs;
+namespace Symbiote\QueuedJobs\Jobs;
 
 use SilverStripe\ORM\DataObject;
-use SilverStripe\QueuedJobs\Services\AbstractQueuedJob;
-use SilverStripe\QueuedJobs\Services\QueuedJob;
+use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
+use Symbiote\QueuedJobs\Services\QueuedJob;
 
 /**
  * An example queued job

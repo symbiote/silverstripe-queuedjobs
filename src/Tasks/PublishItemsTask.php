@@ -1,11 +1,11 @@
 <?php
 
-namespace SilverStripe\QueuedJobs\Tasks;
+namespace Symbiote\QueuedJobs\Tasks;
 
 use Exception;
 use SilverStripe\Dev\BuildTask;
 use SilverStripe\ORM\DataObject;
-use SilverStripe\QueuedJobs\Jobs\PublishItemsJob;
+use Symbiote\QueuedJobs\Jobs\PublishItemsJob;
 
 /**
  * An example build task that publishes a bunch of pages - this demonstrates a realworld example of how the
@@ -37,7 +37,7 @@ class PublishItemsTask extends BuildTask
 
         if ($item && $item->exists()) {
             $job = new PublishItemsJob($root);
-            singleton('SilverStripe\\QueuedJobs\\Services\\QueuedJobService')->queueJob($job);
+            singleton('Symbiote\\QueuedJobs\\Services\\QueuedJobService')->queueJob($job);
         }
     }
 }

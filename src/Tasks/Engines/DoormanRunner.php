@@ -1,12 +1,12 @@
 <?php
 
-namespace SilverStripe\QueuedJobs\Tasks\Engines;
+namespace Symbiote\QueuedJobs\Tasks\Engines;
 
 use AsyncPHP\Doorman\Rule;
 use SilverStripe\ORM\FieldType\DBDatetime;
-use SilverStripe\QueuedJobs\DataObjects\QueuedJobDescriptor;
-use SilverStripe\QueuedJobs\Jobs\DoormanQueuedJobTask;
-use SilverStripe\QueuedJobs\Services\QueuedJob;
+use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
+use Symbiote\QueuedJobs\Jobs\DoormanQueuedJobTask;
+use Symbiote\QueuedJobs\Services\QueuedJob;
 
 /**
  * Runs all jobs through the doorman engine

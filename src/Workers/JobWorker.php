@@ -1,6 +1,6 @@
 <?php
 
-namespace SilverStripe\QueuedJobs\Workers;
+namespace Symbiote\QueuedJobs\Workers;
 
 use SilverStripe\ORM\DataList;
 
@@ -36,7 +36,7 @@ if (interface_exists('GearmanHandler')) {
         public function jobqueueExecute($jobId)
         {
             $this->queuedJobService->checkJobHealth();
-            $job = DataList::create('SilverStripe\\QueuedJobs\\DataObjects\\QueuedJobDescriptor')->byID($jobId);
+            $job = DataList::create('Symbiote\\QueuedJobs\\DataObjects\\QueuedJobDescriptor')->byID($jobId);
             if ($job) {
                 // check that we're not trying to execute something tooo soon
                 if (strtotime($job->StartAfter) > time()) {

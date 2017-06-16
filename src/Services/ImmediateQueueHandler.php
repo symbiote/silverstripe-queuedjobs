@@ -1,8 +1,8 @@
 <?php
 
-namespace SilverStripe\QueuedJobs\Services;
+namespace Symbiote\QueuedJobs\Services;
 
-use SilverStripe\QueuedJobs\DataObjects\QueuedJobDescriptor;
+use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
 
 /**
  * execute jobs immediately in the current request context
@@ -16,7 +16,7 @@ class ImmediateQueueHandler
      * @var array
      */
     private static $dependencies = array(
-        'queuedJobService' => '%$SilverStripe\\QueuedJobs\\Services\\QueuedJobService',
+        'queuedJobService' => '%$Symbiote\\QueuedJobs\\Services\\QueuedJobService',
     );
 
     /**

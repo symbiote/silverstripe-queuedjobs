@@ -1,6 +1,6 @@
 <?php
 
-namespace SilverStripe\QueuedJobs;
+namespace Symbiote\QueuedJobs;
 
 use SilverStripe\Core\Convert;
 use SilverStripe\Core\Injector\Injector;

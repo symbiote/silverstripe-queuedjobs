@@ -1,6 +1,6 @@
 <?php
 
-namespace SilverStripe\QueuedJobs\Tests\QueuedJobsTest;
+namespace Symbiote\QueuedJobs\Tests\QueuedJobsTest;
 
 use Monolog\Logger;
 use SilverStripe\Dev\TestOnly;

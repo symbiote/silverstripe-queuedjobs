@@ -1,8 +1,8 @@
 <?php
 
-namespace SilverStripe\QueuedJobs\Tasks;
+namespace Symbiote\QueuedJobs\Tasks;
 
-use SilverStripe\QueuedJobs\Services\QueuedJob;
+use Symbiote\QueuedJobs\Services\QueuedJob;
 use SilverStripe\Dev\BuildTask;
 
 /**
@@ -97,6 +97,6 @@ class ProcessJobQueueTask extends BuildTask
      */
     public function getService()
     {
-        return singleton('SilverStripe\\QueuedJobs\\Services\\QueuedJobService');
+        return singleton('Symbiote\\QueuedJobs\\Services\\QueuedJobService');
     }
 }

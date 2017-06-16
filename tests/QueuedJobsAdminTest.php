@@ -2,13 +2,13 @@
 
 use SilverStripe\Dev\FunctionalTest;
 use SilverStripe\Forms\FieldList;
-use SilverStripe\QueuedJobs\Controllers\QueuedJobsAdmin;
-use SilverStripe\QueuedJobs\Jobs\PublishItemsJob;
+use Symbiote\QueuedJobs\Controllers\QueuedJobsAdmin;
+use Symbiote\QueuedJobs\Jobs\PublishItemsJob;
 
 /**
  * Tests for the QueuedJobsAdmin ModelAdmin clas
  *
- * @coversDefaultClass \SilverStripe\QueuedJobs\Controllers\QueuedJobsAdmin
+ * @coversDefaultClass \Symbiote\QueuedJobs\Controllers\QueuedJobsAdmin
  * @package queuedjobs
  * @author  Robbie Averill <robbie@silverstripe.com>
  */
@@ -36,7 +36,7 @@ class QueuedJobsAdminTest extends FunctionalTest
         $this->admin = new QueuedJobsAdmin;
 
         // Compatible with both PHPUnit 3 and PHPUnit 5+
-        $mockQueue = method_exists($this, 'createMock') ? $this->createMock('SilverStripe\\QueuedJobs\\Services\\QueuedJobService') : $this->getMock('SilverStripe\\QueuedJobs\\Services\\QueuedJobService');
+        $mockQueue = method_exists($this, 'createMock') ? $this->createMock('Symbiote\\QueuedJobs\\Services\\QueuedJobService') : $this->getMock('Symbiote\\QueuedJobs\\Services\\QueuedJobService');
         $this->admin->jobQueue = $mockQueue;
 
         $this->logInWithPermission('ADMIN');

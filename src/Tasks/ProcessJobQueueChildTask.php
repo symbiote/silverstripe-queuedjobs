@@ -1,6 +1,6 @@
 <?php
 
-namespace SilverStripe\QueuedJobs\Tasks;
+namespace Symbiote\QueuedJobs\Tasks;
 
 use AsyncPHP\Doorman\Handler;
 use AsyncPHP\Doorman\Task;
@@ -38,6 +38,6 @@ class ProcessJobQueueChildTask extends BuildTask
      */
     protected function getService()
     {
-        return singleton('SilverStripe\\QueuedJobs\\Services\\QueuedJobService');
+        return singleton('Symbiote\\QueuedJobs\\Services\\QueuedJobService');
     }
 }

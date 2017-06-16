@@ -1,6 +1,6 @@
 <?php
 
-namespace SilverStripe\QueuedJobs\Tasks\Engines;
+namespace Symbiote\QueuedJobs\Tasks\Engines;
 
 /**
  * Runs tasks on a queue

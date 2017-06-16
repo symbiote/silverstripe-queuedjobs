@@ -1,4 +1,4 @@
-SilverStripe\QueuedJobs\DataObjects\QueuedJobDescriptor:
+Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor:
   first:
     JobStatus: Complete
     LastEdited: "2001-01-01 01:01:01"

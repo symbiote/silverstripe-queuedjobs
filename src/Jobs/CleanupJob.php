@@ -1,12 +1,12 @@
 <?php
 
-namespace SilverStripe\QueuedJobs\Jobs;
+namespace Symbiote\QueuedJobs\Jobs;
 
 use SilverStripe\Core\Config\Config;
 use SilverStripe\ORM\DB;
 use SilverStripe\ORM\FieldType\DBDatetime;
-use SilverStripe\QueuedJobs\Services\AbstractQueuedJob;
-use SilverStripe\QueuedJobs\Services\QueuedJob;
+use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
+use Symbiote\QueuedJobs\Services\QueuedJob;
 
 /**
  * An queued job to clean out the QueuedJobDescriptor Table
@@ -149,10 +149,10 @@ class CleanupJob extends AbstractQueuedJob implements QueuedJob
 			IN (\'' . $staleJobs . '\')');
         $this->addMessage($numJobs . " jobs cleaned up.");
         // let's make sure there is a cleanupJob in the queue
-        if (Config::inst()->get('SilverStripe\\QueuedJobs\\Jobs\\CleanupJob', 'is_enabled')) {
+        if (Config::inst()->get('Symbiote\\QueuedJobs\\Jobs\\CleanupJob', 'is_enabled')) {
             $this->addMessage("Queueing the next Cleanup Job.");
             $cleanup = new CleanupJob();
-            singleton('SilverStripe\\QueuedJobs\\Services\\QueuedJobService')
+            singleton('Symbiote\\QueuedJobs\\Services\\QueuedJobService')
                 ->queueJob($cleanup, date('Y-m-d H:i:s', time() + 86400));
         }
         $this->isComplete = true;

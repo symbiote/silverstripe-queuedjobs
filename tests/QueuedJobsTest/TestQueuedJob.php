@@ -1,9 +1,9 @@
 <?php
 
-namespace SilverStripe\QueuedJobs\Tests\QueuedJobsTest;
+namespace Symbiote\QueuedJobs\Tests\QueuedJobsTest;
 
-use SilverStripe\QueuedJobs\Services\AbstractQueuedJob;
-use SilverStripe\QueuedJobs\Services\QueuedJob;
+use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
+use Symbiote\QueuedJobs\Services\QueuedJob;
 
 class TestQueuedJob extends AbstractQueuedJob implements QueuedJob
 {

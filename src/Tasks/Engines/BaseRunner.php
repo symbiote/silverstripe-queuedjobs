@@ -1,10 +1,10 @@
 <?php
 
-namespace SilverStripe\QueuedJobs\Tasks\Engines;
+namespace Symbiote\QueuedJobs\Tasks\Engines;
 
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Convert;
-use SilverStripe\QueuedJobs\DataObjects\QueuedJobDescriptor;
+use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
 
 /**
  * Class BaseRunner
@@ -20,7 +20,7 @@ class BaseRunner
      */
     public function getService()
     {
-        return singleton('SilverStripe\\QueuedJobs\\Services\\QueuedJobService');
+        return singleton('Symbiote\\QueuedJobs\\Services\\QueuedJobService');
     }
 
     /**

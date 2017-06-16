@@ -1,6 +1,6 @@
 <?php
 
-namespace SilverStripe\QueuedJobs\Controllers;
+namespace Symbiote\QueuedJobs\Controllers;
 
 use ReflectionClass;
 use SilverStripe\Admin\ModelAdmin;
@@ -13,8 +13,8 @@ use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Forms\GridField\GridFieldConfig_RecordEditor;
 use SilverStripe\Forms\TextareaField;
 use SilverStripe\ORM\DataList;
-use SilverStripe\QueuedJobs\Forms\GridFieldQueuedJobExecute;
-use SilverStripe\QueuedJobs\Services\QueuedJob;
+use Symbiote\QueuedJobs\Forms\GridFieldQueuedJobExecute;
+use Symbiote\QueuedJobs\Services\QueuedJob;
 use SilverStripe\Security\Permission;
 
 /**
@@ -41,13 +41,13 @@ class QueuedJobsAdmin extends ModelAdmin
     /**
      * @var array
      */
-    private static $managed_models = array('SilverStripe\\QueuedJobs\\DataObjects\\QueuedJobDescriptor');
+    private static $managed_models = array('Symbiote\\QueuedJobs\\DataObjects\\QueuedJobDescriptor');
 
     /**
      * @var array
      */
     private static $dependencies = array(
-        'jobQueue' => '%$SilverStripe\\QueuedJobs\\Services\\QueuedJobService',
+        'jobQueue' => '%$Symbiote\\QueuedJobs\\Services\\QueuedJobService',
     );
 
     /**
@@ -79,7 +79,7 @@ class QueuedJobsAdmin extends ModelAdmin
 
         $filter = $this->jobQueue->getJobListFilter(null, self::config()->max_finished_jobs_age);
 
-        $list = DataList::create('SilverStripe\\QueuedJobs\\DataObjects\\QueuedJobDescriptor');
+        $list = DataList::create('Symbiote\\QueuedJobs\\DataObjects\\QueuedJobDescriptor');
         $list = $list->where($filter)->sort('Created', 'DESC');
 
         $gridFieldConfig = GridFieldConfig_RecordEditor::create()
@@ -104,18 +104,18 @@ class QueuedJobsAdmin extends ModelAdmin
 
         // Replace gridfield
         $grid = new GridField(
-            'SilverStripe\\QueuedJobs\\DataObjects\\QueuedJobDescriptor',
+            'Symbiote\\QueuedJobs\\DataObjects\\QueuedJobDescriptor',
             _t('QueuedJobs.JobsFieldTitle', 'Jobs'),
             $list,
             $gridFieldConfig
         );
         $grid->setForm($form);
-        $form->Fields()->replaceField('SilverStripe\\QueuedJobs\\DataObjects\\QueuedJobDescriptor', $grid);
+        $form->Fields()->replaceField('Symbiote\\QueuedJobs\\DataObjects\\QueuedJobDescriptor', $grid);
 
         if (Permission::check('ADMIN')) {
-            $types = ClassInfo::subclassesFor('SilverStripe\\QueuedJobs\\Services\\AbstractQueuedJob');
+            $types = ClassInfo::subclassesFor('Symbiote\\QueuedJobs\\Services\\AbstractQueuedJob');
             $types = array_combine($types, $types);
-            unset($types['SilverStripe\\QueuedJobs\\Services\\AbstractQueuedJob']);
+            unset($types['Symbiote\\QueuedJobs\\Services\\AbstractQueuedJob']);
             $jobType = DropdownField::create('JobType', _t('QueuedJobs.CREATE_JOB_TYPE', 'Create job of type'), $types);
             $jobType->setEmptyString('(select job to create)');
             $form->Fields()->push($jobType);

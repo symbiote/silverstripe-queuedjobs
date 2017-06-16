@@ -2,7 +2,7 @@
 
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\ORM\DataObject;
-use SilverStripe\QueuedJobs\Tests\ScheduledExecutionTest\TestScheduledDataObject;
+use Symbiote\QueuedJobs\Tests\ScheduledExecutionTest\TestScheduledDataObject;
 
 /**
  * @author marcus@silverstripe.com.au

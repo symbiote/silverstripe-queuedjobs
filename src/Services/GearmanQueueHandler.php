@@ -1,8 +1,8 @@
 <?php
 
-namespace SilverStripe\QueuedJobs\Services;
+namespace Symbiote\QueuedJobs\Services;
 
-use SilverStripe\QueuedJobs\DataObjects\QueuedJobDescriptor;
+use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
 
 /**
  * @author marcus@silverstripe.com.au

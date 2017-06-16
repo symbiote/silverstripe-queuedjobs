@@ -62,7 +62,7 @@ that processes this queue. Its time of execution can be left a little longer.
 
 ```php
 $publish = new PublishItemsJob(21);
-singleton('SilverStripe\\QueuedJobs\\Services\\QueuedJobService')->queueJob($publish);
+singleton('Symbiote\\QueuedJobs\\Services\\QueuedJobService')->queueJob($publish);
 ```
 
 * To schedule a job to be executed at some point in the future, pass a date through with the call to queueJob
@@ -70,7 +70,7 @@ The following will run the publish job in 1 day's time from now.
 
 ```php
 $publish = new PublishItemsJob(21);
-singleton('SilverStripe\\QueuedJobs\\Services\\QueuedJobService')
+singleton('Symbiote\\QueuedJobs\\Services\\QueuedJobService')
     ->queueJob($publish, date('Y-m-d H:i:s', time() + 86400));
 ```
 
@@ -92,7 +92,7 @@ Name: localproject
 After: '#queuedjobsettings'
 ---
 SilverStripe\Core\Injector\Injector:
-  SilverStripe\QueuedJobs\Services\QueuedJobService:
+  Symbiote\QueuedJobs\Services\QueuedJobService:
     properties:
       queueRunner: %$DoormanRunner
 ```
@@ -111,7 +111,7 @@ After: '#queuedjobsettings'
 ---
 SilverStripe\Core\Injector\Injector:
   QueueHandler:
-    class: SilverStripe\QueuedJobs\Services\GearmanQueueHandler
+    class: Symbiote\QueuedJobs\Services\GearmanQueueHandler
 ```
 
 * Run the gearman worker using `php gearman/gearman_runner.php` in your SS root dir
@@ -136,7 +136,7 @@ the request finishes as the php script ends.
 By default the CleanupJob is disabled. To enable it, set the following in your YML:
 
 ```yaml
-SilverStripe\QueuedJobs\Jobs\CleanupJob:
+Symbiote\QueuedJobs\Jobs\CleanupJob:
   is_enabled: true
 ```
 
@@ -153,7 +153,7 @@ You can also determine which JobStatuses are allowed to be cleaned up. The defau
 The default configuration looks like this:
 
 ```yaml
-SilverStripe\QueuedJobs\Jobs\CleanupJob:
+Symbiote\QueuedJobs\Jobs\CleanupJob:
   is_enabled: false
   cleanup_method: "age"
   cleanup_value: 30
@@ -205,7 +205,7 @@ You can adjust this with the below config change
 
 ```yaml
 # Force memory limit to 256 megabytes
-SilverStripe\QueuedJobs\Services\QueuedJobService\QueuedJobsService:
+Symbiote\QueuedJobs\Services\QueuedJobService\QueuedJobsService:
   # Accepts b, k, m, or b suffixes
   memory_limit: 256m
 ```
@@ -217,7 +217,7 @@ resources. By default this is disabled, so you must specify this in your project
 
 ```yml
 # Force limit to 10 minutes
-SilverStripe\QueuedJobs\Services\QueuedJobService\QueuedJobsService:
+Symbiote\QueuedJobs\Services\QueuedJobService\QueuedJobsService:
   time_limit: 600
 ```
 
