@@ -1,5 +1,5 @@
 {
-    "name": "silverstripe/queuedjobs",
+    "name": "symbiote/silverstripe-queuedjobs",
     "description": "A framework for defining and running background jobs in a queued manner",
     "type": "silverstripe-module",
     "keywords": ["silverstripe", "jobs"],
