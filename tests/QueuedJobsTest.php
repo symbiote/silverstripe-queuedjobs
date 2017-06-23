@@ -11,7 +11,7 @@ use Symbiote\QueuedJobs\Tests\QueuedJobsTest\TestQJService;
 /**
  *
  *
- * @author Marcus Nyeholt <marcus@silverstripe.com.au>
+ * @author Marcus Nyeholt <marcus@symbiote.com.au>
  */
 class QueuedJobsTest extends SapphireTest
 {

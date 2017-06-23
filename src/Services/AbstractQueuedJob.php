@@ -13,7 +13,7 @@ use SilverStripe\ORM\DataObject;
  * jobData with relevant variables needed to process() your job later on in execution. If you do not,
  * please ensure you do before you queueJob() the job, to ensure the signature that is generated is 'correct'.
  *
- * @author Marcus Nyeholt <marcus@silverstripe.com.au>
+ * @author Marcus Nyeholt <marcus@symbiote.com.au>
  * @license BSD http://silverstripe.org/bsd-license/
  */
 abstract class AbstractQueuedJob implements QueuedJob

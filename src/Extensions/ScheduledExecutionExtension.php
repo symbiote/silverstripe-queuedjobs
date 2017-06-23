@@ -18,7 +18,7 @@ use Symbiote\QueuedJobs\Jobs\ScheduledExecutionJob;
  *
  * Developers who want to use these capabilities can set up
  *
- * @author marcus@silverstripe.com.au
+ * @author marcus@symbiote.com.au
  * @license BSD License http://silverstripe.org/bsd-license/
  */
 class ScheduledExecutionExtension extends DataExtension

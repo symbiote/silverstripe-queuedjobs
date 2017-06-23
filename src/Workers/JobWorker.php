@@ -5,7 +5,7 @@ namespace Symbiote\QueuedJobs\Workers;
 use SilverStripe\ORM\DataList;
 
 /**
- * @author marcus@silverstripe.com.au
+ * @author marcus@symbiote.com.au
  * @license BSD License http://silverstripe.org/bsd-license/
  */
 

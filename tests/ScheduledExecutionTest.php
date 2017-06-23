@@ -5,7 +5,7 @@ use SilverStripe\ORM\DataObject;
 use Symbiote\QueuedJobs\Tests\ScheduledExecutionTest\TestScheduledDataObject;
 
 /**
- * @author marcus@silverstripe.com.au
+ * @author marcus@symbiote.com.au
  * @license BSD License http://silverstripe.org/bsd-license/
  */
 class ScheduledExecutionTest extends SapphireTest

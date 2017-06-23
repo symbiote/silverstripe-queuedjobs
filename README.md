@@ -1,8 +1,8 @@
 # SilverStripe Queued Jobs Module
 
 
-[![Build Status](https://travis-ci.org/silverstripe-australia/silverstripe-queuedjobs.svg?branch=master)](https://travis-ci.org/silverstripe-australia/silverstripe-queuedjobs)
-[![Scrutinizer](https://scrutinizer-ci.com/g/silverstripe-australia/silverstripe-queuedjobs/badges/quality-score.png)](https://scrutinizer-ci.com/g/silverstripe-australia/silverstripe-queuedjobs/)
+[![Build Status](https://travis-ci.org/symbiote/silverstripe-queuedjobs.svg?branch=master)](https://travis-ci.org/symbiote/silverstripe-queuedjobs)
+[![Scrutinizer](https://scrutinizer-ci.com/g/symbiote/silverstripe-queuedjobs/badges/quality-score.png)](https://scrutinizer-ci.com/g/symbiote/silverstripe-queuedjobs/)
 
 
 ## Maintainer Contact
@@ -20,13 +20,13 @@ Marcus Nyeholt
 
 The master branch of this module is currently aiming for SilverStripe 4.x compatibility
 
-* [SilverStripe 3.1+ compatible version](https://github.com/silverstripe-australia/silverstripe-queuedjobs/tree/2.9)
-* [SilverStripe 3.0 compatible version](https://github.com/silverstripe-australia/silverstripe-queuedjobs/tree/1.0)
-* [SilverStripe 2.4 compatible version](https://github.com/silverstripe-australia/silverstripe-queuedjobs/tree/ss24)
+* [SilverStripe 3.1+ compatible version](https://github.com/symbiote/silverstripe-queuedjobs/tree/2.9)
+* [SilverStripe 3.0 compatible version](https://github.com/symbiote/silverstripe-queuedjobs/tree/1.0)
+* [SilverStripe 2.4 compatible version](https://github.com/symbiote/silverstripe-queuedjobs/tree/ss24)
 
 ## Documentation
 
-See http://github.com/silverstripe-australia/silverstripe-queuedjobs/wiki/ for more complete
+See http://github.com/symbiote/silverstripe-queuedjobs/wiki/ for more complete
 documentation
 
 The Queued Jobs module provides a framework for SilverStripe developers to
@@ -173,8 +173,8 @@ cronjob is configured and executing correctly.
 
 If defining your own job classes, be aware that when the job is started on the queue, the job class
 is constructed _without_ parameters being passed; this means if you accept constructor args, you
-_must_ detect whether they're present or not before using them. See [this issue](https://github.com/silverstripe-australia/silverstripe-queuedjobs/issues/35)
-and [this wiki page](https://github.com/silverstripe-australia/silverstripe-queuedjobs/wiki/Defining-queued-jobs) for
+_must_ detect whether they're present or not before using them. See [this issue](https://github.com/symbiote/silverstripe-queuedjobs/issues/35)
+and [this wiki page](https://github.com/symbiote/silverstripe-queuedjobs/wiki/Defining-queued-jobs) for
 more information.
 
 If defining your own jobs, please ensure you follow PSR conventions, i.e. use "YourVendor" rather than "SilverStripe".

@@ -17,7 +17,7 @@ use Symbiote\QueuedJobs\Services\QueuedJob;
  *
  * If the sitemap module is installed, uses information from that to populate things
  *
- * @author marcus@silverstripe.com.au
+ * @author marcus@symbiote.com.au
  * @license http://silverstripe.org/bsd-license/
  */
 class GenerateGoogleSitemapJob extends AbstractQueuedJob

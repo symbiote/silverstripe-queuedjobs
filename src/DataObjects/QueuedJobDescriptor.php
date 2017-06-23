@@ -34,7 +34,7 @@ use SilverStripe\Security\Permission;
  *
  * @method Member RunAs() Member to run this job as
  *
- * @author Marcus Nyeholt <marcus@silverstripe.com.au>
+ * @author Marcus Nyeholt <marcus@symbiote.com.au>
  * @license BSD http://silverstripe.org/bsd-license/
  */
 class QueuedJobDescriptor extends DataObject
