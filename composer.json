@@ -26,6 +26,9 @@
             "dev-master": "4.x-dev"
         }
     },
+    "replace": {
+        "silverstripe/queuedjobs": "self.version"
+    },
     "autoload": {
         "psr-4": {
             "Symbiote\\QueuedJobs\\": "src/"
