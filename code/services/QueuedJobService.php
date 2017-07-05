@@ -88,7 +88,7 @@ class QueuedJobService {
 	 * Config controlled list of default/required jobs
 	 * @var Array
 	 */
-	public $defaultJobs;
+	public $defaultJobs = array();
 
 	/**
 	 * Register our shutdown handler
@@ -325,6 +325,9 @@ class QueuedJobService {
 	 */
 	public function checkdefaultJobs($queue = null) {
 		$queue = $queue ?: QueuedJob::QUEUED;
+
+		$this->defaultJobs = !empty($this->defaultJobs) ? $this->defaultJobs : Config::inst()->get(__CLASS__, 'defaultJobs');
+
 		if (count($this->defaultJobs)) {
 
 			$activeJobs = QueuedJobDescriptor::get()->filter(array(
@@ -349,8 +352,10 @@ class QueuedJobService {
 				));
 
 				if (!$job->count()) {
+					SS_Log::log("Default Job config: $title was missing from Queue and has been re-added", SS_Log::ERR);
 					Email::create()
-						->setTo(isset($jobConfig['email']) ? $jobConfig['email'] : Email::config()->admin_email)
+						->setTo(isset($jobConfig['email']) ? $jobConfig['email'] : Config::inst()->get('Email', 'queued_job_admin_email'))
+						->setFrom(Config::inst()->get('Email', 'queued_job_admin_email'))
 						->setSubject('Default Job "' . $title . '" missing')
 						->populateTemplate(array('Title' => $title, 'Site' => Director::absoluteBaseURL()))
 						->populateTemplate($jobConfig)
@@ -358,7 +363,7 @@ class QueuedJobService {
 						->send();
 
 					if (isset($jobConfig['recreate']) && $jobConfig['recreate']) {
-						if (!isset($jobConfig['construct']) || !isset($jobConfig['startDateFormat']) || !isset($jobConfig['startTimeString'])) {
+						if (!array_key_exists('construct', $jobConfig) || !isset($jobConfig['startDateFormat']) || !isset($jobConfig['startTimeString'])) {
 							SS_Log::log("Default Job config: $title incorrectly set up. Please check the readme for examples", SS_Log::ERR);
 							continue;
 						}
