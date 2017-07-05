@@ -680,7 +680,7 @@ class QueuedJobService
                     $jobDescriptor->write();
                 }
 
-                if (!$broken) {
+                if ($job->jobFinished()) {
                     $job->afterComplete();
                     $jobDescriptor->cleanupJob();
                 }
