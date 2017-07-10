@@ -115,7 +115,7 @@ class QueuedJobService
     {
         // bind a shutdown function to process all 'immediate' queued jobs if needed, but only in CLI mode
         if (Config::inst()->get(__CLASS__, 'use_shutdown_function') && Director::is_cli()) {
-            if (class_exists('PHPUnit_Framework_TestCase') && SapphireTest::is_running_test()) {
+            if (class_exists('PHPUnit_Framework_TestCase') && Controller::has_curr() && (Controller::curr() instanceof TestRunner)) {
                 // do NOTHING
             } else {
                 register_shutdown_function(array($this, 'onShutdown'));
