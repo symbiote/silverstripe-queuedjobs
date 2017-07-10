@@ -10,7 +10,6 @@ use SilverStripe\Control\Session;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Convert;
 use SilverStripe\Core\Injector\Injector;
-use SilverStripe\Core\Object;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
@@ -406,7 +405,7 @@ class QueuedJobService
     {
         // create the job class
         $impl = $jobDescriptor->Implementation;
-        $job = Object::create($impl);
+        $job = Injector::inst()->create($impl);
         /* @var $job QueuedJob */
         if (!$job) {
             throw new Exception("Implementation $impl no longer exists");
@@ -903,7 +902,7 @@ class QueuedJobService
                 \Subsite::changeSubsite(0);
             }
             if (Controller::has_curr()) {
-                Session::clear('loggedInAs');
+                Controller::curr()->getRequest()->getSession()->clear('loggedInAs');
             } else {
                 unset($_SESSION['loggedInAs']);
             }
