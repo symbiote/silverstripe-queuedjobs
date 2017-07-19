@@ -326,8 +326,6 @@ class QueuedJobService {
 	public function checkdefaultJobs($queue = null) {
 		$queue = $queue ?: QueuedJob::QUEUED;
 
-		$this->defaultJobs = !empty($this->defaultJobs) ? $this->defaultJobs : Config::inst()->get(__CLASS__, 'defaultJobs');
-
 		if (count($this->defaultJobs)) {
 
 			$activeJobs = QueuedJobDescriptor::get()->filter(array(

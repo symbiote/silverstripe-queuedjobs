@@ -172,30 +172,31 @@ Default jobs are defined in yml config the sample below covers the options and e
 ```
 Injector:
   QueuedJobService:
-    defaultJobs:
-      # This key is used as the title for error logs and alert emails
-      ArbitraryName:
-        # The job type should be the class name of a job REQUIRED
-        type: 'ScheduledExternalImportJob'
-        # This plus the job type is used to create the SQL query REQUIRED
-        filter:
-          # 1 or more Fieldname: 'value' sets that will be queried on REQUIRED
-          #  These can be valid ORM filter
-          JobTitle: 'Scheduled import from Services'
-        # Sets whether the job will be recreated or not OPTIONAL
-        recreate: 1
-        # Set the email address to send the alert to if not set site admin email is used OPTIONAL
-        email: 'admin@email.com'
-        # Parameters set on the recreated object OPTIONAL
-        construct:
-          # 1 or more Fieldname: 'value' sets be passed to the constructor OPTIONAL
-          repeat: 300
-          title: 'Scheduled import from Services'
-      # Minimal implementation will send alerts but not recreate
-      AnotherTitle:
-        type: 'AJob'
-        filter: 
-          JobTitle: 'A job'
+    properties:
+      defaultJobs:
+        # This key is used as the title for error logs and alert emails
+        ArbitraryName:
+          # The job type should be the class name of a job REQUIRED
+          type: 'ScheduledExternalImportJob'
+          # This plus the job type is used to create the SQL query REQUIRED
+          filter:
+            # 1 or more Fieldname: 'value' sets that will be queried on REQUIRED
+            #  These can be valid ORM filter
+            JobTitle: 'Scheduled import from Services'
+          # Sets whether the job will be recreated or not OPTIONAL
+          recreate: 1
+          # Set the email address to send the alert to if not set site admin email is used OPTIONAL
+          email: 'admin@email.com'
+          # Parameters set on the recreated object OPTIONAL
+          construct:
+            # 1 or more Fieldname: 'value' sets be passed to the constructor OPTIONAL
+            repeat: 300
+            title: 'Scheduled import from Services'
+        # Minimal implementation will send alerts but not recreate
+        AnotherTitle:
+          type: 'AJob'
+          filter: 
+            JobTitle: 'A job'
 ```
 
 ## Configuring the CleanupJob
