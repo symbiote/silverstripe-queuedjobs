@@ -328,16 +328,15 @@ class QueuedJobService {
 
 		if (count($this->defaultJobs)) {
 
-			$activeJobs = QueuedJobDescriptor::get()->filter(array(
-					'JobStatus' => array(
+			$activeJobs = QueuedJobDescriptor::get()->filter(
+				'JobStatus', array(
 					QueuedJob::STATUS_NEW,
 					QueuedJob::STATUS_INIT,
 					QueuedJob::STATUS_RUN,
 					QueuedJob::STATUS_WAIT,
 					QueuedJob::STATUS_PAUSED
-				),
-				'JobType' => $queue
-			));
+				)
+			);
 
 			foreach ($this->defaultJobs as $title => $jobConfig) {
 				if (!isset($jobConfig['filter']) || !isset($jobConfig['type'])) {
@@ -350,7 +349,7 @@ class QueuedJobService {
 				));
 
 				if (!$job->count()) {
-					SS_Log::log("Default Job config: $title was missing from Queue and has been re-added", SS_Log::ERR);
+					SS_Log::log("Default Job config: $title was missing from Queue", SS_Log::ERR);
 					Email::create()
 						->setTo(isset($jobConfig['email']) ? $jobConfig['email'] : Config::inst()->get('Email', 'queued_job_admin_email'))
 						->setFrom(Config::inst()->get('Email', 'queued_job_admin_email'))
@@ -369,6 +368,7 @@ class QueuedJobService {
 							Injector::inst()->createWithArgs($jobConfig['type'], $jobConfig['construct']),
 							date($jobConfig['startDateFormat'], strtotime($jobConfig['startTimeString']))
 						);
+						SS_Log::log("Default Job config: $title has been re-added to the Queue", SS_Log::ERR);
 					}
 				}
 			}
