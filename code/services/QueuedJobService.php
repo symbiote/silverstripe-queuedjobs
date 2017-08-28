@@ -18,7 +18,7 @@
  *  data->write();
  *
  *
- * @author Marcus Nyeholt <marcus@silverstripe.com.au>
+ * @author Marcus Nyeholt <marcus@symbiote.com.au>
  * @license BSD http://silverstripe.org/bsd-license/
  */
 class QueuedJobService {
@@ -919,7 +919,7 @@ class JobErrorHandler {
 	/**
 	 * For logging and catching exceptions thrown during AbstractQueuedJob::process()
 	 * and similar.
-	 */ 
+	 */
 	public function handleException($exception) {
 		$errno = E_USER_ERROR;
 		$type = get_class($exception);
@@ -935,7 +935,7 @@ class JobErrorHandler {
 	/**
 	 * Works like the core Silverstripe error handler without exiting
 	 * on fatal messages.
-	 */ 
+	 */
 	public function handleError($errno, $errstr, $errfile, $errline) {
 		if (error_reporting()) {
 			// Don't throw E_DEPRECATED in PHP 5.3+

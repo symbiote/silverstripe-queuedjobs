@@ -8,7 +8,7 @@
  * If no name is given, it creates a demo dummy job to help test that things
  * are set up and working
  *
- * @author Marcus Nyeholt <marcus@silverstripe.com.au>
+ * @author Marcus Nyeholt <marcus@symbiote.com.au>
  * @license BSD http://silverstripe.org/bsd-license/
  */
 class CreateQueuedJobTask extends BuildTask {

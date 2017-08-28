@@ -4,7 +4,7 @@
  * An queued job to clean out the QueuedJobDescriptor Table
  * which often gets too full
  *
- * @author Andrew Aitken-Fincham <andrew@silverstripe.com.au>
+ * @author Andrew Aitken-Fincham <andrew@symbiote.com.au>
  */
 class CleanupJob extends AbstractQueuedJob implements QueuedJob {
 
