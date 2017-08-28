@@ -4,7 +4,7 @@
  * An example build task that publishes a bunch of pages - this demonstrates a realworld example of how the
  * queued jobs project can be used
  *
- * @author Marcus Nyeholt <marcus@silverstripe.com.au>
+ * @author Marcus Nyeholt <marcus@symbiote.com.au>
  * @license BSD http://silverstripe.org/bsd-license/
  */
 class PublishItemsTask extends BuildTask {

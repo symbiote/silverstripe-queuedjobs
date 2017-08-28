@@ -3,7 +3,7 @@
 /**
  * Task used to process the job queue
  *
- * @author Marcus Nyeholt <marcus@silverstripe.com.au>
+ * @author Marcus Nyeholt <marcus@symbiote.com.au>
  * @license BSD http://silverstripe.org/bsd-license/
  */
 class ProcessJobQueueTask extends BuildTask {

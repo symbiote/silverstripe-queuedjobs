@@ -5,7 +5,7 @@
  *
  * Use this as an example of how you can write your own jobs
  *
- * @author Marcus Nyeholt <marcus@silverstripe.com.au>
+ * @author Marcus Nyeholt <marcus@symbiote.com.au>
  * @license BSD http://silverstripe.org/bsd-license/
  */
 class PublishItemsJob extends AbstractQueuedJob implements QueuedJob {

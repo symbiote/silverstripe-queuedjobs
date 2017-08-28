@@ -3,7 +3,7 @@
 /**
  * execute jobs immediately in the current request context
  *
- * @author marcus@silverstripe.com.au
+ * @author marcus@symbiote.com.au
  * @license BSD License http://silverstripe.org/bsd-license/
  */
 class ImmediateQueueHandler {

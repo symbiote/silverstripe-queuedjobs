@@ -1,6 +1,6 @@
 <?php
 /**
- * @author Marcus Nyeholt <marcus@silverstripe.com.au>
+ * @author Marcus Nyeholt <marcus@symbiote.com.au>
  * @license BSD http://silverstripe.org/bsd-license/
  */
 class QueuedJobsAdmin extends ModelAdmin {
@@ -39,7 +39,7 @@ class QueuedJobsAdmin extends ModelAdmin {
 	);
 
 	/**
-	 * European date format 
+	 * European date format
 	 * @var string
 	 */
 	private static $date_format_european = 'dd/MM/yyyy';
@@ -48,7 +48,7 @@ class QueuedJobsAdmin extends ModelAdmin {
 	 * @var QueuedJobService
 	 */
 	public $jobQueue;
-    
+
     /**
      * @config The number of seconds to include jobs that have finished
      * default: 300 (5 minutes), examples: 3600(1h), 86400(1d)
@@ -119,7 +119,7 @@ class QueuedJobsAdmin extends ModelAdmin {
 			$actions = $form->Actions();
 			$actions->push(FormAction::create('createjob', _t('QueuedJobs.CREATE_NEW_JOB', 'Create new job')));
 		}
-        
+
         $this->extend('updateEditForm', $form);
 
 		return $form;

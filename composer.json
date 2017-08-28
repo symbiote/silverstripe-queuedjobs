@@ -1,26 +1,32 @@
 {
-	"name": "silverstripe/queuedjobs",
-	"description": "A framework for defining and running background jobs in a queued manner",
-	"type": "silverstripe-module",
-	"keywords": ["silverstripe", "jobs"],
-	"license": "BSD-3-Clause",
-	"authors": [
-		{
-			"name": "Marcus Nyeholt",
-			"email": "marcus@silverstripe.com.au"
-		},
-		{
-			"name": "Damian Mooyman",
-			"email": "damian@silverstripe.com"
-		}
-	],
-	"require":
-	{
-		"silverstripe/framework": "~3.1",
-		"symbiote/silverstripe-multivaluefield": "~2.0",
-		"asyncphp/doorman": "~1.2"
-	},
+    "name": "symbiote/silverstripe-queuedjobs",
+    "description": "A framework for defining and running background jobs in a queued manner",
+    "type": "silverstripe-module",
+    "keywords": ["silverstripe", "jobs"],
+    "license": "BSD-3-Clause",
+    "authors": [
+        {
+            "name": "Marcus Nyeholt",
+            "email": "marcus@symbiote.com.au"
+        },
+        {
+            "name": "Damian Mooyman",
+            "email": "damian@silverstripe.com"
+        }
+    ],
+    "require":
+    {
+        "silverstripe/framework": "^3.1",
+        "symbiote/silverstripe-multivaluefield": "^3.0",
+        "asyncphp/doorman": "^1.2"
+    },
     "extra": {
-        "installer-name": "queuedjobs"
+        "installer-name": "queuedjobs",
+        "branch-alias": {
+            "3.x-dev": "3.0.x-dev"
+        }
+    },
+    "replace": {
+        "silverstripe/queuedjobs": "self.version"
     }
 }

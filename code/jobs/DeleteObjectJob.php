@@ -5,7 +5,7 @@
  * a schedule, or where the delete may have some onflow affect that takes a while to
  * finish the deletion.
  *
- * @author marcus@silverstripe.com.au
+ * @author marcus@symbiote.com.au
  * @license BSD License http://silverstripe.org/bsd-license/
  */
 class DeleteObjectJob extends AbstractQueuedJob {

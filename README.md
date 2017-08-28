@@ -1,15 +1,15 @@
 # SilverStripe Queued Jobs Module
 
 
-[![Build Status](https://travis-ci.org/silverstripe-australia/silverstripe-queuedjobs.svg?branch=master)](https://travis-ci.org/silverstripe-australia/silverstripe-queuedjobs)
-[![Scrutinizer](https://scrutinizer-ci.com/g/silverstripe-australia/silverstripe-queuedjobs/badges/quality-score.png)](https://scrutinizer-ci.com/g/silverstripe-australia/silverstripe-queuedjobs/)
+[![Build Status](https://travis-ci.org/symbiote/silverstripe-queuedjobs.svg?branch=master)](https://travis-ci.org/symbiote/silverstripe-queuedjobs)
+[![Scrutinizer](https://scrutinizer-ci.com/g/symbiote/silverstripe-queuedjobs/badges/quality-score.png)](https://scrutinizer-ci.com/g/symbiote/silverstripe-queuedjobs/)
 
 
 ## Maintainer Contact
 
 Marcus Nyeholt
 
-<marcus (at) silverstripe (dot) com (dot) au>
+<marcus (at) symbiote (dot) com (dot) au>
 
 ## Requirements
 
@@ -21,12 +21,12 @@ Marcus Nyeholt
 
 The master branch of this module is currently aiming for SilverStripe 3.1 compatibility
 
-* [SilverStripe 3.0 compatible version](https://github.com/silverstripe-australia/silverstripe-queuedjobs/tree/1.0)
-* [SilverStripe 2.4 compatible version](https://github.com/silverstripe-australia/silverstripe-queuedjobs/tree/ss24)
+* [SilverStripe 3.0 compatible version](https://github.com/symbiote/silverstripe-queuedjobs/tree/1.0)
+* [SilverStripe 2.4 compatible version](https://github.com/symbiote/silverstripe-queuedjobs/tree/ss24)
 
 ## Documentation
 
-See http://github.com/silverstripe-australia/silverstripe-queuedjobs/wiki/ for more complete
+See http://github.com/symbiote/silverstripe-queuedjobs/wiki/ for more complete
 documentation
 
 The Queued Jobs module provides a framework for SilverStripe developers to
@@ -60,7 +60,7 @@ that processes this queue. Its time of execution can be left a little longer.
 	singleton('QueuedJobService')->queueJob($publish);
 
 * To schedule a job to be executed at some point in the future, pass a date through with the call to queueJob
-The following will run the publish job in 1 day's time from now. 
+The following will run the publish job in 1 day's time from now.
 
 	$publish = new PublishItemsJob(21);
 	singleton('QueuedJobService')->queueJob($publish, date('Y-m-d H:i:s', time() + 86400));
@@ -84,7 +84,7 @@ After: '#queuedjobsettings'
 ---
 Injector:
   QueuedJobService:
-    properties: 
+    properties:
       queueRunner: %$DoormanRunner
 ```
 
@@ -101,7 +101,7 @@ Name: localproject
 After: '#queuedjobsettings'
 ---
 Injector:
-  QueueHandler: 
+  QueueHandler:
     class: GearmanQueueHandler
 ```
 
@@ -116,15 +116,15 @@ Queued jobs can be executed immediately (instead of being limited by cron's 1 mi
 a file based notification system. This relies on something like inotifywait to monitor a folder (by
 default this is SILVERSTRIPE_CACHE_DIR/queuedjobs) and triggering the ProcessJobQueueTask as above
 but passing job=$filename as the argument. An example script is in queuedjobs/scripts that will run
-inotifywait and then call the ProcessJobQueueTask when a new job is ready to run. 
+inotifywait and then call the ProcessJobQueueTask when a new job is ready to run.
 
 Note - if you do NOT have this running, make sure to set `QueuedJobService::$use_shutdown_function = true;`
 so that immediate mode jobs don't stall. By setting this to true, immediate jobs will be executed after
-the request finishes as the php script ends. 
+the request finishes as the php script ends.
 
 # Default Jobs
 
-Some jobs should always be either running or queued to run, things like data refreshes or periodic clean up jobs, we call these Default Jobs.  
+Some jobs should always be either running or queued to run, things like data refreshes or periodic clean up jobs, we call these Default Jobs.
 Default jobs are checked for at the end of each job queue process, using the job type and any fields in the filter to create an SQL query e.g.
 
 ```
@@ -195,7 +195,7 @@ Injector:
         # Minimal implementation will send alerts but not recreate
         AnotherTitle:
           type: 'AJob'
-          filter: 
+          filter:
             JobTitle: 'A job'
 ```
 
@@ -227,7 +227,7 @@ CleanupJob:
   cleanup_statuses:
     - Broken
 	- Complete
-``` 
+```
 
 
 ## Troubleshooting
@@ -236,15 +236,15 @@ To make sure your job works, you can first try to execute the job directly outsi
 queues - this can be done by manually calling the *setup()* and *process()* methods. If it works fine
 under these circumstances, try having *getJobType()* return *QueuedJob::IMMEDIATE* to have execution
 work immediately, without being persisted or executed via cron. If this works, next make sure your
-cronjob is configured and executing correctly. 
+cronjob is configured and executing correctly.
 
 If defining your own job classes, be aware that when the job is started on the queue, the job class
 is constructed _without_ parameters being passed; this means if you accept constructor args, you
-_must_ detect whether they're present or not before using them. See [this issue](https://github.com/silverstripe-australia/silverstripe-queuedjobs/issues/35) 
-and [this wiki page](https://github.com/silverstripe-australia/silverstripe-queuedjobs/wiki/Defining-queued-jobs) for 
+_must_ detect whether they're present or not before using them. See [this issue](https://github.com/symbiote/silverstripe-queuedjobs/issues/35)
+and [this wiki page](https://github.com/symbiote/silverstripe-queuedjobs/wiki/Defining-queued-jobs) for
 more information
 
-Ensure that notifications are configured so that you can get updates or stalled or broken jobs. You can 
+Ensure that notifications are configured so that you can get updates or stalled or broken jobs. You can
 set the notification email address in your config as below:
 
 
@@ -254,9 +254,9 @@ set the notification email address in your config as below:
 
 **Long running jobs are running multiple times!**
 
-A long running job _may_ fool the system into thinking it has gone away (ie the job health check fails because 
+A long running job _may_ fool the system into thinking it has gone away (ie the job health check fails because
 `currentStep` hasn't been incremented). To avoid this scenario, you can set `$this->currentStep = -1` in your job's
-constructor, to prevent any health checks detecting the job. 
+constructor, to prevent any health checks detecting the job.
 
 ## Performance configuration
 
@@ -284,7 +284,7 @@ resources. By default this is disabled, so you must specify this in your project
 
 ## Indexes
 
-ALTER TABLE `QueuedJobDescriptor` ADD INDEX ( `JobStatus` , `JobType` ) 
+ALTER TABLE `QueuedJobDescriptor` ADD INDEX ( `JobStatus` , `JobType` )
 
 ## Contributing
 
