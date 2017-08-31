@@ -16,7 +16,7 @@
     ],
     "require": {
         "silverstripe/framework": "^4@dev",
-        "silverstripe/admin": "1.0.x-dev",
+        "silverstripe/admin": "^1@dev",
         "asyncphp/doorman": "^3.0"
     },
     "minimum-stability": "dev",
