@@ -23,7 +23,7 @@ class TestQJService extends QueuedJobService implements TestOnly
         return $this->initialiseJob($descriptor);
     }
 
-    public function getLogger() 
+    public function getLogger()
     {
         return isset($this->logger) ? $this->logger : $this->logger = new QueuedJobsTest_RecordingLogger();
     }

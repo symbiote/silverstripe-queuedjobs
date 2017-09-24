@@ -1,9 +1,14 @@
 <?php
 
+namespace Symbiote\QueuedJobs\Tests;
+
+use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Dev\FunctionalTest;
 use SilverStripe\Forms\FieldList;
+use SilverStripe\Forms\TextareaField;
 use Symbiote\QueuedJobs\Controllers\QueuedJobsAdmin;
 use Symbiote\QueuedJobs\Jobs\PublishItemsJob;
+use Symbiote\QueuedJobs\Services\QueuedJobService;
 
 /**
  * Tests for the QueuedJobsAdmin ModelAdmin clas
@@ -30,13 +35,18 @@ class QueuedJobsAdminTest extends FunctionalTest
      *
      * {@inheritDoc}
      */
-    public function setUp()
+    protected function setUp()
     {
         parent::setUp();
-        $this->admin = new QueuedJobsAdmin;
 
-        // Compatible with both PHPUnit 3 and PHPUnit 5+
-        $mockQueue = method_exists($this, 'createMock') ? $this->createMock('Symbiote\\QueuedJobs\\Services\\QueuedJobService') : $this->getMock('Symbiote\\QueuedJobs\\Services\\QueuedJobService');
+        // The shutdown handler doesn't play nicely with SapphireTest's database handling
+        QueuedJobService::config()->set('use_shutdown_function', false);
+
+        $this->admin = new QueuedJobsAdmin;
+        $this->admin->setRequest(new HTTPRequest('GET', '/'));
+        $this->admin->getRequest()->setSession($this->session());
+
+        $mockQueue = $this->createMock(QueuedJobService::class);
         $this->admin->jobQueue = $mockQueue;
 
         $this->logInWithPermission('ADMIN');
@@ -49,7 +59,7 @@ class QueuedJobsAdminTest extends FunctionalTest
     public function testConstructorParamsShouldBeATextarea()
     {
         $fields = $this->admin->getEditForm('foo', new FieldList)->Fields();
-        $this->assertInstanceOf('SilverStripe\\Forms\\TextareaField', $fields->fieldByName('JobParams'));
+        $this->assertInstanceOf(TextareaField::class, $fields->fieldByName('JobParams'));
     }
 
     /**
