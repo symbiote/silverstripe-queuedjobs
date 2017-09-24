@@ -10,12 +10,17 @@ use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\Form;
 use SilverStripe\Forms\FormAction;
 use SilverStripe\Forms\GridField\GridField;
+use SilverStripe\Forms\GridField\GridFieldAddNewButton;
 use SilverStripe\Forms\GridField\GridFieldConfig_RecordEditor;
+use SilverStripe\Forms\GridField\GridFieldDataColumns;
 use SilverStripe\Forms\TextareaField;
 use SilverStripe\ORM\DataList;
-use Symbiote\QueuedJobs\Forms\GridFieldQueuedJobExecute;
-use Symbiote\QueuedJobs\Services\QueuedJob;
 use SilverStripe\Security\Permission;
+use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
+use Symbiote\QueuedJobs\Forms\GridFieldQueuedJobExecute;
+use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
+use Symbiote\QueuedJobs\Services\QueuedJob;
+use Symbiote\QueuedJobs\Services\QueuedJobService;
 
 /**
  * @author Marcus Nyeholt <marcus@symbiote.com.au>
@@ -41,21 +46,23 @@ class QueuedJobsAdmin extends ModelAdmin
     /**
      * @var array
      */
-    private static $managed_models = array('Symbiote\\QueuedJobs\\DataObjects\\QueuedJobDescriptor');
+    private static $managed_models = [
+        QueuedJobDescriptor::class
+    ];
 
     /**
      * @var array
      */
-    private static $dependencies = array(
-        'jobQueue' => '%$Symbiote\\QueuedJobs\\Services\\QueuedJobService',
-    );
+    private static $dependencies = [
+        'jobQueue' => '%$' . QueuedJobService::class,
+    ];
 
     /**
      * @var array
      */
-    private static $allowed_actions = array(
+    private static $allowed_actions = [
         'EditForm'
-    );
+    ];
 
     /**
      * @var QueuedJobService
@@ -79,7 +86,7 @@ class QueuedJobsAdmin extends ModelAdmin
 
         $filter = $this->jobQueue->getJobListFilter(null, self::config()->max_finished_jobs_age);
 
-        $list = DataList::create('Symbiote\\QueuedJobs\\DataObjects\\QueuedJobDescriptor');
+        $list = DataList::create(QueuedJobDescriptor::class);
         $list = $list->where($filter)->sort('Created', 'DESC');
 
         $gridFieldConfig = GridFieldConfig_RecordEditor::create()
@@ -90,7 +97,7 @@ class QueuedJobsAdmin extends ModelAdmin
             ->addComponent(new GridFieldQueuedJobExecute('resume', function ($record) {
                 return $record->JobStatus == QueuedJob::STATUS_PAUSED || $record->JobStatus == QueuedJob::STATUS_BROKEN;
             }))
-            ->removeComponentsByType('SilverStripe\\Forms\\GridField\\GridFieldAddNewButton');
+            ->removeComponentsByType(GridFieldAddNewButton::class);
 
 
         // Set messages to HTML display format
@@ -99,23 +106,23 @@ class QueuedJobsAdmin extends ModelAdmin
                 return "<div style='max-width: 300px; max-height: 200px; overflow: auto;'>$obj->Messages</div>";
             },
         );
-        $gridFieldConfig->getComponentByType('SilverStripe\\Forms\\GridField\\GridFieldDataColumns')
+        $gridFieldConfig->getComponentByType(GridFieldDataColumns::class)
             ->setFieldFormatting($formatting);
 
         // Replace gridfield
-        $grid = new GridField(
-            'Symbiote\\QueuedJobs\\DataObjects\\QueuedJobDescriptor',
+        $grid = GridField::create(
+            QueuedJobDescriptor::class,
             _t('QueuedJobs.JobsFieldTitle', 'Jobs'),
             $list,
             $gridFieldConfig
         );
         $grid->setForm($form);
-        $form->Fields()->replaceField('Symbiote\\QueuedJobs\\DataObjects\\QueuedJobDescriptor', $grid);
+        $form->Fields()->replaceField(QueuedJobDescriptor::class, $grid);
 
         if (Permission::check('ADMIN')) {
-            $types = ClassInfo::subclassesFor('Symbiote\\QueuedJobs\\Services\\AbstractQueuedJob');
+            $types = ClassInfo::subclassesFor(AbstractQueuedJob::class);
             $types = array_combine($types, $types);
-            unset($types['Symbiote\\QueuedJobs\\Services\\AbstractQueuedJob']);
+            unset($types[AbstractQueuedJob::class]);
             $jobType = DropdownField::create('JobType', _t('QueuedJobs.CREATE_JOB_TYPE', 'Create job of type'), $types);
             $jobType->setEmptyString('(select job to create)');
             $form->Fields()->push($jobType);
@@ -131,7 +138,10 @@ class QueuedJobsAdmin extends ModelAdmin
             );
 
             $actions = $form->Actions();
-            $actions->push(FormAction::create('createjob', _t('QueuedJobs.CREATE_NEW_JOB', 'Create new job')));
+            $actions->push(
+                FormAction::create('createjob', _t('QueuedJobs.CREATE_NEW_JOB', 'Create new job'))
+                    ->addExtraClass('btn btn-primary')
+            );
         }
 
         $this->extend('updateEditForm', $form);

@@ -6,8 +6,10 @@ use SilverStripe\Assets\Filesystem;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Forms\DropdownField;
 use SilverStripe\ORM\DataObject;
-use Symbiote\QueuedJobs\Services\QueuedJob;
+use SilverStripe\ORM\FieldType\DBField;
 use SilverStripe\Security\Permission;
+use Symbiote\QueuedJobs\Services\QueuedJob;
+use Symbiote\QueuedJobs\Services\QueuedJobService;
 
 /**
  * A QueuedJobDescriptor is the stored representation of a piece of work that could take a while to execute,
@@ -166,7 +168,7 @@ class QueuedJobDescriptor extends DataObject
             $this->JobStatus = QueuedJob::STATUS_WAIT;
             $this->ResumeCounts++;
             $this->write();
-            singleton('Symbiote\\QueuedJobs\\Services\\QueuedJobService')->startJob($this);
+            singleton(QueuedJobService::class)->startJob($this);
             return true;
         }
         return false;
@@ -188,7 +190,7 @@ class QueuedJobDescriptor extends DataObject
     {
         // if it's an immediate job, lets cache it to disk to be picked up later
         if ($this->JobType == QueuedJob::IMMEDIATE
-            && !Config::inst()->get('Symbiote\\QueuedJobs\\Services\\QueuedJobService', 'use_shutdown_function')
+            && !Config::inst()->get(QueuedJobService::class, 'use_shutdown_function')
         ) {
             touch($this->getJobDir() . '/queuedjob-' . $this->ID);
         }
@@ -202,7 +204,7 @@ class QueuedJobDescriptor extends DataObject
     protected function getJobDir()
     {
         // make sure our temp dir is in place. This is what will be inotify watched
-        $jobDir = Config::inst()->get('Symbiote\\QueuedJobs\\Services\\QueuedJobService', 'cache_dir');
+        $jobDir = Config::inst()->get(QueuedJobService::class, 'cache_dir');
         if ($jobDir{0} != '/') {
             $jobDir = TEMP_FOLDER . '/' . $jobDir;
         }
@@ -215,7 +217,7 @@ class QueuedJobDescriptor extends DataObject
 
     public function execute()
     {
-        $service = singleton('Symbiote\\QueuedJobs\\Services\\QueuedJobService');
+        $service = singleton(QueuedJobService::class);
         $service->runJob($this->ID);
     }
 
@@ -244,8 +246,11 @@ class QueuedJobDescriptor extends DataObject
     public function getMessages()
     {
         if (strlen($this->SavedJobMessages)) {
-            $msgs = @unserialize($this->SavedJobMessages);
-            return is_array($msgs) ? '<ul><li>'.implode('</li><li>', $msgs).'</li></ul>' : '';
+            $messages = @unserialize($this->SavedJobMessages);
+            if (!empty($messages)) {
+                return DBField::create_field('HTMLText', '<ul><li>' . implode('</li><li>', $messages) . '</li></ul>');
+            }
+            return '';
         }
     }
 
@@ -291,9 +296,9 @@ class QueuedJobDescriptor extends DataObject
 
         if (Permission::check('ADMIN')) {
             return $fields;
-        } else {
-            // Readonly CMS view is a lot more useful for debugging than no view at all
-            return $fields->makeReadonly();
         }
+
+        // Readonly CMS view is a lot more useful for debugging than no view at all
+        return $fields->makeReadonly();
     }
 }
