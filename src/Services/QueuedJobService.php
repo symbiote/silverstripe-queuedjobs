@@ -8,6 +8,7 @@ use SilverStripe\Control\Director;
 use SilverStripe\Control\Email\Email;
 use SilverStripe\Control\Session;
 use SilverStripe\Core\Config\Config;
+use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Convert;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\SapphireTest;
@@ -15,10 +16,12 @@ use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
 use SilverStripe\ORM\FieldType\DBDatetime;
-use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\Permission;
+use SilverStripe\Security\Security;
 use Psr\Log\LoggerInterface;
+use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
+use Symbiote\QueuedJobs\QJUtils;
 
 /**
  * A service that can be used for starting, stopping and listing queued jobs.
@@ -43,7 +46,10 @@ use Psr\Log\LoggerInterface;
  */
 class QueuedJobService
 {
+    use Configurable;
+
     /**
+     * @config
      * @var int
      */
     private static $stall_threshold = 3;
@@ -86,6 +92,7 @@ class QueuedJobService
      * triggering immediate jobs. See the wiki for more information
      *
      * @var boolean
+     * @config
      */
     private static $use_shutdown_function = true;
 
@@ -93,6 +100,7 @@ class QueuedJobService
      * The location for immediate jobs to be stored in
      *
      * @var string
+     * @config
      */
     private static $cache_dir = 'queuedjobs';
 
@@ -113,13 +121,14 @@ class QueuedJobService
     public function __construct()
     {
         // bind a shutdown function to process all 'immediate' queued jobs if needed, but only in CLI mode
-        if (Config::inst()->get(__CLASS__, 'use_shutdown_function') && Director::is_cli()) {
+        if (static::config()->get('use_shutdown_function') && Director::is_cli()) {
             register_shutdown_function(array($this, 'onShutdown'));
         }
-        if (Config::inst()->get('SilverStripe\\Control\\Email\\Email', 'queued_job_admin_email') == '') {
+        if (Config::inst()->get(Email::class, 'queued_job_admin_email') == '') {
             Config::modify()->set(
-                'SilverStripe\\Control\\Email\\Email', 'queued_job_admin_email',
-                Config::inst()->get('SilverStripe\\Control\\Email\\Email', 'admin_email')
+                Email::class,
+                'queued_job_admin_email',
+                Config::inst()->get(Email::class, 'admin_email')
             );
         }
     }
@@ -150,7 +159,7 @@ class QueuedJobService
             )
         );
 
-        $existing = DataList::create('Symbiote\\QueuedJobs\\DataObjects\\QueuedJobDescriptor')
+        $existing = DataList::create(QueuedJobDescriptor::class)
             ->filter($filter)
             ->first();
 
@@ -165,7 +174,7 @@ class QueuedJobService
         $jobDescriptor->Implementation = get_class($job);
         $jobDescriptor->StartAfter = $startAfter;
 
-        $jobDescriptor->RunAsID = $userId ? $userId : Member::currentUserID();
+        $jobDescriptor->RunAsID = $userId ? $userId : Security::getCurrentUser()->ID;
 
         // copy data
         $this->copyJobToDescriptor($job, $jobDescriptor);
@@ -356,7 +365,7 @@ class QueuedJobService
      */
     protected function restartStalledJob($stalledJob)
     {
-        if ($stalledJob->ResumeCounts < Config::inst()->get(__CLASS__, 'stall_threshold')) {
+        if ($stalledJob->ResumeCounts < static::config()->get('stall_threshold')) {
             $stalledJob->restart();
             $message = sprintf(
                 _t(
@@ -377,8 +386,8 @@ class QueuedJobService
         }
 
         $this->getLogger()->error($message);
-        $from = Config::inst()->get('SilverStripe\\Control\\Email\\Email', 'admin_email');
-        $to = Config::inst()->get('SilverStripe\\Control\\Email\\Email', 'queued_job_admin_email');
+        $from = Config::inst()->get(Email::class, 'admin_email');
+        $to = Config::inst()->get(Email::class, 'queued_job_admin_email');
         $subject = _t('QueuedJobs.STALLED_JOB', 'Stalled job');
         $mail = new Email($from, $to, $subject, $message);
         $mail->send();
@@ -475,7 +484,7 @@ class QueuedJobService
     {
         // first retrieve the descriptor
         $jobDescriptor = DataObject::get_by_id(
-            'Symbiote\\QueuedJobs\\DataObjects\\QueuedJobDescriptor',
+            QueuedJobDescriptor::class,
             (int) $jobId
         );
         if (!$jobDescriptor) {
@@ -491,7 +500,7 @@ class QueuedJobService
         // this point of execution in some circumstances
         $originalUserID = isset($_SESSION['loggedInAs']) ? $_SESSION['loggedInAs'] : 0;
         $originalUser = $originalUserID
-            ? DataObject::get_by_id('SilverStripe\\Security\\Member', $originalUserID)
+            ? DataObject::get_by_id(Member::class, $originalUserID)
             : null;
         $runAsUser = null;
 
@@ -559,7 +568,7 @@ class QueuedJobService
                         $domain = $subsite->domain();
                         $base = rtrim(Director::protocol() . $domain, '/') . '/';
 
-                        Config::modify()->set('SilverStripe\\Control\\Director', 'alternate_base_url', $base);
+                        Config::modify()->set(Director::class, 'alternate_base_url', $base);
                     }
                 }
 
@@ -567,7 +576,7 @@ class QueuedJobService
                 while (!$job->jobFinished() && !$broken) {
                     // see that we haven't been set to 'paused' or otherwise by another process
                     $jobDescriptor = DataObject::get_by_id(
-                        'Symbiote\\QueuedJobs\\DataObjects\\QueuedJobDescriptor',
+                        QueuedJobDescriptor::class,
                         (int) $jobId
                     );
                     if (!$jobDescriptor || !$jobDescriptor->exists()) {
@@ -616,7 +625,7 @@ class QueuedJobService
                             $stallCount++;
                         }
 
-                        if ($stallCount > Config::inst()->get(__CLASS__, 'stall_threshold')) {
+                        if ($stallCount > static::config()->get('stall_threshold')) {
                             $broken = true;
                             $job->addMessage(
                                 sprintf(
@@ -721,7 +730,7 @@ class QueuedJobService
     protected function hasPassedTimeLimit()
     {
         // Ensure a limit exists
-        $limit = Config::inst()->get(__CLASS__, 'time_limit');
+        $limit = static::config()->get('time_limit');
         if (!$limit) {
             return false;
         }
@@ -768,7 +777,7 @@ class QueuedJobService
     protected function getMemoryLimit()
     {
         // Limit to smaller of explicit limit or php memory limit
-        $limit = $this->parseMemory(Config::inst()->get(__CLASS__, 'memory_limit'));
+        $limit = $this->parseMemory(static::config()->get('memory_limit'));
         if ($limit) {
             return $limit;
         }
@@ -833,7 +842,7 @@ class QueuedJobService
     public function getJobList($type = null, $includeUpUntil = 0)
     {
         return DataObject::get(
-            'Symbiote\\QueuedJobs\\DataObjects\\QueuedJobDescriptor',
+            QueuedJobDescriptor::class,
             $this->getJobListFilter($type, $includeUpUntil)
         );
     }
@@ -850,7 +859,7 @@ class QueuedJobService
      */
     public function getJobListFilter($type = null, $includeUpUntil = 0)
     {
-        $util = singleton('Symbiote\\QueuedJobs\\QJUtils');
+        $util = singleton(QJUtils::class);
 
         $filter = array('JobStatus <>' => QueuedJob::STATUS_COMPLETE);
         if ($includeUpUntil) {
@@ -938,43 +947,5 @@ class QueuedJobService
     public function getLogger()
     {
         return Injector::inst()->get(LoggerInterface::class);
-    }
-}
-
-/**
- * Class used to handle errors for a single job
- */
-class JobErrorHandler
-{
-    public function __construct()
-    {
-        set_error_handler(array($this, 'handleError'));
-    }
-
-    public function clear()
-    {
-        restore_error_handler();
-    }
-
-    public function handleError($errno, $errstr, $errfile, $errline)
-    {
-        if (error_reporting()) {
-            // Don't throw E_DEPRECATED in PHP 5.3+
-            if (defined('E_DEPRECATED')) {
-                if ($errno == E_DEPRECATED || $errno = E_USER_DEPRECATED) {
-                    return;
-                }
-            }
-
-            switch ($errno) {
-                case E_NOTICE:
-                case E_USER_NOTICE:
-                case E_STRICT:
-                    break;
-                default:
-                    throw new Exception($errstr . " in $errfile at line $errline", $errno);
-                    break;
-            }
-        }
     }
 }

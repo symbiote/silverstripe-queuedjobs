@@ -1,5 +1,7 @@
 <?php
 
+namespace Symbiote\QueuedJobs\Tests;
+
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\ORM\DataObject;
 use Symbiote\QueuedJobs\Tests\ScheduledExecutionTest\TestScheduledDataObject;
@@ -8,7 +10,7 @@ use Symbiote\QueuedJobs\Tests\ScheduledExecutionTest\TestScheduledDataObject;
  * @author marcus@symbiote.com.au
  * @license BSD License http://silverstripe.org/bsd-license/
  */
-class ScheduledExecutionTest extends SapphireTest
+class ScheduledExecutionTest extends AbstractTest
 {
     /**
      * We need the DB for this test

@@ -1,19 +1,21 @@
 <?php
 
+namespace Symbiote\QueuedJobs\Tests;
+
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Core\Config\Config;
+use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
 use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
 use Symbiote\QueuedJobs\Services\QueuedJob;
+use Symbiote\QueuedJobs\Services\QueuedJobService;
 use Symbiote\QueuedJobs\Tests\QueuedJobsTest\TestQueuedJob;
 use Symbiote\QueuedJobs\Tests\QueuedJobsTest\TestQJService;
 
 /**
- *
- *
  * @author Marcus Nyeholt <marcus@symbiote.com.au>
  */
-class QueuedJobsTest extends SapphireTest
+class QueuedJobsTest extends AbstractTest
 {
     /**
      * We need the DB for this test
@@ -25,22 +27,12 @@ class QueuedJobsTest extends SapphireTest
     /**
      * {@inheritDoc}
      */
-    public function setUp()
+    protected function setUp()
     {
         parent::setUp();
 
-        Config::nest();
         // Two restarts are allowed per job
-        Config::modify()->set('Symbiote\\QueuedJobs\\Services\\QueuedJobService', 'stall_threshold', 2);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function tearDown()
-    {
-        Config::unnest();
-        parent::tearDown();
+        Config::modify()->set(QueuedJobService::class, 'stall_threshold', 2);
     }
 
     /**
@@ -166,12 +158,12 @@ class QueuedJobsTest extends SapphireTest
         $job = new TestQueuedJob();
         $id = $svc->queueJob($job);
 
-        $descriptor = DataObject::get_by_id('Symbiote\\QueuedJobs\\DataObjects\\QueuedJobDescriptor', $id);
+        $descriptor = DataObject::get_by_id(QueuedJobDescriptor::class, $id);
 
         $job = $svc->testInit($descriptor);
         $this->assertInstanceOf(TestQueuedJob::class, $job, 'Job has been triggered');
 
-        $descriptor = DataObject::get_by_id('Symbiote\\QueuedJobs\\DataObjects\\QueuedJobDescriptor', $id);
+        $descriptor = DataObject::get_by_id(QueuedJobDescriptor::class, $id);
 
         $this->assertEquals(QueuedJob::STATUS_INIT, $descriptor->JobStatus);
     }
@@ -194,7 +186,7 @@ class QueuedJobsTest extends SapphireTest
         $this->assertTrue($result);
 
         // we want to make sure that the current user is the runas user of the job
-        $descriptor = DataObject::get_by_id('Symbiote\\QueuedJobs\\DataObjects\\QueuedJobDescriptor', $id);
+        $descriptor = DataObject::get_by_id(QueuedJobDescriptor::class, $id);
         $this->assertEquals('Complete', $descriptor->JobStatus);
     }
 
@@ -219,7 +211,7 @@ class QueuedJobsTest extends SapphireTest
         $svc->onShutdown();
 
         $jobs = $svc->getJobList(QueuedJob::IMMEDIATE);
-        $this->assertInstanceOf('SilverStripe\\ORM\\DataList', $jobs);
+        $this->assertInstanceOf(DataList::class, $jobs);
         $this->assertEquals(0, $jobs->count());
     }
 
