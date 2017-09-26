@@ -4,6 +4,7 @@ namespace Symbiote\QueuedJobs\Jobs;
 
 use SilverStripe\ORM\DataObject;
 use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
+use Symbiote\QueuedJobs\Services\QueuedJobService;
 
 /**
  * A job that gets executed on a particular schedule. When it runs,
@@ -45,7 +46,7 @@ class ScheduledExecutionJob extends AbstractQueuedJob
     public function getTitle()
     {
         return _t(
-            'ScheduledExecutionJob.Title',
+            __CLASS__ . '.Title',
             'Scheduled execution for {title}',
             array('title' => $this->getDataObject()->getTitle())
         );
@@ -76,7 +77,7 @@ class ScheduledExecutionJob extends AbstractQueuedJob
             if ($next > time()) {
                 // in the future
                 $nextGen = date('Y-m-d H:i:s', $next);
-                $nextId = singleton('Symbiote\\QueuedJobs\\Services\\QueuedJobService')->queueJob(
+                $nextId = singleton(QueuedJobService::class)->queueJob(
                     new ScheduledExecutionJob($object, $this->timesExecuted + 1),
                     $nextGen
                 );

@@ -2,6 +2,7 @@
 
 namespace Symbiote\QueuedJobs\Jobs;
 
+use Page;
 use SilverStripe\ORM\DataObject;
 use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
 use Symbiote\QueuedJobs\Services\QueuedJob;
@@ -30,7 +31,7 @@ class PublishItemsJob extends AbstractQueuedJob implements QueuedJob
 
     protected function getRoot()
     {
-        return DataObject::get_by_id('Page', $this->rootID);
+        return DataObject::get_by_id(Page::class, $this->rootID);
     }
 
     /**
@@ -41,7 +42,7 @@ class PublishItemsJob extends AbstractQueuedJob implements QueuedJob
     public function getTitle()
     {
         return _t(
-            'PublishItemsJob.Title',
+            __CLASS__ . '.Title',
             "Publish items beneath {title}",
             array('title' => $this->getRoot()->Title)
         );
@@ -111,7 +112,7 @@ class PublishItemsJob extends AbstractQueuedJob implements QueuedJob
         $ID = array_shift($remainingChildren);
 
         // get the page
-        $page = DataObject::get_by_id('Page', $ID);
+        $page = DataObject::get_by_id(Page::class, $ID);
         if ($page) {
             // publish it
             $page->doPublish();

@@ -25,7 +25,7 @@ class ProcessJobQueueTask extends BuildTask
     public function getDescription()
     {
         return _t(
-            'ProcessJobQueueTask.Description',
+            __CLASS__ . '.Description',
             'Used via a cron job to execute queued jobs that need to be run.'
         );
     }
