@@ -13,6 +13,7 @@ use Symbiote\QueuedJobs\Services\QueuedJob;
  *
  * @author marcus@symbiote.com.au
  * @license BSD License http://silverstripe.org/bsd-license/
+ * @skipUpgrade
  */
 class DeleteObjectJob extends AbstractQueuedJob
 {
@@ -30,10 +31,10 @@ class DeleteObjectJob extends AbstractQueuedJob
     }
 
     /**
-     * @param string (default: Object)
+     * @param  string $name
      * @return DataObject
      */
-    protected function getObject($name = 'SilverStripe\\Core\\Object')
+    protected function getObject($name = 'Object')
     {
         return DataObject::get_by_id($this->TargetClass, $this->TargetID);
     }
@@ -53,9 +54,9 @@ class DeleteObjectJob extends AbstractQueuedJob
     {
         $obj = $this->getObject();
         if ($obj) {
-            return _t('DeleteObjectJob.DELETE_OBJ2', 'Delete {title}', array('title' => $obj->Title));
+            return _t(__CLASS__ . '.DELETE_OBJ2', 'Delete {title}', array('title' => $obj->Title));
         } else {
-            return _t('DeleteObjectJob.DELETE_JOB', 'Delete node');
+            return _t(__CLASS__ . '.DELETE_JOB', 'Delete node');
         }
     }
 

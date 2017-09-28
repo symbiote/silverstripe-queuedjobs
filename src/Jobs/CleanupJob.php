@@ -72,7 +72,7 @@ class CleanupJob extends AbstractQueuedJob implements QueuedJob
     public function getTitle()
     {
         return _t(
-            'CleanupJob.Title',
+            __CLASS__ . '.Title',
             "Clean up old jobs from the database"
         );
     }

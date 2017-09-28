@@ -15,6 +15,7 @@ use SilverStripe\ORM\DataObject;
  *
  * @author Marcus Nyeholt <marcus@symbiote.com.au>
  * @license BSD http://silverstripe.org/bsd-license/
+ * @skipUpgrade
  */
 abstract class AbstractQueuedJob implements QueuedJob
 {
@@ -63,7 +64,7 @@ abstract class AbstractQueuedJob implements QueuedJob
      * @param DataObject $object
      * @param string $name A name to give it, if you want to store more than one
      */
-    protected function setObject(DataObject $object, $name = 'SilverStripe\\Core\\Object')
+    protected function setObject(DataObject $object, $name = 'Object')
     {
         $this->{$name . 'ID'} = $object->ID;
         $this->{$name . 'Type'} = $object->ClassName;
@@ -73,7 +74,7 @@ abstract class AbstractQueuedJob implements QueuedJob
      * @param string $name
      * @return DataObject|void
      */
-    protected function getObject($name = 'SilverStripe\\Core\\Object')
+    protected function getObject($name = 'Object')
     {
         $id = $this->{$name . 'ID'};
         $type = $this->{$name . 'Type'};

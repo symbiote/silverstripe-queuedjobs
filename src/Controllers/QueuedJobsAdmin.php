@@ -110,36 +110,38 @@ class QueuedJobsAdmin extends ModelAdmin
             ->setFieldFormatting($formatting);
 
         // Replace gridfield
+        /** @skipUpgrade */
         $grid = GridField::create(
             QueuedJobDescriptor::class,
-            _t('QueuedJobs.JobsFieldTitle', 'Jobs'),
+            _t(__CLASS__ . '.JobsFieldTitle', 'Jobs'),
             $list,
             $gridFieldConfig
         );
         $grid->setForm($form);
-        $form->Fields()->replaceField(QueuedJobDescriptor::class, $grid);
+        /** @skipUpgrade */
+        $form->Fields()->replaceField('QueuedJobDescriptor', $grid);
 
         if (Permission::check('ADMIN')) {
             $types = ClassInfo::subclassesFor(AbstractQueuedJob::class);
             $types = array_combine($types, $types);
             unset($types[AbstractQueuedJob::class]);
-            $jobType = DropdownField::create('JobType', _t('QueuedJobs.CREATE_JOB_TYPE', 'Create job of type'), $types);
+            $jobType = DropdownField::create('JobType', _t(__CLASS__ . '.CREATE_JOB_TYPE', 'Create job of type'), $types);
             $jobType->setEmptyString('(select job to create)');
             $form->Fields()->push($jobType);
 
             $jobParams = TextareaField::create(
                 'JobParams',
-                _t('QueuedJobs.JOB_TYPE_PARAMS', 'Constructor parameters for job creation (one per line)')
+                _t(__CLASS__ . '.JOB_TYPE_PARAMS', 'Constructor parameters for job creation (one per line)')
             );
             $form->Fields()->push($jobParams);
 
             $form->Fields()->push(
-                $dt = DatetimeField::create('JobStart', _t('QueuedJobs.START_JOB_TIME', 'Start job at'))
+                $dt = DatetimeField::create('JobStart', _t(__CLASS__ . '.START_JOB_TIME', 'Start job at'))
             );
 
             $actions = $form->Actions();
             $actions->push(
-                FormAction::create('createjob', _t('QueuedJobs.CREATE_NEW_JOB', 'Create new job'))
+                FormAction::create('createjob', _t(__CLASS__ . '.CREATE_NEW_JOB', 'Create new job'))
                     ->addExtraClass('btn btn-primary')
             );
         }
@@ -173,7 +175,7 @@ class QueuedJobsAdmin extends ModelAdmin
                 $jobClass = new ReflectionClass($jobType);
                 $job = $jobClass->newInstanceArgs($params);
                 if ($this->jobQueue->queueJob($job, $time)) {
-                    $form->sessionMessage('Successfully queued job', 'success');
+                    $form->sessionMessage(_t(__CLASS__ . '.QueuedJobSuccess', 'Successfully queued job'), 'success');
                 }
             }
         }

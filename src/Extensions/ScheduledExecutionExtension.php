@@ -10,7 +10,9 @@ use SilverStripe\Forms\NumericField;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\Forms\TextField;
 use SilverStripe\ORM\DataExtension;
+use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
 use Symbiote\QueuedJobs\Jobs\ScheduledExecutionJob;
+use Symbiote\QueuedJobs\Services\QueuedJobService;
 
 /**
  * An extension that can be added to objects that automatically
@@ -44,7 +46,7 @@ class ScheduledExecutionExtension extends DataExtension
      * @var array
      */
     private static $has_one = array(
-        'ScheduledJob' => 'Symbiote\\QueuedJobs\\DataObjects\\QueuedJobDescriptor',
+        'ScheduledJob' => QueuedJobDescriptor::class,
     );
 
     /**
@@ -54,10 +56,10 @@ class ScheduledExecutionExtension extends DataExtension
     {
         $fields->findOrMakeTab(
             'Root.Schedule',
-            _t('ScheduledExecution.ScheduleTabTitle', 'Schedule')
+            _t(__CLASS__ . '.ScheduleTabTitle', 'Schedule')
         );
         $fields->addFieldsToTab('Root.Schedule', array(
-            $dt = DatetimeField::create('FirstExecution', _t('ScheduledExecution.FIRST_EXECUTION', 'First Execution')),
+            $dt = DatetimeField::create('FirstExecution', _t(__CLASS__ . '.FIRST_EXECUTION', 'First Execution')),
             FieldGroup::create(
                 NumericField::create('ExecuteInterval', ''),
                 DropdownField::create(
@@ -65,26 +67,26 @@ class ScheduledExecutionExtension extends DataExtension
                     '',
                     array(
                         '' => '',
-                        'Minute' => _t('ScheduledExecution.ExecuteEveryMinute', 'Minute'),
-                        'Hour' => _t('ScheduledExecution.ExecuteEveryHour', 'Hour'),
-                        'Day' => _t('ScheduledExecution.ExecuteEveryDay', 'Day'),
-                        'Week' => _t('ScheduledExecution.ExecuteEveryWeek', 'Week'),
-                        'Fortnight' => _t('ScheduledExecution.ExecuteEveryFortnight', 'Fortnight'),
-                        'Month' => _t('ScheduledExecution.ExecuteEveryMonth', 'Month'),
-                        'Year' => _t('ScheduledExecution.ExecuteEveryYear', 'Year'),
+                        'Minute' => _t(__CLASS__ . '.ExecuteEveryMinute', 'Minute'),
+                        'Hour' => _t(__CLASS__ . '.ExecuteEveryHour', 'Hour'),
+                        'Day' => _t(__CLASS__ . '.ExecuteEveryDay', 'Day'),
+                        'Week' => _t(__CLASS__ . '.ExecuteEveryWeek', 'Week'),
+                        'Fortnight' => _t(__CLASS__ . '.ExecuteEveryFortnight', 'Fortnight'),
+                        'Month' => _t(__CLASS__ . '.ExecuteEveryMonth', 'Month'),
+                        'Year' => _t(__CLASS__ . '.ExecuteEveryYear', 'Year'),
                     )
                 )
-            )->setTitle(_t('ScheduledExecution.EXECUTE_EVERY', 'Execute every')),
+            )->setTitle(_t(__CLASS__ . '.EXECUTE_EVERY', 'Execute every')),
             TextField::create(
                 'ExecuteFree',
-                _t('ScheduledExecution.EXECUTE_FREE', 'Scheduled (in strtotime format from first execution)')
+                _t(__CLASS__ . '.EXECUTE_FREE', 'Scheduled (in strtotime format from first execution)')
             )
         ));
 
         if ($this->owner->ScheduledJobID) {
             $jobTime = $this->owner->ScheduledJob()->StartAfter;
             $fields->addFieldsToTab('Root.Schedule', array(
-                ReadonlyField::create('NextRunDate', _t('ScheduledExecution.NEXT_RUN_DATE', 'Next run date'), $jobTime)
+                ReadonlyField::create('NextRunDate', _t(__CLASS__ . '.NEXT_RUN_DATE', 'Next run date'), $jobTime)
             ));
         }
 
@@ -120,7 +122,7 @@ class ScheduledExecutionExtension extends DataExtension
                     $time = date('Y-m-d H:i:s', strtotime($this->owner->FirstExecution));
                 }
 
-                $this->owner->ScheduledJobID = singleton('Symbiote\\QueuedJobs\\Services\\QueuedJobService')
+                $this->owner->ScheduledJobID = singleton(QueuedJobService::class)
                     ->queueJob($job, $time);
             }
         }

@@ -32,7 +32,7 @@ class CreateQueuedJobTask extends BuildTask
     public function getDescription()
     {
         return _t(
-            'CreateQueuedJobTask.Description',
+            __CLASS__ . '.Description',
             'A task used to create a queued job. Pass the queued job class name as the "name" parameter, pass an optional "start" parameter (parseable by strtotime) to set a start time for the job.'
         );
     }

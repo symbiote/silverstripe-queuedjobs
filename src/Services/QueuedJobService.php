@@ -367,28 +367,24 @@ class QueuedJobService
     {
         if ($stalledJob->ResumeCounts < static::config()->get('stall_threshold')) {
             $stalledJob->restart();
-            $message = sprintf(
-                _t(
-                    'QueuedJobs.STALLED_JOB_RESTART_MSG',
-                    'A job named %s appears to have stalled. It will be stopped and restarted, please login to make sure it has continued'
-                ),
-                $stalledJob->JobTitle
+            $message = _t(
+                __CLASS__ . '.STALLED_JOB_RESTART_MSG',
+                'A job named {name} appears to have stalled. It will be stopped and restarted, please login to make sure it has continued',
+                ['name' => $stalledJob->JobTitle]
             );
         } else {
             $stalledJob->pause();
-            $message = sprintf(
-                _t(
-                    'QueuedJobs.STALLED_JOB_MSG',
-                    'A job named %s appears to have stalled. It has been paused, please login to check it'
-                ),
-                $stalledJob->JobTitle
+            $message = _t(
+                __CLASS__ . '.STALLED_JOB_MSG',
+                'A job named {name} appears to have stalled. It has been paused, please login to check it',
+                ['name' => $stalledJob->JobTitle]
             );
         }
 
         $this->getLogger()->error($message);
         $from = Config::inst()->get(Email::class, 'admin_email');
         $to = Config::inst()->get(Email::class, 'queued_job_admin_email');
-        $subject = _t('QueuedJobs.STALLED_JOB', 'Stalled job');
+        $subject = _t(__CLASS__ . '.STALLED_JOB', 'Stalled job');
         $mail = new Email($from, $to, $subject, $message);
         $mail->send();
     }
@@ -597,7 +593,9 @@ class QueuedJobService
                     }
                     if ($jobDescriptor->JobStatus != QueuedJob::STATUS_RUN) {
                         // we've been paused by something, so we'll just exit
-                        $job->addMessage(sprintf(_t('QueuedJobs.JOB_PAUSED', "Job paused at %s"), date('Y-m-d H:i:s')));
+                        $job->addMessage(
+                            _t(__CLASS__ . '.JOB_PAUSED', 'Job paused at {time}', ['time' => date('Y-m-d H:i:s')])
+                        );
                         $broken = true;
                     }
 
@@ -607,11 +605,14 @@ class QueuedJobService
                         } catch (Exception $e) {
                             // okay, we'll just catch this exception for now
                             $job->addMessage(
-                                sprintf(
-                                    _t('QueuedJobs.JOB_EXCEPT', 'Job caused exception %s in %s at line %s'),
-                                    $e->getMessage(),
-                                    $e->getFile(),
-                                    $e->getLine()
+                                _t(
+                                    __CLASS__ . '.JOB_EXCEPT',
+                                    'Job caused exception {message} in {file} at line {line}',
+                                    [
+                                        'message' => $e->getMessage(),
+                                        'file' => $e->getFile(),
+                                        'line' => $e->getLine(),
+                                    ]
                                 ),
                                 'ERROR'
                             );
@@ -628,9 +629,10 @@ class QueuedJobService
                         if ($stallCount > static::config()->get('stall_threshold')) {
                             $broken = true;
                             $job->addMessage(
-                                sprintf(
-                                    _t('QueuedJobs.JOB_STALLED', "Job stalled after %s attempts - please check"),
-                                    $stallCount
+                                _t(
+                                    __CLASS__ . '.JOB_STALLED',
+                                    'Job stalled after {attempts} attempts - please check',
+                                    ['attempts' => $stallCount]
                                 ),
                                 'ERROR'
                             );
@@ -640,10 +642,13 @@ class QueuedJobService
                         // now we'll be good and check our memory usage. If it is too high, we'll set the job to
                         // a 'Waiting' state, and let the next processing run pick up the job.
                         if ($this->isMemoryTooHigh()) {
-                            $job->addMessage(sprintf(
-                                _t('QueuedJobs.MEMORY_RELEASE', 'Job releasing memory and waiting (%s used)'),
-                                $this->humanReadable($this->getMemoryUsage())
-                            ));
+                            $job->addMessage(
+                                _t(
+                                    __CLASS__ . '.MEMORY_RELEASE',
+                                    'Job releasing memory and waiting ({used} used)',
+                                    ['used' => $this->humanReadable($this->getMemoryUsage())]
+                                )
+                            );
                             $jobDescriptor->JobStatus = QueuedJob::STATUS_WAIT;
                             $broken = true;
                         }
@@ -651,7 +656,7 @@ class QueuedJobService
                         // Also check if we are running too long
                         if ($this->hasPassedTimeLimit()) {
                             $job->addMessage(_t(
-                                'QueuedJobs.TIME_LIMIT',
+                                __CLASS__ . '.TIME_LIMIT',
                                 'Queue has passed time limit and will restart before continuing'
                             ));
                             $jobDescriptor->JobStatus = QueuedJob::STATUS_WAIT;

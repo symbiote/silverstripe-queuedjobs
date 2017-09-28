@@ -11,6 +11,7 @@ use SilverStripe\ORM\FieldType\DBDatetime;
 use SilverStripe\ORM\Versioning\Versioned;
 use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
 use Symbiote\QueuedJobs\Services\QueuedJob;
+use Symbiote\QueuedJobs\Services\QueuedJobService;
 
 /**
  * A job for generating a site's google sitemap
@@ -49,7 +50,7 @@ class GenerateGoogleSitemapJob extends AbstractQueuedJob
      */
     public function getTitle()
     {
-        return _t('GenerateSitemapJob.REGENERATE', 'Regenerate Google sitemap .xml file');
+        return _t(__CLASS__ . '.REGENERATE', 'Regenerate Google sitemap .xml file');
     }
 
     /**
@@ -202,6 +203,6 @@ class GenerateGoogleSitemapJob extends AbstractQueuedJob
         }
 
         $nextgeneration = new GenerateGoogleSitemapJob();
-        singleton('Symbiote\\QueuedJobs\\Services\\QueuedJobService')->queueJob($nextgeneration, date('Y-m-d H:i:s', time() + self::$regenerate_time));
+        singleton(QueuedJobService::class)->queueJob($nextgeneration, date('Y-m-d H:i:s', time() + self::$regenerate_time));
     }
 }
