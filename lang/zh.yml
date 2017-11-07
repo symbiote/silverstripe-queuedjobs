@@ -9,29 +9,29 @@ zh:
   PublishItemsJob:
     Title: '发布下列项 {title}'
   QueuedJobDescriptor:
-    PLURALNAME: '排队作业描述符'
-    SINGULARNAME: '排队作业描述符'
+    PLURALNAME: 排队作业描述符
+    SINGULARNAME: 排队作业描述符
   QueuedJobs:
     JOB_EXCEPT: '作业导致例外 %s 位于 %s 的第 %s 行'
     JOB_PAUSED: '作业在 %s 暂停'
     JOB_STALLED: '%s 次尝试后作业停滞 —— 请检查'
-    JOB_TYPE: '工作类型'
+    JOB_TYPE: 工作类型
     JobsFieldTitle: 作业
     MEMORY_RELEASE: '工作正在释放内存并等待（%s 已用）'
-    STALLED_JOB: '呆滞任务'
+    STALLED_JOB: 呆滞任务
     STALLED_JOB_MSG: '名为 %s 的工作似乎停滞不前。它已暂停，请登录查看'
-    TABLE_ADDE: 已添加
+    TABLE_ADDE: '已添加'
     TABLE_MESSAGES: 消息
     TABLE_NUM_PROCESSED: 完成
     TABLE_STARTED: 已开始
-    TABLE_START_AFTER: '开始于'
+    TABLE_START_AFTER: 开始于
     TABLE_STATUS: 状态
-    TABLE_TITLE: 标题
-    TABLE_TOTAL: 全部
+    TABLE_TITLE: '标题'
+    TABLE_TOTAL: '全部'
   QueuedJobsAdmin:
     MENUTITLE: 作业
   ScheduledExecution:
-    EXECUTE_EVERY: '执行每'
+    EXECUTE_EVERY: 执行每
     EXECUTE_FREE: '已调度（以首次执行的时间戳格式显示）'
     ExecuteEveryDay: 日
     ExecuteEveryFortnight: 两周
@@ -39,8 +39,8 @@ zh:
     ExecuteEveryMonth: 月
     ExecuteEveryWeek: 周
     ExecuteEveryYear: 年
-    FIRST_EXECUTION: '第一次执行'
-    NEXT_RUN_DATE: '下一次运行日期'
+    FIRST_EXECUTION: 第一次执行
+    NEXT_RUN_DATE: 下一次运行日期
     ScheduleTabTitle: 日程表
   ScheduledExecutionJob:
     Title: '{title}计划执行'

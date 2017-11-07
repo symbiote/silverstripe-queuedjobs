@@ -116,6 +116,12 @@ class QueuedJobService
     public $queueRunner;
 
     /**
+     * Config controlled list of default/required jobs
+     * @var array
+     */
+    public $defaultJobs = [];
+
+    /**
      * Register our shutdown handler
      */
     public function __construct()
@@ -354,6 +360,59 @@ class QueuedJobService
                     true
                 )
             );
+        }
+    }
+
+    /**
+     * Checks through ll the scheduled jobs that are expected to exist
+     */
+    public function checkDefaultJobs($queue = null)
+    {
+        $queue = $queue ?: QueuedJob::QUEUED;
+        if (count($this->defaultJobs)) {
+            $activeJobs = QueuedJobDescriptor::get()->filter(
+                'JobStatus',
+                array(
+                    QueuedJob::STATUS_NEW,
+                    QueuedJob::STATUS_INIT,
+                    QueuedJob::STATUS_RUN,
+                    QueuedJob::STATUS_WAIT,
+                    QueuedJob::STATUS_PAUSED,
+                )
+            );
+            foreach ($this->defaultJobs as $title => $jobConfig) {
+                if (!isset($jobConfig['filter']) || !isset($jobConfig['type'])) {
+                    $this->getLogger()->error("Default Job config: $title incorrectly set up. Please check the readme for examples");
+                    continue;
+                }
+                $job = $activeJobs->filter(array_merge(
+                    array('Implementation' => $jobConfig['type']),
+                    $jobConfig['filter']
+                ));
+                if (!$job->count()) {
+                    $this->getLogger()->error("Default Job config: $title was missing from Queue");
+                    Email::create()
+                        ->setTo(isset($jobConfig['email']) ? $jobConfig['email'] : Config::inst()->get('Email', 'queued_job_admin_email'))
+                        ->setFrom(Config::inst()->get('Email', 'queued_job_admin_email'))
+                        ->setSubject('Default Job "' . $title . '" missing')
+                        ->setData($jobConfig)
+                        ->addData('Title', $title)
+                        ->addData('Site', Director::absoluteBaseURL())
+                        ->setHTMLTemplate('QueuedJobsDefaultJob')
+                        ->send();
+                    if (isset($jobConfig['recreate']) && $jobConfig['recreate']) {
+                        if (!array_key_exists('construct', $jobConfig) || !isset($jobConfig['startDateFormat']) || !isset($jobConfig['startTimeString'])) {
+                            $this->getLogger()->error("Default Job config: $title incorrectly set up. Please check the readme for examples");
+                            continue;
+                        }
+                        singleton('Symbiote\\QueuedJobs\\Services\\QueuedJobService')->queueJob(
+                            Injector::inst()->createWithArgs($jobConfig['type'], $jobConfig['construct']),
+                            date($jobConfig['startDateFormat'], strtotime($jobConfig['startTimeString']))
+                        );
+                        $this->getLogger()->error("Default Job config: $title has been re-added to the Queue");
+                    }
+                }
+            }
         }
     }
 
@@ -649,7 +708,9 @@ class QueuedJobService
                                     ['used' => $this->humanReadable($this->getMemoryUsage())]
                                 )
                             );
-                            $jobDescriptor->JobStatus = QueuedJob::STATUS_WAIT;
+                            if ($jobDescriptor->JobStatus != QueuedJob::STATUS_BROKEN) {
+                                $jobDescriptor->JobStatus = QueuedJob::STATUS_WAIT;
+                            }
                             $broken = true;
                         }
 
@@ -659,7 +720,9 @@ class QueuedJobService
                                 __CLASS__ . '.TIME_LIMIT',
                                 'Queue has passed time limit and will restart before continuing'
                             ));
-                            $jobDescriptor->JobStatus = QueuedJob::STATUS_WAIT;
+                            if ($jobDescriptor->JobStatus != QueuedJob::STATUS_BROKEN) {
+                                $jobDescriptor->JobStatus = QueuedJob::STATUS_WAIT;
+                            }
                             $broken = true;
                         }
                     }
@@ -888,6 +951,7 @@ class QueuedJobService
     public function runQueue($queue)
     {
         $this->checkJobHealth($queue);
+        $this->checkdefaultJobs($queue);
         $this->queueRunner->runQueue($queue);
     }
 
