@@ -1,0 +1,57 @@
+ru:
+  CreateQueuedJobTask:
+    Description: 'Задача используется для создания отложенного действия. Укажите тип задачи, укажите опциональный параметр "start" (обрабатывается функцией strtotime) для времени начала.'
+  DeleteObjectJob:
+    DELETE_JOB: Удалить
+    DELETE_OBJ2: 'Удалить {title}'
+  GenerateSitemapJob:
+    REGENERATE: 'Генерировать Google sitemap .xml файл'
+  ProcessJobQueueTask:
+    Description: 'Используется cron для выполнения отложенных задач.'
+  PublishItemsJob:
+    Title: 'Опубликовать вложенные объекты {title}'
+  QueuedJobDescriptor:
+    PLURALNAME: 'Дескрипторы отложенных задач'
+    SINGULARNAME: 'Дескриптор отложенной задачи'
+  QueuedJobRule:
+    PLURALNAME: 'Настройки отложенных задач'
+    SINGULARNAME: 'Настройки отложенной задачи'
+  QueuedJobs:
+    CREATE_JOB_TYPE: 'Создать задачу типа'
+    CREATE_NEW_JOB: 'Создать задачу'
+    JOB_EXCEPT: 'Произошла ошибка задачи %s в %s на строчке %s'
+    JOB_PAUSED: 'Задача остановлена %s'
+    JOB_STALLED: 'Задача замороженна после %s попыток - пожалуйста проверьте'
+    JOB_TYPE: 'Тип задачи'
+    JOB_TYPE_PARAMS: 'Параметры конструктора задачи'
+    JobsFieldTitle: Задачи
+    MEMORY_RELEASE: 'Задача ожидает освобождения памяти (%s использовано)'
+    STALLED_JOB: 'Замороженная задача'
+    STALLED_JOB_MSG: 'Задача %s заморожена. Задача была остановлена, войдите в систему для проверки'
+    START_JOB_TIME: 'Начать задачу в'
+    TABLE_ADDE: Добавлена
+    TABLE_MESSAGES: Сообщение
+    TABLE_NUM_PROCESSED: Выполнено
+    TABLE_STARTED: Начата
+    TABLE_START_AFTER: 'Начать после'
+    TABLE_STATUS: Статус
+    TABLE_TITLE: Название
+    TABLE_TOTAL: Итого
+    TIME_LIMIT: 'Очередь достигла лимита по времени и будет начата заново перед продолжением'
+  QueuedJobsAdmin:
+    MENUTITLE: Задачи
+  ScheduledExecution:
+    EXECUTE_EVERY: 'Выполнять каждые'
+    EXECUTE_FREE: 'Запланировано (в формате strtotime после первого выполнения)'
+    ExecuteEveryDay: День
+    ExecuteEveryFortnight: 'Две недели'
+    ExecuteEveryHour: Час
+    ExecuteEveryMinute: Минута
+    ExecuteEveryMonth: Месяц
+    ExecuteEveryWeek: Неделя
+    ExecuteEveryYear: Год
+    FIRST_EXECUTION: 'Первое исполнение'
+    NEXT_RUN_DATE: 'Дата следующего исполнения'
+    ScheduleTabTitle: 'Расписание'
+  ScheduledExecutionJob:
+    Title: 'Запланировано исполнение {title}'

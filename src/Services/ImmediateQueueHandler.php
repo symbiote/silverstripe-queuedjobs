@@ -31,4 +31,13 @@ class ImmediateQueueHandler
     {
         $this->queuedJobService->runJob($job->ID);
     }
+
+    /**
+     * @param QueuedJobDescriptor $job
+     * @param string $date
+     */
+    public function scheduleJob(QueuedJobDescriptor $job, $date)
+    {
+        $this->queuedJobService->runJob($job->ID);
+    }
 }

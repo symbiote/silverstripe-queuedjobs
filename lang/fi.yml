@@ -9,7 +9,7 @@ fi:
     SINGULARNAME: 'Jonossa olevan tehtävän kuvaaja'
   QueuedJobs:
     JOB_PAUSED: 'Tehtävä pysäytetty aikaan %s'
-    JOB_TYPE: 'Tehtävätyyppi'
+    JOB_TYPE: Tehtävätyyppi
     JobsFieldTitle: Tehtävät
     STALLED_JOB: 'Pysäytetty työ'
     STALLED_JOB_MSG: '%s tehtävä näyttää olevan seisahtunut. Se on nyt pysäytetty. Ole hyvä ja kirjaudu sisään tarkastellaksesi sitä'
@@ -26,7 +26,7 @@ fi:
   ScheduledExecution:
     EXECUTE_EVERY: 'Suorita joka'
     ExecuteEveryDay: Päivä
-    ExecuteEveryFortnight: Kaksi viikkoa
+    ExecuteEveryFortnight: 'Kaksi viikkoa'
     ExecuteEveryHour: Tunti
     ExecuteEveryMonth: Kuukausi
     ExecuteEveryWeek: Viikko

@@ -1,12 +1,14 @@
 # SilverStripe Queued Jobs Module
 
 [![Build Status](https://travis-ci.org/symbiote/silverstripe-queuedjobs.svg?branch=master)](https://travis-ci.org/symbiote/silverstripe-queuedjobs)
+[![Scrutinizer](https://scrutinizer-ci.com/g/symbiote/silverstripe-queuedjobs/badges/quality-score.png)](https://scrutinizer-ci.com/g/symbiote/silverstripe-queuedjobs/)
+
 
 ## Maintainer Contact
 
 Marcus Nyeholt
 
-marcus@symbiote.com.au
+<marcus (at) symbiote (dot) com (dot) au>
 
 ## Requirements
 
@@ -127,6 +129,83 @@ inotifywait and then call the ProcessJobQueueTask when a new job is ready to run
 Note - if you do NOT have this running, make sure to set `QueuedJobService::$use_shutdown_function = true;`
 so that immediate mode jobs don't stall. By setting this to true, immediate jobs will be executed after
 the request finishes as the php script ends.
+
+# Default Jobs
+
+Some jobs should always be either running or queued to run, things like data refreshes or periodic clean up jobs, we call these Default Jobs.
+Default jobs are checked for at the end of each job queue process, using the job type and any fields in the filter to create an SQL query e.g.
+
+```
+ArbitraryName:
+  type: 'ScheduledExternalImportJob'
+  filter:
+    JobTitle: 'Scheduled import from Services'
+```
+
+Will become:
+
+```
+QueuedJobDescriptor::get()->filter(array(
+  'type' => 'ScheduledExternalImportJob',
+  'JobTitle' => 'Scheduled import from Services'
+));
+```
+
+This query is checked to see if there's at least 1 healthly (new, run, wait or paused) job matching the filter. If there's not and recreate is true in the yml config we use the construct array as params to pass to a new job object e.g:
+
+```
+ArbitraryName:
+  type: 'ScheduledExternalImportJob'
+  filter:
+    JobTitle: 'Scheduled import from Services'
+  recreate: 1
+  construct:
+    repeat: 300
+    contentItem: 100
+      target: 157
+```
+If the above job is missing it will be recreated as:
+```
+Injector::inst()->createWithArgs('ScheduledExternalImportJob', $construct[])
+```
+
+### Pausing Default Jobs
+
+If you need to stop a default job from raising alerts and being recreated, set an existing copy of the job to Paused in the CMS.
+
+### YML config
+
+Default jobs are defined in yml config the sample below covers the options and expected values
+
+```
+Injector:
+  QueuedJobService:
+    properties:
+      defaultJobs:
+        # This key is used as the title for error logs and alert emails
+        ArbitraryName:
+          # The job type should be the class name of a job REQUIRED
+          type: 'ScheduledExternalImportJob'
+          # This plus the job type is used to create the SQL query REQUIRED
+          filter:
+            # 1 or more Fieldname: 'value' sets that will be queried on REQUIRED
+            #  These can be valid ORM filter
+            JobTitle: 'Scheduled import from Services'
+          # Sets whether the job will be recreated or not OPTIONAL
+          recreate: 1
+          # Set the email address to send the alert to if not set site admin email is used OPTIONAL
+          email: 'admin@email.com'
+          # Parameters set on the recreated object OPTIONAL
+          construct:
+            # 1 or more Fieldname: 'value' sets be passed to the constructor OPTIONAL
+            repeat: 300
+            title: 'Scheduled import from Services'
+        # Minimal implementation will send alerts but not recreate
+        AnotherTitle:
+          type: 'AJob'
+          filter:
+            JobTitle: 'A job'
+```
 
 ## Configuring the CleanupJob
 

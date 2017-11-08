@@ -16,25 +16,25 @@ mi:
     JOB_PAUSED: 'i okioki te mahi i %s'
     JOB_STALLED: 'I auporoa te mahi i muri i ngā whakamātauranga %s - me tirotiro'
     JOB_TYPE: 'Momo mahi'
-    JobsFieldTitle: Ngā Mahi
+    JobsFieldTitle: 'Ngā Mahi'
     MEMORY_RELEASE: 'E tuku pūmahara ana te mahi, ka tataru (i whakamahia te %s)'
     STALLED_JOB: 'Mahi Kua Auporoa'
     STALLED_JOB_MSG: 'Te āhua nei, kua auporoa he mahi e kīia ana ko %s. Kua okioki, me takiuru anō kia tirohia'
-    TABLE_ADDE: I Tāpiritia
+    TABLE_ADDE: 'I Tāpiritia'
     TABLE_MESSAGES: Karere
-    TABLE_NUM_PROCESSED: Kua Oti
-    TABLE_STARTED: I Tīmata
+    TABLE_NUM_PROCESSED: 'Kua Oti'
+    TABLE_STARTED: 'I Tīmata'
     TABLE_START_AFTER: 'Tīmata Ā Muri'
     TABLE_STATUS: Tūnga
     TABLE_TITLE: Taitara
     TABLE_TOTAL: Tapeke
   QueuedJobsAdmin:
-    MENUTITLE: Ngā Mahi
+    MENUTITLE: 'Ngā Mahi'
   ScheduledExecution:
     EXECUTE_EVERY: 'Kawea Te Katoa'
     EXECUTE_FREE: 'Kua whakaritea ( i te hōputu strtotime mai i te kawenga tuatahi)'
     ExecuteEveryDay: Rā
-    ExecuteEveryFortnight: Rua Wiki
+    ExecuteEveryFortnight: 'Rua Wiki'
     ExecuteEveryHour: Haora
     ExecuteEveryMonth: Marama
     ExecuteEveryWeek: Wiki

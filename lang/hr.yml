@@ -31,7 +31,7 @@ hr:
     EXECUTE_EVERY: 'Izvrši svaki'
     EXECUTE_FREE: 'Planirano (u strtotime formatu od prvog pokretanja)'
     ExecuteEveryDay: dan
-    ExecuteEveryFortnight: dve nedjelje
+    ExecuteEveryFortnight: 'dve nedjelje'
     ExecuteEveryHour: sat
     ExecuteEveryMinute: minuta
     ExecuteEveryMonth: mjesec

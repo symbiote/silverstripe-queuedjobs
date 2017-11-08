@@ -9,6 +9,7 @@ use SilverStripe\ORM\DataObject;
 use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
 use Symbiote\QueuedJobs\Services\QueuedJob;
 use Symbiote\QueuedJobs\Services\QueuedJobService;
+use Symbiote\QueuedJobs\Tests\QueuedJobsTest\TestExceptingJob;
 use Symbiote\QueuedJobs\Tests\QueuedJobsTest\TestQueuedJob;
 use Symbiote\QueuedJobs\Tests\QueuedJobsTest\TestQJService;
 
@@ -380,5 +381,121 @@ class QueuedJobsTest extends AbstractTest
         $this->assertEquals(QueuedJob::STATUS_PAUSED, $descriptor->JobStatus);
         $this->assertEmpty($nextJob);
         $this->assertContains('A job named A Test job appears to have stalled. It has been paused, please login to check it', $logger->getMessages());
+    }
+
+    public function testExceptionWithMemoryExhaustion()
+    {
+        $svc = $this->getService();
+        $job = new TestExceptingJob();
+        $job->firstJob = true;
+        $id = $svc->queueJob($job);
+        $descriptor = QueuedJobDescriptor::get()->byID($id);
+
+        // we want to set the memory limit _really_ low so that our first run triggers
+        $mem = Config::inst()->get('QueuedJobService', 'memory_limit');
+        Config::inst()->update('QueuedJobService', 'memory_limit', 1);
+
+        $svc->runJob($id);
+
+        Config::inst()->update('QueuedJobService', 'memory_limit', $mem);
+
+        $descriptor = QueuedJobDescriptor::get()->byID($id);
+
+        $this->assertEquals(QueuedJob::STATUS_BROKEN, $descriptor->JobStatus);
+    }
+
+    public function testCheckdefaultJobs()
+    {
+        // Create a job and add it to the queue
+        $svc = $this->getService();
+        $testDefaultJobsArray = array(
+            'ArbitraryName' => array(
+                # I'll get restarted and create an alert email
+                'type' => TestQueuedJob::class,
+                'filter' => array(
+                    'JobTitle' => "A Test job"
+                ),
+                'recreate' => 1,
+                'construct' => array(
+                    'queue' => QueuedJob::QUEUED
+                ),
+                'startDateFormat' => 'Y-m-d 02:00:00',
+                'startTimeString' => 'tomorrow',
+                'email' => 'test@queuejobtest.com'
+            ));
+        $svc->defaultJobs = $testDefaultJobsArray;
+        $jobConfig = $testDefaultJobsArray['ArbitraryName'];
+
+        $activeJobs = QueuedJobDescriptor::get()->filter(
+            'JobStatus',
+            array(
+                QueuedJob::STATUS_NEW,
+                QueuedJob::STATUS_INIT,
+                QueuedJob::STATUS_RUN,
+                QueuedJob::STATUS_WAIT,
+                QueuedJob::STATUS_PAUSED
+            )
+        );
+        //assert no jobs currently active
+        $this->assertEquals(0, $activeJobs->count());
+
+        //add a default job to the queue
+        $svc->checkdefaultJobs();
+        $this->assertEquals(1, $activeJobs->count());
+        $descriptor = $activeJobs->filter(array_merge(
+            array('Implementation' => $jobConfig['type']),
+            $jobConfig['filter']
+        ))->first();
+        // Verify initial state is new
+        $this->assertEquals(QueuedJob::STATUS_NEW, $descriptor->JobStatus);
+
+        //update Job to paused
+        $descriptor->JobStatus = QueuedJob::STATUS_PAUSED;
+        $descriptor->write();
+        //check defaults the paused job shoudl be ignored
+        $svc->checkdefaultJobs();
+        $this->assertEquals(1, $activeJobs->count());
+        //assert we now still have 1 of our job (paused)
+        $this->assertEquals(1, QueuedJobDescriptor::get()->count());
+
+        //update Job to broken
+        $descriptor->JobStatus = QueuedJob::STATUS_BROKEN;
+        $descriptor->write();
+        //check and add job for broken job
+        $svc->checkdefaultJobs();
+        $this->assertEquals(1, $activeJobs->count());
+        //assert we now have 2 of our job (one good one broken)
+        $this->assertEquals(2, QueuedJobDescriptor::get()->count());
+
+        //test not adding a job when job is there already
+        $svc->checkdefaultJobs();
+        $this->assertEquals(1, $activeJobs->count());
+        //assert we now have 2 of our job (one good one broken)
+        $this->assertEquals(2, QueuedJobDescriptor::get()->count());
+
+        //test add jobs with various start dates
+        $job = $activeJobs->first();
+        date('Y-m-d 02:00:00', strtotime('+1 day'));
+        $this->assertEquals(date('Y-m-d 02:00:00', strtotime('+1 day')), $job->StartAfter);
+        //swap start time to midday
+        $testDefaultJobsArray['ArbitraryName']['startDateFormat'] = 'Y-m-d 12:00:00';
+        //clean up then add new jobs
+        $svc->defaultJobs = $testDefaultJobsArray;
+        $activeJobs->removeAll();
+        $svc->checkdefaultJobs();
+        //assert one jobs currently active
+        $this->assertEquals(1, $activeJobs->count());
+        $job = $activeJobs->first();
+        $this->assertEquals(date('Y-m-d 12:00:00', strtotime('+1 day')), $job->StartAfter);
+        //test alert email
+        $email = $this->findEmail('test@queuejobtest.com');
+        $this->assertNotNull($email);
+
+        //test broken job config
+        unset($testDefaultJobsArray['ArbitraryName']['startDateFormat']);
+        //clean up then add new jobs
+        $svc->defaultJobs = $testDefaultJobsArray;
+        $activeJobs->removeAll();
+        $svc->checkdefaultJobs();
     }
 }

@@ -15,6 +15,7 @@ use SilverStripe\Forms\GridField\GridFieldConfig_RecordEditor;
 use SilverStripe\Forms\GridField\GridFieldDataColumns;
 use SilverStripe\Forms\TextareaField;
 use SilverStripe\ORM\DataList;
+use SilverStripe\Security\Member;
 use SilverStripe\Security\Permission;
 use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
 use Symbiote\QueuedJobs\Forms\GridFieldQueuedJobExecute;
@@ -63,6 +64,12 @@ class QueuedJobsAdmin extends ModelAdmin
     private static $allowed_actions = [
         'EditForm'
     ];
+
+    /**
+     * European date format
+     * @var string
+     */
+    private static $date_format_european = 'dd/MM/yyyy';
 
     /**
      * @var QueuedJobService
@@ -170,6 +177,12 @@ class QueuedJobsAdmin extends ModelAdmin
             $jobType = isset($data['JobType']) ? $data['JobType'] : '';
             $params = isset($data['JobParams']) ? explode(PHP_EOL, $data['JobParams']) : array();
             $time = isset($data['JobStart']) && is_array($data['JobStart']) ? implode(" ", $data['JobStart']) : null;
+
+            // If the user has select the European date format as their setting then replace '/' with '-' in the date string so PHP
+            // treats the date as this format.
+            if (Member::currentUser()->DateFormat == self::$date_format_european) {
+                $time = str_replace('/', '-', $time);
+            }
 
             if ($jobType && class_exists($jobType)) {
                 $jobClass = new ReflectionClass($jobType);
