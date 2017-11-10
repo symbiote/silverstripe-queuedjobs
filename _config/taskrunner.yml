@@ -1,0 +1,9 @@
+---
+Name: QueuedDevelopmentAdmin
+---
+DevelopmentAdmin:
+  registered_controllers:
+    tasks:
+      controller: 'QueuedTaskRunner'
+      links:
+        tasks: 'See a list of build tasks to run (QueuedJobs version)'
