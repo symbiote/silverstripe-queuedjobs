@@ -15,6 +15,7 @@ class QueuedTaskRunner extends TaskRunner
         'ProcessJobQueueTask',
         'ProcessJobQueueChildTask',
         'CreateQueuedJobTask',
+        'DeleteAllJobsTask',
     );
 
     public function index()
