@@ -111,7 +111,7 @@ class QueuedJobDescriptor extends DataObject {
 			'StartAfter' => _t('QueuedJobs.TABLE_START_AFTER', 'Start After'),
 			'JobType'	=> _t('QueuedJobs.JOB_TYPE', 'Job Type'),
 			'JobStatus' => _t('QueuedJobs.TABLE_STATUS', 'Status'),
-			'Messages' => _t('QueuedJobs.TABLE_MESSAGES', 'Message'),
+			'LastMessage' => _t('QueuedJobs.TABLE_MESSAGES', 'Message'),
 			'StepsProcessed' => _t('QueuedJobs.TABLE_NUM_PROCESSED', 'Done'),
 			'TotalSteps' => _t('QueuedJobs.TABLE_TOTAL', 'Total'),
 		);
@@ -213,14 +213,29 @@ class QueuedJobDescriptor extends DataObject {
 	}
 
 	/**
+     * Get all job messages as an HTML unordered list.
 	 * @return string|void
 	 */
 	public function getMessages() {
 		if (strlen($this->SavedJobMessages)) {
 			$msgs = @unserialize($this->SavedJobMessages);
-			return is_array($msgs) ? '<ul><li>'.implode('</li><li>', $msgs).'</li></ul>' : '';
+			return is_array($msgs) ? '<ul><li>'.nl2br(implode('</li><li>', Convert::raw2xml($msgs))).'</li></ul>' : '';
 		}
 	}
+
+    /**
+     * Get the last job message as a raw string
+     * @return string|void
+     */
+    public function getLastMessage() {
+        if (strlen($this->SavedJobMessages)) {
+            $msgs = @unserialize($this->SavedJobMessages);
+            if (is_array($msgs) && sizeof($msgs)) {
+                $msg = array_pop($msgs);
+                return $msg;
+            }
+        }
+    }
 
 	/**
 	 * @return string
@@ -259,6 +274,10 @@ class QueuedJobDescriptor extends DataObject {
 
 		$fields->removeByName('SavedJobData');
 		$fields->removeByName('SavedJobMessages');
+
+        if (strlen($this->SavedJobMessages)) {
+            $fields->addFieldToTab('Root.Messages', new LiteralField('Messages', $this->getMessages()));
+        }
 
 		if (Permission::check('ADMIN')) {
 			return $fields;
