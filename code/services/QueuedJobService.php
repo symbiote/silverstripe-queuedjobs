@@ -601,6 +601,19 @@ class QueuedJobService {
 					}
 
 					if (!$broken) {
+                        // Collect output as job messages as well as sending it to the screen
+                        $obLogger = function ($buffer, $phase) use ($job, $jobDescriptor) {
+                            $job->addMessage($buffer);
+
+                            if ($jobDescriptor) {
+                                $this->copyJobToDescriptor($job, $jobDescriptor);
+                                $jobDescriptor->write();
+                            }
+
+                            return $buffer;
+                        };
+                        ob_start($obLogger, 256);
+
 						try {
 							$job->process();
 						} catch (Exception $e) {
@@ -609,6 +622,8 @@ class QueuedJobService {
 							$errorHandler->handleException($e);
 							$jobDescriptor->JobStatus =  QueuedJob::STATUS_BROKEN;
 						}
+
+                        ob_end_flush();
 
 						// now check the job state
 						$data = $job->getJobData();
