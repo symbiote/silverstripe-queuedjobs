@@ -4,17 +4,22 @@ Name: queuedjobsettings
 SilverStripe\Core\Injector\Injector:
   QueueHandler:
     class: Symbiote\QueuedJobs\Services\DefaultQueueHandler
+  DoormanRunner:
+    class: Symbiote\QueuedJobs\Tasks\Engines\DoormanRunner
+
   Symbiote\QueuedJobs\Services\QueuedJobService:
     properties:
       queueHandler: %$QueueHandler
       # Change to %$DoormanRunner for async processing (requires *nix)
       queueRunner: %$Symbiote\QueuedJobs\Tasks\Engines\QueueRunner
+
   DefaultRule:
     class: 'AsyncPHP\Doorman\Rule\InMemoryRule'
     properties:
       Processes: 1
       MinimumProcessorUsage: 0
       MaximumProcessorUsage: 100
+
   Symbiote\QueuedJobs\Tasks\Engines\DoormanRunner:
     properties:
       DefaultRules:
@@ -29,8 +34,10 @@ SilverStripe\Core\Injector\Injector:
   Symbiote\QueuedJobs\Services\GearmanQueueHandler:
     properties:
       gearmanService: %$GearmanService
+
   Symbiote\QueuedJobs\Workers\JobWorker:
     properties:
       queuedJobService: %$Symbiote\QueuedJobs\Services\QueuedJobService
+
   QueueHandler:
     class: GearmanQueueHandler

@@ -47,29 +47,33 @@ The module comes with
 same user as your webserver - this prevents any problems with file permissions.
 
 ```
-*/1 * * * * php /path/to/silverstripe/framework/cli-script.php dev/tasks/ProcessJobQueueTask
+*/1 * * * * php /path/to/silverstripe/vendor/bin/sake dev/tasks/ProcessJobQueueTask
 ```
 
 * If your code is to make use of the 'long' jobs, ie that could take days to process, also install another task
 that processes this queue. Its time of execution can be left a little longer.
 
 ```
-*/15 * * * * php /path/to/silverstripe/framework/cli-script.php dev/tasks/ProcessJobQueueTask queue=large
+*/15 * * * * php /path/to/silverstripe/vendor/bin/sake dev/tasks/ProcessJobQueueTask queue=large
 ```
 
 * From your code, add a new job for execution.
 
 ```php
+use Symbiote\QueuedJobs\Services\QueuedJobService;
+
 $publish = new PublishItemsJob(21);
-singleton('Symbiote\\QueuedJobs\\Services\\QueuedJobService')->queueJob($publish);
+singleton(QueuedJobService::class)->queueJob($publish);
 ```
 
 * To schedule a job to be executed at some point in the future, pass a date through with the call to queueJob
 The following will run the publish job in 1 day's time from now.
 
 ```php
+use Symbiote\QueuedJobs\Services\QueuedJobService;
+
 $publish = new PublishItemsJob(21);
-singleton('Symbiote\\QueuedJobs\\Services\\QueuedJobService')
+singleton(QueuedJobService::class)
     ->queueJob($publish, date('Y-m-d H:i:s', time() + 86400));
 ```
 
@@ -95,7 +99,6 @@ SilverStripe\Core\Injector\Injector:
     properties:
       queueRunner: %$DoormanRunner
 ```
-
 
 ## Using Gearman for running jobs
 
@@ -144,11 +147,11 @@ ArbitraryName:
 
 Will become:
 
-```
-QueuedJobDescriptor::get()->filter(array(
+```php
+QueuedJobDescriptor::get()->filter([
   'type' => 'ScheduledExternalImportJob',
   'JobTitle' => 'Scheduled import from Services'
-));
+]);
 ```
 
 This query is checked to see if there's at least 1 healthly (new, run, wait or paused) job matching the filter. If there's not and recreate is true in the yml config we use the construct array as params to pass to a new job object e.g:
@@ -165,8 +168,8 @@ ArbitraryName:
       target: 157
 ```
 If the above job is missing it will be recreated as:
-```
-Injector::inst()->createWithArgs('ScheduledExternalImportJob', $construct[])
+```php
+Injector::inst()->createWithArgs(ScheduledExternalImportJob::class, $construct[])
 ```
 
 ### Pausing Default Jobs
@@ -177,9 +180,9 @@ If you need to stop a default job from raising alerts and being recreated, set a
 
 Default jobs are defined in yml config the sample below covers the options and expected values
 
-```
-Injector:
-  QueuedJobService:
+```yaml
+SilverStripe\Core\Injector\Injector:
+  Symbiote\QueuedJobs\Services\QueuedJobService:
     properties:
       defaultJobs:
         # This key is used as the title for error logs and alert emails

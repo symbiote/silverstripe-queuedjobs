@@ -40,7 +40,7 @@ start() {
 	for PATH in ${SILVERSTRIPE_ROOT[@]};
 	do
 	INOTIFY_OPTS="--monitor --event attrib -q"
-	INOTIFY_ARGS="--format 'php ${PATH}/framework/cli-script.php dev/tasks/ProcessJobQueueTask job=%f' ${PATH}/silverstripe-cache/queuedjobs | /bin/sh"
+	INOTIFY_ARGS="--format 'php ${PATH}/vendor/bin/sake dev/tasks/ProcessJobQueueTask job=%f' ${PATH}/silverstripe-cache/queuedjobs | /bin/sh"
 			daemon --user apache /usr/bin/inotifywait ${INOTIFY_OPTS} ${INOTIFY_ARGS} &
 			/bin/touch /var/lock/subsys/queue_processor
 		done

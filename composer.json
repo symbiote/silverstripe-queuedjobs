@@ -1,7 +1,7 @@
 {
     "name": "symbiote/silverstripe-queuedjobs",
     "description": "A framework for defining and running background jobs in a queued manner",
-    "type": "silverstripe-module",
+    "type": "silverstripe-vendormodule",
     "keywords": ["silverstripe", "jobs"],
     "license": "BSD-3-Clause",
     "authors": [
@@ -15,8 +15,8 @@
         }
     ],
     "require": {
-        "silverstripe/framework": "^4@dev",
-        "silverstripe/admin": "^1@dev",
+        "silverstripe/framework": "^4",
+        "silverstripe/admin": "^1",
         "asyncphp/doorman": "^3.0"
     },
     "require-dev": {
@@ -26,7 +26,7 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "extra": {
-        "installer-name": "queuedjobs",
+        "expose": ["images"],
         "branch-alias": {
             "dev-master": "4.x-dev"
         }
