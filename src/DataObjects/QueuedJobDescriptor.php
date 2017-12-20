@@ -127,7 +127,7 @@ class QueuedJobDescriptor extends DataObject
             'JobTitle' => _t(__CLASS__ . '.TABLE_TITLE', 'Title'),
             'Created' => _t(__CLASS__ . '.TABLE_ADDE', 'Added'),
             'JobStarted' => _t(__CLASS__ . '.TABLE_STARTED', 'Started'),
-//			'JobRestarted' => _t(__CLASS__ . '.TABLE_RESUMED', 'Resumed'),
+//          'JobRestarted' => _t(__CLASS__ . '.TABLE_RESUMED', 'Resumed'),
             'StartAfter' => _t(__CLASS__ . '.TABLE_START_AFTER', 'Start After'),
             'JobType'   => _t(__CLASS__ . '.JOB_TYPE', 'Job Type'),
             'JobStatus' => _t(__CLASS__ . '.TABLE_STATUS', 'Status'),
