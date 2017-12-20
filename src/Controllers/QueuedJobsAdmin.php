@@ -42,7 +42,7 @@ class QueuedJobsAdmin extends ModelAdmin
     /**
      * @var string
      */
-    private static $menu_icon = "queuedjobs/images/clipboard.png";
+    private static $menu_icon = "symbiote/silverstripe-queuedjobs:images/clipboard.png";
 
     /**
      * @var array

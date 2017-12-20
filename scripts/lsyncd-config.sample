@@ -9,7 +9,7 @@ settings = {
 
 -- Define the command and path for the each system being monitored here, where webuser is the user your webserver
 -- runs as
-runcmd = "/sbin/runuser webuser -c \"/usr/bin/php /var/www/sitepath/framework/cli-script.php dev/tasks/ProcessJobQueueTask job=\"$1\" /var/www/sitepath/framework/silverstripe-cache/queuedjobs\""
+runcmd = "/sbin/runuser webuser -c \"/usr/bin/php /var/www/sitepath/vendor/bin/sake dev/tasks/ProcessJobQueueTask job=\"$1\" /var/www/sitepath/framework/silverstripe-cache/queuedjobs\""
 
 site_processor = {
 	onCreate = function(event)

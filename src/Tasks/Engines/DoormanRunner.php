@@ -48,7 +48,7 @@ class DoormanRunner extends BaseRunner implements TaskRunnerEngine
         // split jobs out into multiple tasks...
 
         $manager = new ProcessManager();
-        $manager->setWorker(BASE_PATH . "/framework/cli-script.php dev/tasks/ProcessJobQueueChildTask");
+        $manager->setWorker(BASE_PATH . "/vendor/bin/sake dev/tasks/ProcessJobQueueChildTask");
         // $manager->setLogPath(__DIR__);
 
         // Assign default rules
