@@ -119,7 +119,7 @@ interface QueuedJob
      * @param int $totalSteps
      * @param int $currentStep
      * @param boolean $isComplete
-     * @param stdClass $jobData
+     * @param \stdClass $jobData
      * @param array $messages
      *
      * @see QueuedJob::getJobData();

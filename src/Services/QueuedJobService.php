@@ -10,6 +10,7 @@ use SilverStripe\Control\Session;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Convert;
+use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\ORM\DataList;
@@ -47,6 +48,7 @@ use Symbiote\QueuedJobs\QJUtils;
 class QueuedJobService
 {
     use Configurable;
+    use Injectable;
 
     /**
      * @config
