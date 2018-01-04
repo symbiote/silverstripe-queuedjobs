@@ -21,6 +21,7 @@ use SilverStripe\Security\Member;
 use SilverStripe\Security\Permission;
 use SilverStripe\Security\Security;
 use Psr\Log\LoggerInterface;
+use SilverStripe\Subsites\Model\Subsite;
 use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
 use Symbiote\QueuedJobs\QJUtils;
 
@@ -163,7 +164,7 @@ class QueuedJobService
             'Signature' => $signature,
             'JobStatus' => array(
                 QueuedJob::STATUS_NEW,
-                QueuedJob::STATUS_INIT
+                QueuedJob::STATUS_INIT,
             )
         );
 
@@ -613,14 +614,11 @@ class QueuedJobService
                 // have we stalled at all?
                 $stallCount = 0;
 
-                if ($job->SubsiteID && class_exists('Subsite')) {
-                    /**
-                     * @todo Check for 4.x compatibility with Subsites once namespacing is implemented
-                     */
-                    \Subsite::changeSubsite($job->SubsiteID);
+                if ($job->SubsiteID && class_exists(Subsite::class)) {
+                    Subsite::changeSubsite($job->SubsiteID);
 
                     // lets set the base URL as far as Director is concerned so that our URLs are correct
-                    $subsite = DataObject::get_by_id('Subsite', $job->SubsiteID);
+                    $subsite = DataObject::get_by_id(Subsite::class, $job->SubsiteID);
                     if ($subsite && $subsite->exists()) {
                         $domain = $subsite->domain();
                         $base = rtrim(Director::protocol() . $domain, '/') . '/';
