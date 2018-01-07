@@ -2,8 +2,10 @@
 
 namespace Symbiote\QueuedJobs\Tasks;
 
+use SilverStripe\Control\HTTPRequest;
 use Symbiote\QueuedJobs\Services\QueuedJob;
 use SilverStripe\Dev\BuildTask;
+use Symbiote\QueuedJobs\Services\QueuedJobService;
 
 /**
  * Task used to process the job queue
@@ -97,6 +99,6 @@ class ProcessJobQueueTask extends BuildTask
      */
     public function getService()
     {
-        return singleton('Symbiote\\QueuedJobs\\Services\\QueuedJobService');
+        return QueuedJobService::singleton();
     }
 }

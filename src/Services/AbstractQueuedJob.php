@@ -2,6 +2,7 @@
 
 namespace Symbiote\QueuedJobs\Services;
 
+use SilverStripe\Subsites\State\SubsiteState;
 use stdClass;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\ORM\DataObject;
@@ -161,11 +162,8 @@ abstract class AbstractQueuedJob implements QueuedJob
     public function getJobData()
     {
         // okay, we NEED to store the subsite ID if there's one available
-        if (!$this->SubsiteID && class_exists('Subsite')) {
-            /**
-             * Note: This may need to be checked for 4.x compatibility
-             */
-            $this->SubsiteID = \Subsite::currentSubsiteID();
+        if (!$this->SubsiteID && class_exists(SubsiteState::class)) {
+            $this->SubsiteID = SubsiteState::singleton()->getSubsiteId();
         }
 
         $data = new stdClass();
@@ -227,7 +225,7 @@ abstract class AbstractQueuedJob implements QueuedJob
 
         foreach ($custom as $class => $settings) {
             foreach ($settings as $setting => $value) {
-                Config::inst()->update($class, $setting, $value);
+                Config::modify()->set($class, $setting, $value);
             }
         }
     }
