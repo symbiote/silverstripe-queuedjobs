@@ -131,7 +131,12 @@ class QueuedJobsAdmin extends ModelAdmin
         if (Permission::check('ADMIN')) {
             $types = ClassInfo::subclassesFor(AbstractQueuedJob::class);
             $types = array_combine($types, $types);
-            unset($types[AbstractQueuedJob::class]);
+            foreach ($types as $class) {
+                $reflection = new ReflectionClass($class);
+                if (!$reflection->isInstantiable()) {
+                    unset($types[$class]);
+                }
+            }
             $jobType = DropdownField::create('JobType', _t(__CLASS__ . '.CREATE_JOB_TYPE', 'Create job of type'), $types);
             $jobType->setEmptyString('(select job to create)');
             $form->Fields()->push($jobType);
