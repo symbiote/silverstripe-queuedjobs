@@ -687,8 +687,7 @@ class QueuedJobService {
 
 		Config::unnest();
 
-		// okay let's reset our user if we've got an original
-		if ($runAsUser && $originalUser) {
+		if ($runAsUser) {
 			Session::clear("loggedInAs");
 			if ($originalUser) {
 				Session::set("loggedInAs", $originalUser->ID);
