@@ -12,6 +12,8 @@ use SilverStripe\ORM\Versioning\Versioned;
 use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
 use Symbiote\QueuedJobs\Services\QueuedJob;
 use Symbiote\QueuedJobs\Services\QueuedJobService;
+use SilverStripe\Core\Environment;
+use SilverStripe\Core\TempFolder;
 
 /**
  * A job for generating a site's google sitemap
@@ -71,11 +73,11 @@ class GenerateGoogleSitemapJob extends AbstractQueuedJob
     public function setup()
     {
         parent::setup();
-        increase_time_limit_to();
+        Environment::increaseTimeLimitTo();
 
         $restart = $this->currentStep == 0;
         if (!$this->tempFile || !file_exists($this->tempFile)) {
-            $tmpfile = tempnam(getTempFolder(), 'sitemap');
+            $tmpfile = tempnam(TempFolder::getTempFolder(), 'sitemap');
             if (file_exists($tmpfile)) {
                 $this->tempFile = $tmpfile;
             }
@@ -95,7 +97,7 @@ class GenerateGoogleSitemapJob extends AbstractQueuedJob
         parent::prepareForRestart();
         // if the file we've been building is missing, lets fix it up
         if (!$this->tempFile || !file_exists($this->tempFile)) {
-            $tmpfile = tempnam(getTempFolder(), 'sitemap');
+            $tmpfile = tempnam(TempFolder::getTempFolder(), 'sitemap');
             if (file_exists($tmpfile)) {
                 $this->tempFile = $tmpfile;
             }
