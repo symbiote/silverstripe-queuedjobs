@@ -7,6 +7,7 @@ use SilverStripe\Admin\ModelAdmin;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Forms\DatetimeField;
 use SilverStripe\Forms\DropdownField;
+use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\Form;
 use SilverStripe\Forms\FormAction;
 use SilverStripe\Forms\GridField\GridField;
@@ -106,7 +107,6 @@ class QueuedJobsAdmin extends ModelAdmin
             }))
             ->removeComponentsByType(GridFieldAddNewButton::class);
 
-
         // Set messages to HTML display format
         $formatting = array(
             'Messages' => function ($val, $obj) {
@@ -119,14 +119,14 @@ class QueuedJobsAdmin extends ModelAdmin
         // Replace gridfield
         /** @skipUpgrade */
         $grid = GridField::create(
-            QueuedJobDescriptor::class,
+            'QueuedJobDescriptor',
             _t(__CLASS__ . '.JobsFieldTitle', 'Jobs'),
             $list,
             $gridFieldConfig
         );
         $grid->setForm($form);
         /** @skipUpgrade */
-        $form->Fields()->replaceField('QueuedJobDescriptor', $grid);
+        $form->Fields()->replaceField($this->sanitiseClassName(QueuedJobDescriptor::class), $grid);
 
         if (Permission::check('ADMIN')) {
             $types = ClassInfo::subclassesFor(AbstractQueuedJob::class);

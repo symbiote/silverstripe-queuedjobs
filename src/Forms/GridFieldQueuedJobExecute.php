@@ -6,41 +6,30 @@ use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Forms\GridField\GridField_ActionProvider;
 use SilverStripe\Forms\GridField\GridField_ColumnProvider;
 use SilverStripe\Forms\GridField\GridField_FormAction;
-use Symbiote\QueuedJobs\Services\QueuedJob;
+use SilverStripe\ORM\DataObject;
 use SilverStripe\View\Requirements;
+use Symbiote\QueuedJobs\Services\QueuedJob;
 
-/**
- * This class is a {@link GridField} component that adds a delete action for objects.
- *
- * This component also supports unlinking a relation instead of deleting the object.
- * Use the {@link $removeRelation} property set in the constructor.
- *
- * <code>
- * $action = new GridFieldDeleteAction(); // delete objects permanently
- * $action = new GridFieldDeleteAction(true); // removes the relation to object, instead of deleting
- * </code>
- *
- * @package queuedjobs
- * @subpackage forms
- */
 class GridFieldQueuedJobExecute implements GridField_ColumnProvider, GridField_ActionProvider
 {
 
     protected $action = 'execute';
 
     /**
+     * CSS icon class names for each action (see silverstripe-admin fonts)
+     *
      * @var array
      */
-    protected $icons = array(
-        'execute' => 'navigation',
-        'pause'   => 'minus-circle_disabled',
-        'resume'  => 'arrow-circle-double',
-    );
+    protected $icons = [
+        'execute' => 'font-icon-block-media',
+        'pause'   => 'font-icon-cancel-circled',
+        'resume'  => 'font-icon-sync',
+    ];
 
     /**
      * Call back to see if the record's action icon should be shown.
      *
-     * @var closure
+     * @var callable
      */
     protected $viewCheck;
 
@@ -83,7 +72,7 @@ class GridFieldQueuedJobExecute implements GridField_ColumnProvider, GridField_A
      */
     public function getColumnAttributes($gridField, $record, $columnName)
     {
-        return array('class' => 'col-buttons');
+        return array('class' => 'grid-field__col-compact');
     }
 
     /**
@@ -146,9 +135,17 @@ class GridFieldQueuedJobExecute implements GridField_ColumnProvider, GridField_A
             $this->action,
             array('RecordID' => $record->ID)
         );
-        $field->addExtraClass('gridfield-button-job' . $this->action)
-            ->setAttribute('title', ucfirst($this->action))
-            ->setAttribute('data-icon', $icon);
+
+        $humanTitle = ucfirst($this->action);
+        $title = _t(__CLASS__ . '.' . $humanTitle, $humanTitle);
+
+        $field
+            ->addExtraClass('gridfield-button-job' . $this->action)
+            ->addExtraClass($icon)
+            ->addExtraClass('btn--icon-md btn--no-text grid-field__icon-action')
+            ->setAttribute('title', $title)
+            ->setDescription($title);
+
         return $field->Field();
     }
 
