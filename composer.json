@@ -26,7 +26,6 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "extra": {
-        "expose": ["images"],
         "branch-alias": {
             "dev-master": "4.x-dev"
         }
