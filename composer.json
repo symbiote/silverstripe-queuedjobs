@@ -23,7 +23,7 @@
     "extra": {
         "installer-name": "queuedjobs",
         "branch-alias": {
-            "3.x-dev": "3.0.x-dev"
+            "3.x-dev": "3.1.x-dev"
         }
     },
     "replace": {
