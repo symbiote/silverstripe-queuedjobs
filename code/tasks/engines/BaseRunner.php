@@ -42,15 +42,15 @@ class BaseRunner {
 	 */
 	protected function logDescriptorStatus($descriptor, $queue) {
 		if(is_null($descriptor)) {
-			$this->writeLogLine('No new jobs');
+			$this->writeLogLine('No new jobs on queue ' . $queue);
 		}
 
 		if($descriptor === false) {
-			$this->writeLogLine('Job is still running on ' . $queue);
+			$this->writeLogLine('Job is still running on queue ' . $queue);
 		}
 
 		if($descriptor instanceof QueuedJobDescriptor) {
-			$this->writeLogLine('Running ' . $descriptor->JobTitle . ' and others from ' . $queue . '.');
+			$this->writeLogLine('Running ' . $descriptor->JobTitle . ' and others from queue ' . $queue . '.');
 		}
 	}
 
