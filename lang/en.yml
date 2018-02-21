@@ -42,6 +42,8 @@ en:
     TIME_LIMIT: 'Queue has passed time limit and will restart before continuing'
   QueuedJobsAdmin:
     MENUTITLE: Jobs
+  RunBuildTaskJob:
+    JOB_TITLE: 'Run BuildTask {task}'
   ScheduledExecution:
     EXECUTE_EVERY: 'Execute every'
     EXECUTE_FREE: 'Scheduled (in strtotime format from first execution)'
