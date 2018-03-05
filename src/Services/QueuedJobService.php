@@ -361,7 +361,11 @@ class QueuedJobService
                         'errcontext' => array()
                     ),
                     true
-                )
+                ),
+                [
+                    'file' => __FILE__,
+                    'line' => __LINE__,
+                ]
             );
         }
     }
@@ -385,7 +389,13 @@ class QueuedJobService
             );
             foreach ($this->defaultJobs as $title => $jobConfig) {
                 if (!isset($jobConfig['filter']) || !isset($jobConfig['type'])) {
-                    $this->getLogger()->error("Default Job config: $title incorrectly set up. Please check the readme for examples");
+                    $this->getLogger()->error(
+                        "Default Job config: $title incorrectly set up. Please check the readme for examples",
+                        [
+                            'file' => __FILE__,
+                            'line' => __LINE__,
+                        ]
+                    );
                     continue;
                 }
                 $job = $activeJobs->filter(array_merge(
@@ -393,7 +403,13 @@ class QueuedJobService
                     $jobConfig['filter']
                 ));
                 if (!$job->count()) {
-                    $this->getLogger()->error("Default Job config: $title was missing from Queue");
+                    $this->getLogger()->error(
+                        "Default Job config: $title was missing from Queue",
+                        [
+                            'file' => __FILE__,
+                            'line' => __LINE__,
+                        ]
+                    );
                     Email::create()
                         ->setTo(isset($jobConfig['email']) ? $jobConfig['email'] : Config::inst()->get('Email', 'queued_job_admin_email'))
                         ->setFrom(Config::inst()->get('Email', 'queued_job_admin_email'))
@@ -405,14 +421,26 @@ class QueuedJobService
                         ->send();
                     if (isset($jobConfig['recreate']) && $jobConfig['recreate']) {
                         if (!array_key_exists('construct', $jobConfig) || !isset($jobConfig['startDateFormat']) || !isset($jobConfig['startTimeString'])) {
-                            $this->getLogger()->error("Default Job config: $title incorrectly set up. Please check the readme for examples");
+                            $this->getLogger()->error(
+                                "Default Job config: $title incorrectly set up. Please check the readme for examples",
+                                [
+                                    'file' => __FILE__,
+                                    'line' => __LINE__,
+                                ]
+                            );
                             continue;
                         }
                         singleton('Symbiote\\QueuedJobs\\Services\\QueuedJobService')->queueJob(
                             Injector::inst()->createWithArgs($jobConfig['type'], $jobConfig['construct']),
                             date($jobConfig['startDateFormat'], strtotime($jobConfig['startTimeString']))
                         );
-                        $this->getLogger()->error("Default Job config: $title has been re-added to the Queue");
+                        $this->getLogger()->error(
+                            "Default Job config: $title has been re-added to the Queue",
+                            [
+                                'file' => __FILE__,
+                                'line' => __LINE__,
+                            ]
+                        );
                     }
                 }
             }
@@ -443,7 +471,13 @@ class QueuedJobService
             );
         }
 
-        $this->getLogger()->error($message);
+        $this->getLogger()->error(
+            $message,
+            [
+                'file' => __FILE__,
+                'line' => __LINE__,
+            ]
+        );
         $from = Config::inst()->get(Email::class, 'admin_email');
         $to = Config::inst()->get(Email::class, 'queued_job_admin_email');
         $subject = _t(__CLASS__ . '.STALLED_JOB', 'Stalled job');
@@ -646,7 +680,11 @@ class QueuedJobService
                                     'errcontext' => array()
                                 ),
                                 true
-                            )
+                            ),
+                            [
+                                'file' => __FILE__,
+                                'line' => __LINE__,
+                            ]
                         );
                         break;
                     }
@@ -675,7 +713,12 @@ class QueuedJobService
                                 ),
                                 'ERROR'
                             );
-                            $this->getLogger()->error($e->getMessage());
+                            $this->getLogger()->error(
+                                $e->getMessage(),
+                                [
+                                    'exception' => $e,
+                                ]
+                            );
                             $jobDescriptor->JobStatus =  QueuedJob::STATUS_BROKEN;
                         }
 
@@ -741,7 +784,11 @@ class QueuedJobService
                                     'errcontext' => array()
                                 ),
                                 true
-                            )
+                            ),
+                            [
+                                'file' => __FILE__,
+                                'line' => __LINE__,
+                            ]
                         );
                         $broken = true;
                     }
@@ -758,7 +805,12 @@ class QueuedJobService
                 }
             } catch (Exception $e) {
                 // okay, we'll just catch this exception for now
-                $this->getLogger()->error($e->getMessage());
+                $this->getLogger()->error(
+                    $e->getMessage(),
+                    [
+                        'exception' => $e,
+                    ]
+                );
                 $jobDescriptor->JobStatus =  QueuedJob::STATUS_BROKEN;
                 $jobDescriptor->write();
                 $broken = true;
