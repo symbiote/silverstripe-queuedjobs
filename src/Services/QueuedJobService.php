@@ -183,7 +183,11 @@ class QueuedJobService
         $jobDescriptor->Implementation = get_class($job);
         $jobDescriptor->StartAfter = $startAfter;
 
-        $jobDescriptor->RunAsID = $userId ? $userId : Security::getCurrentUser()->ID;
+        if ($userId === null) {
+            $userId = (Security::getCurrentUser() ? Security::getCurrentUser()->ID : null);
+        }
+
+        $jobDescriptor->RunAsID = $userId;
 
         // copy data
         $this->copyJobToDescriptor($job, $jobDescriptor);
