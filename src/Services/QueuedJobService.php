@@ -10,6 +10,7 @@ use SilverStripe\Control\Session;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Convert;
+use SilverStripe\Core\Extensible;
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\SapphireTest;
@@ -50,6 +51,7 @@ class QueuedJobService
 {
     use Configurable;
     use Injectable;
+    use Extensible;
 
     /**
      * @config
@@ -677,6 +679,7 @@ class QueuedJobService
                             );
                             $this->getLogger()->error($e->getMessage());
                             $jobDescriptor->JobStatus =  QueuedJob::STATUS_BROKEN;
+                            $this->extend('updateJobDescriptorAndJobOnException', $jobDescriptor, $job, $e);
                         }
 
                         // now check the job state
@@ -760,6 +763,7 @@ class QueuedJobService
                 // okay, we'll just catch this exception for now
                 $this->getLogger()->error($e->getMessage());
                 $jobDescriptor->JobStatus =  QueuedJob::STATUS_BROKEN;
+                $this->extend('updateJobDescriptorAndJobOnException', $jobDescriptor, $job, $e);
                 $jobDescriptor->write();
                 $broken = true;
             }
