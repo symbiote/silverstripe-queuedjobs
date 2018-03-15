@@ -574,7 +574,7 @@ class QueuedJobService
                 // the job runner outputs content way early in the piece, meaning there'll be cookie errors
                 // if we try and do a normal login, and we only want it temporarily...
                 if (Controller::has_curr()) {
-                    Controller::curr()->getRequest()->getSession()->set('loggedInAs', $runAsUser->ID);
+                    Security::setCurrentUser($runAsUser);
                 } else {
                     $_SESSION['loggedInAs'] = $runAsUser->ID;
                 }
