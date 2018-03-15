@@ -568,24 +568,9 @@ class QueuedJobService
             : null;
         $runAsUser = null;
 
-        if (Director::is_cli() || !$originalUser || Permission::checkMember($originalUser, 'ADMIN')) {
-            $runAsUser = $jobDescriptor->RunAs();
-            if ($runAsUser && $runAsUser->exists()) {
-                // the job runner outputs content way early in the piece, meaning there'll be cookie errors
-                // if we try and do a normal login, and we only want it temporarily...
-                if (Controller::has_curr()) {
-                    Security::setCurrentUser($runAsUser);
-                } else {
-                    $_SESSION['loggedInAs'] = $runAsUser->ID;
-                }
-
-                // this is an explicit coupling brought about by SS not having
-                // a nice way of mocking a user, as it requires session
-                // nastiness
-                if (class_exists('SecurityContext')) {
-                    singleton('SecurityContext')->setMember($runAsUser);
-                }
-            }
+        // If the Job has requested that we run it as a particular user, then we should try and do that.
+        if ($jobDescriptor->RunAs() !== null) {
+            $runAsUser = $this->setRunAsUser($jobDescriptor->RunAs(), $originalUser);
         }
 
         // set up a custom error handler for this processing
@@ -777,15 +762,71 @@ class QueuedJobService
 
         Config::unnest();
 
-        // okay let's reset our user if we've got an original
-        if ($runAsUser && $originalUser && Controller::has_curr()) {
-            Controller::curr()->getRequest()->getSession()->clear("loggedInAs");
-            if ($originalUser) {
-                Controller::curr()->getRequest()->getSession()->set("loggedInAs", $originalUser->ID);
+        $this->unsetRunAsUser($runAsUser, $originalUser);
+
+        return !$broken;
+    }
+
+    /**
+     * @param Member $runAsUser
+     * @param Member|null $originalUser
+     * @return null|Member
+     */
+    protected function setRunAsUser(Member $runAsUser, Member $originalUser = null)
+    {
+        // Sanity check. Can't set the user if they don't exist.
+        if ($runAsUser === null || !$runAsUser->exists()) {
+            return null;
+        }
+
+        // Don't need to set Security user if we're already logged in as that same user.
+        if ($originalUser && $originalUser->ID === $runAsUser->ID) {
+            return null;
+        }
+
+        // We are currently either not logged in at all, or we're logged in as a different user. We should switch users
+        // so that the context within the Job is correct.
+        if (Controller::has_curr()) {
+            Security::setCurrentUser($runAsUser);
+        } else {
+            $_SESSION['loggedInAs'] = $runAsUser->ID;
+        }
+
+        // This is an explicit coupling brought about by SS not having a nice way of mocking a user, as it requires
+        // session nastiness
+        if (class_exists('SecurityContext')) {
+            singleton('SecurityContext')->setMember($runAsUser);
+        }
+
+        return $runAsUser;
+    }
+
+    /**
+     * @param Member|null $runAsUser
+     * @param Member|null $originalUser
+     */
+    protected function unsetRunAsUser(Member $runAsUser = null, Member $originalUser = null)
+    {
+        // No runAsUser was set, so we don't need to do anything.
+        if ($runAsUser === null) {
+            return;
+        }
+
+        // There was no originalUser, so we should make sure that we set the user back to null.
+        if (!$originalUser) {
+            if (Controller::has_curr()) {
+                Security::setCurrentUser(null);
+            } else {
+                $_SESSION['loggedInAs'] = null;
             }
         }
 
-        return !$broken;
+        // Okay let's reset our user.
+        if (Controller::has_curr()) {
+            Security::setCurrentUser($originalUser);
+        } else {
+            $_SESSION['loggedInAs'] = $originalUser->ID;
+        }
     }
 
     /**
@@ -982,15 +1023,6 @@ class QueuedJobService
                  * @todo Check for 4.x compatibility with Subsites once namespacing is implemented
                  */
                 \Subsite::changeSubsite(0);
-            }
-            if (Controller::has_curr()) {
-                Controller::curr()->getRequest()->getSession()->clear('loggedInAs');
-            } else {
-                unset($_SESSION['loggedInAs']);
-            }
-
-            if (class_exists('SecurityContext')) {
-                singleton('SecurityContext')->setMember(null);
             }
 
             $job = $this->getNextPendingJob($name);
