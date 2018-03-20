@@ -185,11 +185,13 @@ class QueuedJobService
         $jobDescriptor->Implementation = get_class($job);
         $jobDescriptor->StartAfter = $startAfter;
 
-        if ($userId === null) {
-            $userId = (Security::getCurrentUser() ? Security::getCurrentUser()->ID : null);
+        $runAsID = 0;
+        if ($userId) {
+            $runAsID = $userId;
+        } elseif (Security::getCurrentUser() && Security::getCurrentUser()->exists()) {
+            $runAsID = Security::getCurrentUser()->ID;
         }
-
-        $jobDescriptor->RunAsID = $userId;
+        $jobDescriptor->RunAsID = $runAsID;
 
         // copy data
         $this->copyJobToDescriptor($job, $jobDescriptor);
@@ -650,6 +652,17 @@ class QueuedJobService
                     }
 
                     if (!$broken) {
+                        // Collect output as job messages as well as sending it to the screen
+                        $obLogger = function ($buffer, $phase) use ($job, $jobDescriptor) {
+                            $job->addMessage($buffer);
+                            if ($jobDescriptor) {
+                                $this->copyJobToDescriptor($job, $jobDescriptor);
+                                $jobDescriptor->write();
+                            }
+                            return $buffer;
+                        };
+                        ob_start($obLogger, 256);
+
                         try {
                             $job->process();
                         } catch (Exception $e) {
@@ -670,6 +683,8 @@ class QueuedJobService
                             $jobDescriptor->JobStatus =  QueuedJob::STATUS_BROKEN;
                             $this->extend('updateJobDescriptorAndJobOnException', $jobDescriptor, $job, $e);
                         }
+
+                        ob_end_flush();
 
                         // now check the job state
                         $data = $job->getJobData();
