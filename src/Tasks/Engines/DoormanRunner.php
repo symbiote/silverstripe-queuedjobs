@@ -2,6 +2,7 @@
 
 namespace Symbiote\QueuedJobs\Tasks\Engines;
 
+use AsyncPHP\Doorman\Manager\ProcessManager;
 use AsyncPHP\Doorman\Rule;
 use SilverStripe\ORM\FieldType\DBDatetime;
 use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
