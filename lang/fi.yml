@@ -1,18 +1,29 @@
 fi:
+  CleanupJob:
+    Title: 'Siivoa vanhat työt tietokannasta'
   DeleteObjectJob:
     DELETE_JOB: 'Poista solmu'
     DELETE_OBJ2: 'Poista {title}'
   GenerateSitemapJob:
     REGENERATE: 'Luo Google-sivukartta .xml-tiedosto uudelleen'
+  PublishItemsJob:
+    Title: 'Julkaise kohteet {title} alla'
   QueuedJobDescriptor:
     PLURALNAME: 'Jonossa olevien tehtävien kuvaajat'
     SINGULARNAME: 'Jonossa olevan tehtävän kuvaaja'
+  QueuedJobRule:
+    PLURALNAME: 'Jonossa olevan tehtävän säännöt'
+    SINGULARNAME: 'Jonossa olevan tehtävän sääntö'
   QueuedJobs:
+    CREATE_JOB_TYPE: 'Luo tehtävä tyypiltään'
+    CREATE_NEW_JOB: 'Luo uusi tehtävä'
+    JOB_EXCEPT: 'Tehtävä aiheutti poikkeuksen %s sijainnissa %s rivillä %s'
     JOB_PAUSED: 'Tehtävä pysäytetty aikaan %s'
-    JOB_TYPE: 'Tehtävätyyppi'
+    JOB_TYPE: Tehtävätyyppi
     JobsFieldTitle: Tehtävät
     STALLED_JOB: 'Pysäytetty työ'
     STALLED_JOB_MSG: '%s tehtävä näyttää olevan seisahtunut. Se on nyt pysäytetty. Ole hyvä ja kirjaudu sisään tarkastellaksesi sitä'
+    START_JOB_TIME: 'Aloita tehtävä ajankohtana'
     TABLE_ADDE: Lisätty
     TABLE_MESSAGES: Viesti
     TABLE_NUM_PROCESSED: Tehty
@@ -26,8 +37,9 @@ fi:
   ScheduledExecution:
     EXECUTE_EVERY: 'Suorita joka'
     ExecuteEveryDay: Päivä
-    ExecuteEveryFortnight: Kaksi viikkoa
+    ExecuteEveryFortnight: 'Kaksi viikkoa'
     ExecuteEveryHour: Tunti
+    ExecuteEveryMinute: Minuutti
     ExecuteEveryMonth: Kuukausi
     ExecuteEveryWeek: Viikko
     ExecuteEveryYear: Vuosi

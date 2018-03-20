@@ -15,9 +15,9 @@ class ImmediateQueueHandler
     /**
      * @var array
      */
-    private static $dependencies = array(
+    private static $dependencies = [
         'queuedJobService' => '%$Symbiote\\QueuedJobs\\Services\\QueuedJobService',
-    );
+    ];
 
     /**
      * @var QueuedJobService
@@ -28,6 +28,11 @@ class ImmediateQueueHandler
      * @param QueuedJobDescriptor $job
      */
     public function startJobOnQueue(QueuedJobDescriptor $job)
+    {
+        $this->queuedJobService->runJob($job->ID);
+    }
+
+    public function scheduleJob(QueuedJobDescriptor $job, $date)
     {
         $this->queuedJobService->runJob($job->ID);
     }

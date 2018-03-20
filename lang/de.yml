@@ -20,7 +20,7 @@ de:
     JOB_EXCEPT: 'Auftrag hat einen ''%s'' Fehler verursacht in %s Zeile %s '
     JOB_PAUSED: 'Auftrag pausiert um %s'
     JOB_STALLED: 'Auftrag angehalten nach %s versuchen. Bitte überprüfen Sie den Auftrag.'
-    JOB_TYPE: 'Auftragstyp'
+    JOB_TYPE: Auftragstyp
     JobsFieldTitle: Aufträge
     STALLED_JOB: 'Angehaltener Auftrag'
     STALLED_JOB_MSG: 'Der Auftrag %s scheint festzustecken. Er wurde angehalten. Bitte loggen Sie sich ein, um den Auftrag zu überprüfen.'
@@ -39,7 +39,7 @@ de:
     EXECUTE_EVERY: 'Alle ausführen'
     EXECUTE_FREE: 'Geplant (in strtotime-format nach dem ersten Ausführen)'
     ExecuteEveryDay: Tag
-    ExecuteEveryFortnight: Zwei Wochen
+    ExecuteEveryFortnight: 'Zwei Wochen'
     ExecuteEveryHour: Stunde
     ExecuteEveryMinute: Minute
     ExecuteEveryMonth: Monat

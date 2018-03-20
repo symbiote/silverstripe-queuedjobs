@@ -592,7 +592,19 @@ class QueuedJobService
                         $broken = true;
                     }
 
-                    if (!$broken) {
+                    if (!$broken)
+                    {
+                        // Collect output as job messages as well as sending it to the screen
+                        $obLogger = function ($buffer, $phase) use ($job, $jobDescriptor) {
+                            $job->addMessage($buffer);
+                            if ($jobDescriptor) {
+                                $this->copyJobToDescriptor($job, $jobDescriptor);
+                                $jobDescriptor->write();
+                            }
+                            return $buffer;
+                        };
+                        ob_start($obLogger, 256);
+
                         try {
                             $job->process();
                         } catch (Exception $e) {
@@ -609,6 +621,8 @@ class QueuedJobService
                             $this->getLogger()->error($e->getMessage());
                             $jobDescriptor->JobStatus =  QueuedJob::STATUS_BROKEN;
                         }
+
+                        ob_end_flush();
 
                         // now check the job state
                         $data = $job->getJobData();
@@ -692,8 +706,7 @@ class QueuedJobService
 
         Config::unnest();
 
-        // okay let's reset our user if we've got an original
-        if ($runAsUser && $originalUser && Controller::has_curr()) {
+        if ($runAsUser && Controller::has_curr()) {
             Controller::curr()->getRequest()->getSession()->clear("loggedInAs");
             if ($originalUser) {
                 Controller::curr()->getRequest()->getSession()->set("loggedInAs", $originalUser->ID);

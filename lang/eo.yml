@@ -1,4 +1,6 @@
 eo:
+  CleanupJob:
+    Title: 'Purigi malnovajn taskojn el la datumbazo'
   CreateQueuedJobTask:
     Description: 'Tasko uzota por krei atendovican taskon. Pasu la klasnomon de la atendovican tasko kiel la parametron "nomo", pasu malnepran parametron "starto" (analizeblan de strtotime) por agordi startotempon por la tasko.'
   DeleteObjectJob:
@@ -44,7 +46,7 @@ eo:
     EXECUTE_EVERY: 'Plenumi ĉiun'
     EXECUTE_FREE: 'Planita (en strtotime-formato ek de unua plenumo)'
     ExecuteEveryDay: Tago
-    ExecuteEveryFortnight: Du semajnoj
+    ExecuteEveryFortnight: 'Du semajnoj'
     ExecuteEveryHour: Horo
     ExecuteEveryMinute: Minuto
     ExecuteEveryMonth: Monato

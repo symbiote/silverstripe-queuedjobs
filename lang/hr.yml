@@ -1,4 +1,6 @@
 hr:
+  CleanupJob:
+    Title: 'Očisti stare poslove iz baze'
   DeleteObjectJob:
     DELETE_JOB: 'Obriši čvor'
     DELETE_OBJ2: 'Obriši {title}'
@@ -13,6 +15,7 @@ hr:
     JOB_TYPE: 'Tip posla'
     JOB_TYPE_PARAMS: 'Konstruktorski parametri za kreiranje posla'
     JobsFieldTitle: Poslovi
+    MEMORY_RELEASE: 'Posao oslobađa memoriju i čeka (%s korišeno)'
     STALLED_JOB: 'Zaglavljen posao'
     STALLED_JOB_MSG: 'Čini se da posao %s je zaglavljen. Pauziran je, molimo vas logirajte se da provjerite'
     START_JOB_TIME: 'Pokreni posao u'
@@ -31,7 +34,7 @@ hr:
     EXECUTE_EVERY: 'Izvrši svaki'
     EXECUTE_FREE: 'Planirano (u strtotime formatu od prvog pokretanja)'
     ExecuteEveryDay: dan
-    ExecuteEveryFortnight: dve nedjelje
+    ExecuteEveryFortnight: 'dve nedjelje'
     ExecuteEveryHour: sat
     ExecuteEveryMinute: minuta
     ExecuteEveryMonth: mjesec

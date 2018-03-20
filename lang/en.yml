@@ -1,4 +1,6 @@
 en:
+  CleanupJob:
+    Title: 'Clean up old jobs from the database'
   CreateQueuedJobTask:
     Description: 'A task used to create a queued job. Pass the queued job class name as the "name" parameter, pass an optional "start" parameter (parseable by strtotime) to set a start time for the job.'
   DeleteObjectJob:
@@ -41,6 +43,8 @@ en:
     TIME_LIMIT: 'Queue has passed time limit and will restart before continuing'
   QueuedJobsAdmin:
     MENUTITLE: Jobs
+  RunBuildTaskJob:
+    JOB_TITLE: 'Run BuildTask {task}'
   ScheduledExecution:
     EXECUTE_EVERY: 'Execute every'
     EXECUTE_FREE: 'Scheduled (in strtotime format from first execution)'
