@@ -4,7 +4,9 @@ namespace Symbiote\QueuedJobs\DataObjects;
 
 use SilverStripe\Assets\Filesystem;
 use SilverStripe\Core\Config\Config;
+use SilverStripe\Core\Convert;
 use SilverStripe\Forms\DropdownField;
+use SilverStripe\Forms\LiteralField;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBField;
 use SilverStripe\Security\Permission;
@@ -50,7 +52,7 @@ class QueuedJobDescriptor extends DataObject
     /**
      * @var array
      */
-    private static $db = array(
+    private static $db = [
         'JobTitle' => 'Varchar(255)',
         'Signature' => 'Varchar(64)',
         'Implementation' => 'Varchar(255)',
@@ -66,46 +68,46 @@ class QueuedJobDescriptor extends DataObject
         'SavedJobMessages' => 'Text',
         'JobStatus' => 'Varchar(16)',
         'JobType' => 'Varchar(16)',
-    );
+    ];
 
     /**
      * @var array
      */
-    private static $has_one = array(
+    private static $has_one = [
         'RunAs' => 'SilverStripe\\Security\\Member',
-    );
+    ];
 
     /**
      * @var array
      */
-    private static $defaults = array(
+    private static $defaults = [
         'JobStatus' => 'New',
         'ResumeCounts' => 0,
         'LastProcessedCount' => -1 // -1 means never checked, 0 means checked and none were processed
-    );
+    ];
 
     /**
      * @var array
      */
-    private static $indexes = array(
+    private static $indexes = [
         'JobStatus' => true,
         'StartAfter' => true,
-        'Signature' => true
-    );
+        'Signature' => true,
+    ];
 
     /**
      * @var array
      */
-    private static $casting = array(
-        'Messages' => 'HTMLText'
-    );
+    private static $casting = [
+        'Messages' => 'HTMLText',
+    ];
 
     /**
      * @var array
      */
-    private static $searchable_fields = array(
+    private static $searchable_fields = [
         'JobTitle',
-    );
+    ];
 
     /**
      * @var string
@@ -131,7 +133,7 @@ class QueuedJobDescriptor extends DataObject
             'StartAfter' => _t(__CLASS__ . '.TABLE_START_AFTER', 'Start After'),
             'JobType'   => _t(__CLASS__ . '.JOB_TYPE', 'Job Type'),
             'JobStatus' => _t(__CLASS__ . '.TABLE_STATUS', 'Status'),
-            'Messages' => _t(__CLASS__ . '.TABLE_MESSAGES', 'Message'),
+            'LastMessage' => _t(__CLASS__ . '.TABLE_MESSAGES', 'Message'),
             'StepsProcessed' => _t(__CLASS__ . '.TABLE_NUM_PROCESSED', 'Done'),
             'TotalSteps' => _t(__CLASS__ . '.TABLE_TOTAL', 'Total'),
         );
@@ -141,14 +143,15 @@ class QueuedJobDescriptor extends DataObject
      * Pause this job, but only if it is waiting, running, or init
      *
      * @param bool $force Pause this job even if it's not waiting, running, or init
+     *
      * @return bool Return true if this job was paused
      */
     public function pause($force = false)
     {
         if ($force || in_array(
-            $this->JobStatus,
-            array(QueuedJob::STATUS_WAIT, QueuedJob::STATUS_RUN, QueuedJob::STATUS_INIT)
-        )) {
+                $this->JobStatus,
+                [QueuedJob::STATUS_WAIT, QueuedJob::STATUS_RUN, QueuedJob::STATUS_INIT]
+            )) {
             $this->JobStatus = QueuedJob::STATUS_PAUSED;
             $this->write();
             return true;
@@ -160,11 +163,12 @@ class QueuedJobDescriptor extends DataObject
      * Resume this job and schedules it for execution
      *
      * @param bool $force Resume this job even if it's not paused or broken
+     *
      * @return bool Return true if this job was resumed
      */
     public function resume($force = false)
     {
-        if ($force || in_array($this->JobStatus, array(QueuedJob::STATUS_PAUSED, QueuedJob::STATUS_BROKEN))) {
+        if ($force || in_array($this->JobStatus, [QueuedJob::STATUS_PAUSED, QueuedJob::STATUS_BROKEN])) {
             $this->JobStatus = QueuedJob::STATUS_WAIT;
             $this->ResumeCounts++;
             $this->write();
@@ -241,6 +245,8 @@ class QueuedJobDescriptor extends DataObject
     }
 
     /**
+     * Get all job messages as an HTML unordered list.
+     *
      * @return string|void
      */
     public function getMessages()
@@ -248,9 +254,25 @@ class QueuedJobDescriptor extends DataObject
         if (strlen($this->SavedJobMessages)) {
             $messages = @unserialize($this->SavedJobMessages);
             if (!empty($messages)) {
-                return DBField::create_field('HTMLText', '<ul><li>' . implode('</li><li>', $messages) . '</li></ul>');
+                return DBField::create_field('HTMLText', '<ul><li>' . nl2br(implode('</li><li>', Convert::raw2xml($messages))) . '</li></ul>');
             }
             return '';
+        }
+    }
+
+    /**
+     * Get the last job message as a raw string
+     *
+     * @return string|void
+     */
+    public function getLastMessage()
+    {
+        if (strlen($this->SavedJobMessages)) {
+            $msgs = @unserialize($this->SavedJobMessages);
+            if (is_array($msgs) && sizeof($msgs)) {
+                $msg = array_pop($msgs);
+                return $msg;
+            }
         }
     }
 
@@ -270,13 +292,13 @@ class QueuedJobDescriptor extends DataObject
         $fields = parent::getCMSFields();
         $fields->replaceField(
             'JobType',
-            new DropdownField('JobType', $this->fieldLabel('JobType'), array(
+            new DropdownField('JobType', $this->fieldLabel('JobType'), [
                 QueuedJob::IMMEDIATE => 'Immediate',
                 QueuedJob::QUEUED => 'Queued',
-                QueuedJob::LARGE => 'Large'
-            ))
+                QueuedJob::LARGE => 'Large',
+            ])
         );
-        $statuses = array(
+        $statuses = [
             QueuedJob::STATUS_NEW,
             QueuedJob::STATUS_INIT,
             QueuedJob::STATUS_RUN,
@@ -284,8 +306,8 @@ class QueuedJobDescriptor extends DataObject
             QueuedJob::STATUS_COMPLETE,
             QueuedJob::STATUS_PAUSED,
             QueuedJob::STATUS_CANCELLED,
-            QueuedJob::STATUS_BROKEN
-        );
+            QueuedJob::STATUS_BROKEN,
+        ];
         $fields->replaceField(
             'JobStatus',
             DropdownField::create('JobStatus', $this->fieldLabel('JobStatus'), array_combine($statuses, $statuses))
@@ -293,6 +315,10 @@ class QueuedJobDescriptor extends DataObject
 
         $fields->removeByName('SavedJobData');
         $fields->removeByName('SavedJobMessages');
+
+        if (strlen($this->SavedJobMessages)) {
+            $fields->addFieldToTab('Root.Messages', new LiteralField('Messages', $this->getMessages()));
+        }
 
         if (Permission::check('ADMIN')) {
             return $fields;

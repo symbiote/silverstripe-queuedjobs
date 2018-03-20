@@ -15,9 +15,9 @@ class ImmediateQueueHandler
     /**
      * @var array
      */
-    private static $dependencies = array(
+    private static $dependencies = [
         'queuedJobService' => '%$Symbiote\\QueuedJobs\\Services\\QueuedJobService',
-    );
+    ];
 
     /**
      * @var QueuedJobService

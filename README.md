@@ -138,7 +138,7 @@ the request finishes as the php script ends.
 Some jobs should always be either running or queued to run, things like data refreshes or periodic clean up jobs, we call these Default Jobs.
 Default jobs are checked for at the end of each job queue process, using the job type and any fields in the filter to create an SQL query e.g.
 
-```
+```yml
 ArbitraryName:
   type: 'ScheduledExternalImportJob'
   filter:
@@ -156,7 +156,7 @@ QueuedJobDescriptor::get()->filter([
 
 This query is checked to see if there's at least 1 healthly (new, run, wait or paused) job matching the filter. If there's not and recreate is true in the yml config we use the construct array as params to pass to a new job object e.g:
 
-```
+```yml
 ArbitraryName:
   type: 'ScheduledExternalImportJob'
   filter:
