@@ -2,6 +2,7 @@
 
 namespace Symbiote\QueuedJobs\Tests;
 
+use SilverStripe\Core\Config\Config;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Dev\FunctionalTest;
 use SilverStripe\Forms\FieldList;
@@ -24,6 +25,8 @@ class QueuedJobsAdminTest extends FunctionalTest
      * @var string
      */
     // protected static $fixture_file = 'QueuedJobsAdminTest.yml';
+
+    protected $usesDatabase = true;
 
     /**
      * @var QueuedJobsAdmin

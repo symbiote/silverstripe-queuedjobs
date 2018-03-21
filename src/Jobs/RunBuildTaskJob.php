@@ -1,5 +1,14 @@
 <?php
 
+namespace Symbiote\QueuedJobs\Jobs;
+
+use SilverStripe\Control\HTTPRequest;
+use SilverStripe\Core\Injector\Injector;
+use SilverStripe\Dev\BuildTask;
+use SilverStripe\ORM\DataObject;
+use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
+use Symbiote\QueuedJobs\Services\QueuedJob;
+
 /**
  * A job used to delete a data object. Typically used for deletes that need to happen on
  * a schedule, or where the delete may have some onflow affect that takes a while to
@@ -29,7 +38,7 @@ class RunBuildTaskJob extends AbstractQueuedJob {
      * @param string (default: Object)
      * @return DataObject
      */
-    protected function getObject($name = 'Object') {
+    protected function getObject($name = 'SilverStripe\\Core\\Object') {
         return DataObject::get_by_id($this->TargetClass, $this->TargetID);
     }
 
@@ -49,7 +58,7 @@ class RunBuildTaskJob extends AbstractQueuedJob {
     }
 
     public function process() {
-        if (!is_subclass_of($this->TaskClass, 'BuildTask')) {
+        if (!is_subclass_of($this->TaskClass, BuildTask::class)) {
             throw new \LogicException($this->TaskClass . ' is not a build task');
         }
 
@@ -60,7 +69,7 @@ class RunBuildTaskJob extends AbstractQueuedJob {
 
         $getVars = array();
         parse_str($this->QueryString, $getVars);
-        $request = new SS_HTTPRequest('GET', '/', $getVars);
+        $request = new HTTPRequest('GET', '/', $getVars);
         $task->run($request);
 
         $this->currentStep = 1;
