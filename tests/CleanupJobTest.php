@@ -27,6 +27,7 @@ class CleanupJobTest extends AbstractTest
         // the LastEdited dates in the fixture
         DBDatetime::set_mock_now("2002-02-03 02:02:02");
         parent::setUp();
+        Config::modify()->set(\Symbiote\QueuedJobs\Services\QueuedJobService::class, 'use_shutdown_function', false);
     }
 
     /**

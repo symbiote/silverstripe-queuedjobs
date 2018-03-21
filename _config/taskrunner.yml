@@ -1,9 +1,11 @@
 ---
 Name: QueuedDevelopmentAdmin
+After:
+  - DevelopmentAdmin
 ---
-DevelopmentAdmin:
+SilverStripe\Dev\DevelopmentAdmin:
   registered_controllers:
     tasks:
-      controller: 'QueuedTaskRunner'
+      controller: Symbiote\QueuedJobs\Controllers\QueuedTaskRunner
       links:
         tasks: 'See a list of build tasks to run (QueuedJobs version)'
