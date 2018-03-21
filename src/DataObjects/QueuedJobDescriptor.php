@@ -149,9 +149,9 @@ class QueuedJobDescriptor extends DataObject
     public function pause($force = false)
     {
         if ($force || in_array(
-                $this->JobStatus,
-                [QueuedJob::STATUS_WAIT, QueuedJob::STATUS_RUN, QueuedJob::STATUS_INIT]
-            )) {
+            $this->JobStatus,
+            [QueuedJob::STATUS_WAIT, QueuedJob::STATUS_RUN, QueuedJob::STATUS_INIT]
+        )) {
             $this->JobStatus = QueuedJob::STATUS_PAUSED;
             $this->write();
             return true;
