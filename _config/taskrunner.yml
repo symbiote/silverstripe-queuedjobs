@@ -1,5 +1,7 @@
 ---
 Name: QueuedDevelopmentAdmin
+After:
+  - DevelopmentAdmin
 ---
 SilverStripe\Dev\DevelopmentAdmin:
   registered_controllers:

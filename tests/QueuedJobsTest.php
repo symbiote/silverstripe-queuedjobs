@@ -25,19 +25,20 @@ class QueuedJobsTest extends SapphireTest
     /**
      * {@inheritDoc}
      */
-    public function setUp()
+    protected function setUp()
     {
         parent::setUp();
 
         Config::nest();
         // Two restarts are allowed per job
         Config::modify()->set('Symbiote\\QueuedJobs\\Services\\QueuedJobService', 'stall_threshold', 2);
+        Config::modify()->set(\Symbiote\QueuedJobs\Services\QueuedJobService::class, 'use_shutdown_function', false);
     }
 
     /**
      * {@inheritDoc}
      */
-    public function tearDown()
+    protected function tearDown()
     {
         Config::unnest();
         parent::tearDown();

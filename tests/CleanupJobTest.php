@@ -19,18 +19,19 @@ class CleanupJobTest extends SapphireTest
     /**
      * {@inheritDoc}
      */
-    public function setUp()
+    protected function setUp()
     {
         // Have to set a fake time here to work with
         // the LastEdited dates in the fixture
         DBDatetime::set_mock_now("2002-02-03 02:02:02");
         parent::setUp();
+        Config::modify()->set(\Symbiote\QueuedJobs\Services\QueuedJobService::class, 'use_shutdown_function', false);
     }
 
     /**
      * {@inheritDoc}
      */
-    public function tearDown()
+    protected function tearDown()
     {
         parent::tearDown();
         DBDatetime::clear_mock_now();

@@ -4,6 +4,7 @@ namespace Symbiote\QueuedJobs\Jobs;
 
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Core\Injector\Injector;
+use SilverStripe\Dev\BuildTask;
 use SilverStripe\ORM\DataObject;
 use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
 use Symbiote\QueuedJobs\Services\QueuedJob;
@@ -37,7 +38,7 @@ class RunBuildTaskJob extends AbstractQueuedJob {
      * @param string (default: Object)
      * @return DataObject
      */
-    protected function getObject($name = 'Object') {
+    protected function getObject($name = 'SilverStripe\\Core\\Object') {
         return DataObject::get_by_id($this->TargetClass, $this->TargetID);
     }
 
@@ -57,7 +58,7 @@ class RunBuildTaskJob extends AbstractQueuedJob {
     }
 
     public function process() {
-        if (!is_subclass_of($this->TaskClass, 'BuildTask')) {
+        if (!is_subclass_of($this->TaskClass, BuildTask::class)) {
             throw new \LogicException($this->TaskClass . ' is not a build task');
         }
 

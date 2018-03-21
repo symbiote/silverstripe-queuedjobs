@@ -1,5 +1,6 @@
 <?php
 
+use SilverStripe\Core\Config\Config;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\ORM\DataObject;
 use Symbiote\QueuedJobs\Tests\ScheduledExecutionTest\TestScheduledDataObject;
@@ -24,6 +25,12 @@ class ScheduledExecutionTest extends SapphireTest
     protected static $extra_dataobjects = array(
         TestScheduledDataObject::class
     );
+
+    protected function setUp()
+    {
+        parent::setUp();
+        Config::modify()->set(\Symbiote\QueuedJobs\Services\QueuedJobService::class, 'use_shutdown_function', false);
+    }
 
     public function testScheduledExecutionTimes()
     {

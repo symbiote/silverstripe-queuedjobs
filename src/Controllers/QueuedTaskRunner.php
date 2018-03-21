@@ -8,8 +8,13 @@ use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\BuildTask;
 use SilverStripe\Dev\DebugView;
 use SilverStripe\Dev\TaskRunner;
+use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
 use Symbiote\QueuedJobs\Jobs\RunBuildTaskJob;
 use Symbiote\QueuedJobs\Services\QueuedJobService;
+use Symbiote\QueuedJobs\Tasks\CreateQueuedJobTask;
+use Symbiote\QueuedJobs\Tasks\DeleteAllJobsTask;
+use Symbiote\QueuedJobs\Tasks\ProcessJobQueueChildTask;
+use Symbiote\QueuedJobs\Tasks\ProcessJobQueueTask;
 
 class QueuedTaskRunner extends TaskRunner
 {
@@ -23,10 +28,10 @@ class QueuedTaskRunner extends TaskRunner
     );
 
     private static $task_blacklist = array(
-        'ProcessJobQueueTask',
-        'ProcessJobQueueChildTask',
-        'CreateQueuedJobTask',
-        'DeleteAllJobsTask',
+        ProcessJobQueueTask::class,
+        ProcessJobQueueChildTask::class,
+        CreateQueuedJobTask::class,
+        DeleteAllJobsTask::class,
     );
 
     public function index()
@@ -39,8 +44,8 @@ class QueuedTaskRunner extends TaskRunner
         // Web mode
         if(!Director::is_cli()) {
             $renderer = new DebugView();
-            $renderer->renderHeader();
-            $renderer->renderInfo("SilverStripe Development Tools: Tasks (QueuedJobs version)", Director::absoluteBaseURL());
+            echo $renderer->renderHeader();
+            echo $renderer->renderInfo("SilverStripe Development Tools: Tasks (QueuedJobs version)", Director::absoluteBaseURL());
             $base = Director::absoluteBaseURL();
 
             echo "<div class=\"options\">";
@@ -77,7 +82,7 @@ class QueuedTaskRunner extends TaskRunner
             }
             echo "</ul></div>";
 
-            $renderer->renderFooter();
+            echo $renderer->renderFooter();
 
         // CLI mode - revert to default behaviour
         } else {
@@ -125,7 +130,7 @@ class QueuedTaskRunner extends TaskRunner
                 $jobID = Injector::inst()->get(QueuedJobService::class)->queueJob($job);
 
                 $message('Done: queued with job ID ' . $jobID);
-                $adminLink = Director::baseURL() . "admin/queuedjobs/QueuedJobDescriptor";
+                $adminLink = Director::baseURL() . "admin/queuedjobs/" . str_replace('\\', '-', QueuedJobDescriptor::class);
                 $message("Visit <a href=\"$adminLink\">queued jobs admin</a> to see job status");
                 return;
             }

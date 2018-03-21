@@ -1,5 +1,6 @@
 <?php
 
+use SilverStripe\Core\Config\Config;
 use SilverStripe\Dev\FunctionalTest;
 use SilverStripe\Forms\FieldList;
 use Symbiote\QueuedJobs\Controllers\QueuedJobsAdmin;
@@ -20,6 +21,8 @@ class QueuedJobsAdminTest extends FunctionalTest
      */
     // protected static $fixture_file = 'QueuedJobsAdminTest.yml';
 
+    protected $usesDatabase = true;
+
     /**
      * @var QueuedJobsAdmin
      */
@@ -30,9 +33,11 @@ class QueuedJobsAdminTest extends FunctionalTest
      *
      * {@inheritDoc}
      */
-    public function setUp()
+    protected function setUp()
     {
         parent::setUp();
+        Config::modify()->set(\Symbiote\QueuedJobs\Services\QueuedJobService::class, 'use_shutdown_function', false);
+
         $this->admin = new QueuedJobsAdmin;
 
         // Compatible with both PHPUnit 3 and PHPUnit 5+
