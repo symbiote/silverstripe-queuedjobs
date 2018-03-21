@@ -125,18 +125,18 @@ class QueuedJobDescriptor extends DataObject
      */
     public function summaryFields()
     {
-        return array(
+        return [
             'JobTitle' => _t(__CLASS__ . '.TABLE_TITLE', 'Title'),
             'Created' => _t(__CLASS__ . '.TABLE_ADDE', 'Added'),
             'JobStarted' => _t(__CLASS__ . '.TABLE_STARTED', 'Started'),
 //          'JobRestarted' => _t(__CLASS__ . '.TABLE_RESUMED', 'Resumed'),
             'StartAfter' => _t(__CLASS__ . '.TABLE_START_AFTER', 'Start After'),
-            'JobType'   => _t(__CLASS__ . '.JOB_TYPE', 'Job Type'),
+            'JobType' => _t(__CLASS__ . '.JOB_TYPE', 'Job Type'),
             'JobStatus' => _t(__CLASS__ . '.TABLE_STATUS', 'Status'),
             'LastMessage' => _t(__CLASS__ . '.TABLE_MESSAGES', 'Message'),
             'StepsProcessed' => _t(__CLASS__ . '.TABLE_NUM_PROCESSED', 'Done'),
             'TotalSteps' => _t(__CLASS__ . '.TABLE_TOTAL', 'Total'),
-        );
+        ];
     }
 
     /**
@@ -149,9 +149,9 @@ class QueuedJobDescriptor extends DataObject
     public function pause($force = false)
     {
         if ($force || in_array(
-                $this->JobStatus,
-                [QueuedJob::STATUS_WAIT, QueuedJob::STATUS_RUN, QueuedJob::STATUS_INIT]
-            )) {
+            $this->JobStatus,
+            [QueuedJob::STATUS_WAIT, QueuedJob::STATUS_RUN, QueuedJob::STATUS_INIT]
+        )) {
             $this->JobStatus = QueuedJob::STATUS_PAUSED;
             $this->write();
             return true;

@@ -19,30 +19,30 @@ use Symbiote\QueuedJobs\Tasks\ProcessJobQueueTask;
 class QueuedTaskRunner extends TaskRunner
 {
 
-    private static $url_handlers = array(
-        'queue/$TaskName' => 'queueTask'
-    );
+    private static $url_handlers = [
+        'queue/$TaskName' => 'queueTask',
+    ];
 
-    private static $allowed_actions = array(
-        'queueTask'
-    );
+    private static $allowed_actions = [
+        'queueTask',
+    ];
 
-    private static $task_blacklist = array(
+    private static $task_blacklist = [
         ProcessJobQueueTask::class,
         ProcessJobQueueChildTask::class,
         CreateQueuedJobTask::class,
         DeleteAllJobsTask::class,
-    );
+    ];
 
     public function index()
     {
         $tasks = $this->getTasks();
 
         $blacklist = (array)$this->config()->task_blacklist;
-        $backlistedTasks = array();
+        $backlistedTasks = [];
 
         // Web mode
-        if(!Director::is_cli()) {
+        if (!Director::is_cli()) {
             $renderer = new DebugView();
             echo $renderer->renderHeader();
             echo $renderer->renderInfo("SilverStripe Development Tools: Tasks (QueuedJobs version)", Director::absoluteBaseURL());
@@ -84,7 +84,7 @@ class QueuedTaskRunner extends TaskRunner
 
             echo $renderer->renderFooter();
 
-        // CLI mode - revert to default behaviour
+            // CLI mode - revert to default behaviour
         } else {
             return parent::index();
         }
@@ -93,6 +93,7 @@ class QueuedTaskRunner extends TaskRunner
 
     /**
      * Adds a RunBuildTaskJob to the job queue for a given task
+     *
      * @param HTTPRequest $request
      */
     public function queueTask($request)

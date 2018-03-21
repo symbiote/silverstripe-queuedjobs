@@ -122,6 +122,7 @@ class QueuedJobService
 
     /**
      * Config controlled list of default/required jobs
+     *
      * @var array
      */
     public $defaultJobs = [];
@@ -133,7 +134,7 @@ class QueuedJobService
     {
         // bind a shutdown function to process all 'immediate' queued jobs if needed, but only in CLI mode
         if (static::config()->get('use_shutdown_function') && Director::is_cli()) {
-            register_shutdown_function(array($this, 'onShutdown'));
+            register_shutdown_function([$this, 'onShutdown']);
         }
         if (Config::inst()->get(Email::class, 'queued_job_admin_email') == '') {
             Config::modify()->set(
@@ -155,6 +156,7 @@ class QueuedJobService
      *          The date (in Y-m-d H:i:s format) to start execution after
      * @param int $userId
      *          The ID of a user to execute the job as. Defaults to the current user
+     *
      * @return int
      */
     public function queueJob(QueuedJob $job, $startAfter = null, $userId = null, $queueName = null)
@@ -162,13 +164,13 @@ class QueuedJobService
         $signature = $job->getSignature();
 
         // see if we already have this job in a queue
-        $filter = array(
+        $filter = [
             'Signature' => $signature,
-            'JobStatus' => array(
+            'JobStatus' => [
                 QueuedJob::STATUS_NEW,
                 QueuedJob::STATUS_INIT,
-            )
-        );
+            ],
+        ];
 
         $existing = DataList::create(QueuedJobDescriptor::class)
             ->filter($filter)
@@ -278,6 +280,7 @@ class QueuedJobService
      * return the next job that should be executed
      *
      * @param string $type Job type
+     *
      * @return QueuedJobDescriptor
      */
     public function getNextPendingJob($type = null)
@@ -299,7 +302,7 @@ class QueuedJobService
         // If there's an existing job either running or pending, the lets just return false to indicate
         // that we're still executing
         $runningJob = $list
-            ->filter('JobStatus', array(QueuedJob::STATUS_INIT, QueuedJob::STATUS_RUN))
+            ->filter('JobStatus', [QueuedJob::STATUS_INIT, QueuedJob::STATUS_RUN])
             ->first();
         if ($runningJob) {
             return false;
@@ -332,13 +335,13 @@ class QueuedJobService
         $queue = $queue ?: QueuedJob::QUEUED;
         // Select all jobs currently marked as running
         $runningJobs = QueuedJobDescriptor::get()
-            ->filter(array(
-                'JobStatus' => array(
+            ->filter([
+                'JobStatus' => [
                     QueuedJob::STATUS_RUN,
                     QueuedJob::STATUS_INIT,
-                ),
+                ],
                 'JobType' => $queue,
-            ));
+            ]);
 
         // If no steps have been processed since the last run, consider it a broken job
         // Only check jobs that have been viewed before. LastProcessedCount defaults to -1 on new jobs.
@@ -361,13 +364,13 @@ class QueuedJobService
         if ($brokenJobs && $brokenJobs->count()) {
             $this->getLogger()->error(
                 print_r(
-                    array(
+                    [
                         'errno' => 0,
                         'errstr' => 'Broken jobs were found in the job queue',
                         'errfile' => __FILE__,
                         'errline' => __LINE__,
-                        'errcontext' => array()
-                    ),
+                        'errcontext' => [],
+                    ],
                     true
                 )
             );
@@ -383,13 +386,13 @@ class QueuedJobService
         if (count($this->defaultJobs)) {
             $activeJobs = QueuedJobDescriptor::get()->filter(
                 'JobStatus',
-                array(
+                [
                     QueuedJob::STATUS_NEW,
                     QueuedJob::STATUS_INIT,
                     QueuedJob::STATUS_RUN,
                     QueuedJob::STATUS_WAIT,
                     QueuedJob::STATUS_PAUSED,
-                )
+                ]
             );
             foreach ($this->defaultJobs as $title => $jobConfig) {
                 if (!isset($jobConfig['filter']) || !isset($jobConfig['type'])) {
@@ -397,7 +400,7 @@ class QueuedJobService
                     continue;
                 }
                 $job = $activeJobs->filter(array_merge(
-                    array('Implementation' => $jobConfig['type']),
+                    ['Implementation' => $jobConfig['type']],
                     $jobConfig['filter']
                 ));
                 if (!$job->count()) {
@@ -431,6 +434,7 @@ class QueuedJobService
      * Attempt to restart a stalled job
      *
      * @param QueuedJobDescriptor $stalledJob
+     *
      * @return bool True if the job was successfully restarted
      */
     protected function restartStalledJob($stalledJob)
@@ -511,6 +515,7 @@ class QueuedJobService
      * Assumption is the job has a status of "Queued" or "Wait".
      *
      * @param QueuedJobDescriptor $jobDescriptor
+     *
      * @return boolean
      */
     protected function grabMutex(QueuedJobDescriptor $jobDescriptor)
@@ -544,6 +549,7 @@ class QueuedJobService
      *
      * @param int $jobId
      *          The ID of the job to start executing
+     *
      * @return boolean
      */
     public function runJob($jobId)
@@ -551,7 +557,7 @@ class QueuedJobService
         // first retrieve the descriptor
         $jobDescriptor = DataObject::get_by_id(
             QueuedJobDescriptor::class,
-            (int) $jobId
+            (int)$jobId
         );
         if (!$jobDescriptor) {
             throw new Exception("$jobId is invalid");
@@ -625,19 +631,19 @@ class QueuedJobService
                     // see that we haven't been set to 'paused' or otherwise by another process
                     $jobDescriptor = DataObject::get_by_id(
                         QueuedJobDescriptor::class,
-                        (int) $jobId
+                        (int)$jobId
                     );
                     if (!$jobDescriptor || !$jobDescriptor->exists()) {
                         $broken = true;
                         $this->getLogger()->error(
                             print_r(
-                                array(
+                                [
                                     'errno' => 0,
                                     'errstr' => 'Job descriptor ' . $jobId . ' could not be found',
                                     'errfile' => __FILE__,
                                     'errline' => __LINE__,
-                                    'errcontext' => array()
-                                ),
+                                    'errcontext' => [],
+                                ],
                                 true
                             )
                         );
@@ -702,7 +708,7 @@ class QueuedJobService
                                 ),
                                 'ERROR'
                             );
-                            $jobDescriptor->JobStatus =  QueuedJob::STATUS_BROKEN;
+                            $jobDescriptor->JobStatus = QueuedJob::STATUS_BROKEN;
                         }
 
                         // now we'll be good and check our memory usage. If it is too high, we'll set the job to
@@ -740,13 +746,13 @@ class QueuedJobService
                     } else {
                         $this->getLogger()->error(
                             print_r(
-                                array(
+                                [
                                     'errno' => 0,
                                     'errstr' => 'Job descriptor has been set to null',
                                     'errfile' => __FILE__,
                                     'errline' => __LINE__,
-                                    'errcontext' => array()
-                                ),
+                                    'errcontext' => [],
+                                ],
                                 true
                             )
                         );
@@ -936,6 +942,7 @@ class QueuedJobService
      * Based on implementation in install.php5
      *
      * @param string $memString
+     *
      * @return float
      */
     protected function parseMemory($memString)
@@ -956,8 +963,8 @@ class QueuedJobService
 
     protected function humanReadable($size)
     {
-        $filesizename = array(" Bytes", " KB", " MB", " GB", " TB", " PB", " EB", " ZB", " YB");
-        return $size ? round($size/pow(1024, ($i = floor(log($size, 1024)))), 2) . $filesizename[$i] : '0 Bytes';
+        $filesizename = [" Bytes", " KB", " MB", " GB", " TB", " PB", " EB", " ZB", " YB"];
+        return $size ? round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . $filesizename[$i] : '0 Bytes';
     }
 
 
@@ -969,6 +976,7 @@ class QueuedJobService
      * @param int $includeUpUntil
      *          The number of seconds to include jobs that have just finished, allowing a job list to be built that
      *          includes recently finished jobs
+     *
      * @return QueuedJobDescriptor
      */
     public function getJobList($type = null, $includeUpUntil = 0)
@@ -987,13 +995,14 @@ class QueuedJobService
      * @param int $includeUpUntil
      *          The number of seconds to include jobs that have just finished, allowing a job list to be built that
      *          includes recently finished jobs
+     *
      * @return string
      */
     public function getJobListFilter($type = null, $includeUpUntil = 0)
     {
         $util = singleton(QJUtils::class);
 
-        $filter = array('JobStatus <>' => QueuedJob::STATUS_COMPLETE);
+        $filter = ['JobStatus <>' => QueuedJob::STATUS_COMPLETE];
         if ($includeUpUntil) {
             $filter['JobFinished > '] = date('Y-m-d H:i:s', time() - $includeUpUntil);
         }
@@ -1001,7 +1010,7 @@ class QueuedJobService
         $filter = $util->dbQuote($filter, ' OR ');
 
         if ($type) {
-            $filter = $util->dbQuote(array('JobType =' => (string) $type)). ' AND ('.$filter.')';
+            $filter = $util->dbQuote(['JobType =' => (string)$type]) . ' AND (' . $filter . ')';
         }
 
         return $filter;
@@ -1066,6 +1075,7 @@ class QueuedJobService
 
     /**
      * Get a logger
+     *
      * @return LoggerInterface
      */
     public function getLogger()
