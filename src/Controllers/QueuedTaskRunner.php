@@ -1,5 +1,16 @@
 <?php
 
+namespace Symbiote\QueuedJobs\Controllers;
+
+use SilverStripe\Control\Director;
+use SilverStripe\Core\Convert;
+use SilverStripe\Core\Injector\Injector;
+use SilverStripe\Dev\BuildTask;
+use SilverStripe\Dev\DebugView;
+use SilverStripe\Dev\TaskRunner;
+use Symbiote\QueuedJobs\Jobs\RunBuildTaskJob;
+use Symbiote\QueuedJobs\Services\QueuedJobService;
+
 class QueuedTaskRunner extends TaskRunner
 {
 
@@ -28,8 +39,8 @@ class QueuedTaskRunner extends TaskRunner
         // Web mode
         if(!Director::is_cli()) {
             $renderer = new DebugView();
-            $renderer->writeHeader();
-            $renderer->writeInfo("SilverStripe Development Tools: Tasks (QueuedJobs version)", Director::absoluteBaseURL());
+            $renderer->renderHeader();
+            $renderer->renderInfo("SilverStripe Development Tools: Tasks (QueuedJobs version)", Director::absoluteBaseURL());
             $base = Director::absoluteBaseURL();
 
             echo "<div class=\"options\">";
@@ -66,7 +77,7 @@ class QueuedTaskRunner extends TaskRunner
             }
             echo "</ul></div>";
 
-            $renderer->writeFooter();
+            $renderer->renderFooter();
 
         // CLI mode - revert to default behaviour
         } else {
@@ -77,7 +88,7 @@ class QueuedTaskRunner extends TaskRunner
 
     /**
      * Adds a RunBuildTaskJob to the job queue for a given task
-     * @param SS_HTTPRequest $request
+     * @param HTTPRequest $request
      */
     public function queueTask($request)
     {
@@ -101,7 +112,8 @@ class QueuedTaskRunner extends TaskRunner
 
         foreach ($tasks as $task) {
             if ($task['segment'] == $name) {
-                $inst = Injector::inst()->create($task['class']); /** @var BuildTask $inst */
+                /** @var BuildTask $inst */
+                $inst = Injector::inst()->create($task['class']);
                 if (!$inst->isEnabled()) {
                     $message('The task is disabled');
                     return;
@@ -110,7 +122,7 @@ class QueuedTaskRunner extends TaskRunner
                 $title(sprintf('Queuing Task %s', $inst->getTitle()));
 
                 $job = new RunBuildTaskJob($task['class'], $querystring);
-                $jobID = Injector::inst()->get('QueuedJobService')->queueJob($job);
+                $jobID = Injector::inst()->get(QueuedJobService::class)->queueJob($job);
 
                 $message('Done: queued with job ID ' . $jobID);
                 $adminLink = Director::baseURL() . "admin/queuedjobs/QueuedJobDescriptor";

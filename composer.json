@@ -24,7 +24,9 @@
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
-    "extra": [],
+    "extra": {
+        "installer-name": "queuedjobs"
+    },
     "replace": {
         "silverstripe/queuedjobs": "self.version"
     },
