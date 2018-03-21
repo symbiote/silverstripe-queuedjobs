@@ -17,11 +17,13 @@ use Symbiote\QueuedJobs\Services\QueuedJob;
  * @author marcus@symbiote.com.au
  * @license BSD License http://silverstripe.org/bsd-license/
  */
-class RunBuildTaskJob extends AbstractQueuedJob {
+class RunBuildTaskJob extends AbstractQueuedJob
+{
     /**
      * @param DataObject $node
      */
-    public function __construct($taskClass = null, $queryString = null) {
+    public function __construct($taskClass = null, $queryString = null)
+    {
         if ($taskClass) {
             $this->TaskClass = $taskClass;
         }
@@ -36,28 +38,33 @@ class RunBuildTaskJob extends AbstractQueuedJob {
 
     /**
      * @param string (default: Object)
+     *
      * @return DataObject
      */
-    protected function getObject($name = 'SilverStripe\\Core\\Object') {
+    protected function getObject($name = 'SilverStripe\\Core\\Object')
+    {
         return DataObject::get_by_id($this->TargetClass, $this->TargetID);
     }
 
     /**
      * @return string
      */
-    public function getJobType() {
+    public function getJobType()
+    {
         return QueuedJob::QUEUED;
     }
 
     /**
      * @return string
      */
-    public function getTitle() {
+    public function getTitle()
+    {
         $taskName = $this->QueryString ? ($this->TaskClass . '?' . $this->QueryString) : $this->TaskClass;
-        return _t('RunBuildTaskJob.JOB_TITLE', 'Run BuildTask {task}', array('task' => $taskName));
+        return _t('RunBuildTaskJob.JOB_TITLE', 'Run BuildTask {task}', ['task' => $taskName]);
     }
 
-    public function process() {
+    public function process()
+    {
         if (!is_subclass_of($this->TaskClass, BuildTask::class)) {
             throw new \LogicException($this->TaskClass . ' is not a build task');
         }
@@ -67,7 +74,7 @@ class RunBuildTaskJob extends AbstractQueuedJob {
             throw new \LogicException($this->TaskClass . ' is not enabled');
         }
 
-        $getVars = array();
+        $getVars = [];
         parse_str($this->QueryString, $getVars);
         $request = new HTTPRequest('GET', '/', $getVars);
         $task->run($request);
