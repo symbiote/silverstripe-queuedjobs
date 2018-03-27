@@ -3,6 +3,7 @@
 namespace Symbiote\QueuedJobs\Tasks\Engines;
 
 use AsyncPHP\Doorman\Rule;
+use AsyncPHP\Doorman\Manager\ProcessManager;
 use SilverStripe\ORM\FieldType\DBDatetime;
 use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
 use Symbiote\QueuedJobs\Jobs\DoormanQueuedJobTask;
@@ -50,6 +51,9 @@ class DoormanRunner extends BaseRunner implements TaskRunnerEngine
         $manager = new ProcessManager();
         $manager->setWorker(BASE_PATH . "/vendor/bin/sake dev/tasks/ProcessJobQueueChildTask");
         // $manager->setLogPath(__DIR__);
+
+        // Do not want to default to using the PHP binary to run sake
+        $manager->setBinary('');
 
         // Assign default rules
         $defaultRules = $this->getDefaultRules();
