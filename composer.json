@@ -25,11 +25,7 @@
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
-    "extra": {
-        "branch-alias": {
-            "dev-master": "4.x-dev"
-        }
-    },
+    "extra": [],
     "replace": {
         "silverstripe/queuedjobs": "self.version"
     },
