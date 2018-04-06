@@ -43,7 +43,7 @@ class QueuedJobsAdmin extends ModelAdmin
     /**
      * @var string
      */
-    private static $menu_icon_class = 'font-icon-clipboard-pencil';
+    private static $menu_icon_class = 'font-icon-checklist';
 
     /**
      * @var array
