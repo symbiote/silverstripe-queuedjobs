@@ -48,7 +48,7 @@ class DoormanRunner extends BaseRunner implements TaskRunnerEngine
 
         // split jobs out into multiple tasks...
 
-        $manager = Injector::inst()->create('AsyncPHP\Doorman\Manager\ProcessManager');
+        $manager = Injector::inst()->create(ProcessManager::class);
         $manager->setWorker(BASE_PATH . "/vendor/silverstripe/framework/cli-script.php dev/tasks/ProcessJobQueueChildTask");
         $logPath = Environment::getEnv('SS_DOORMAN_LOGPATH');
         if ($logPath) {
