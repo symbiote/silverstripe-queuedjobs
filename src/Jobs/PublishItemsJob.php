@@ -41,10 +41,16 @@ class PublishItemsJob extends AbstractQueuedJob implements QueuedJob
      */
     public function getTitle()
     {
+        $title = 'Unknown';
+
+        if ($root = $this->getRoot()) {
+            $title = $root->Title;
+        }
+
         return _t(
             __CLASS__ . '.Title',
             "Publish items beneath {title}",
-            array('title' => $this->getRoot()->Title)
+            ['title' => $title]
         );
     }
 
