@@ -2,19 +2,19 @@
 
 namespace Symbiote\QueuedJobs\Tasks\Engines;
 
-use AsyncPHP\Doorman\Rule;
 use AsyncPHP\Doorman\Manager\ProcessManager;
+use SilverStripe\Core\Environment;
 use SilverStripe\ORM\FieldType\DBDatetime;
 use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
 use Symbiote\QueuedJobs\Jobs\DoormanQueuedJobTask;
 use Symbiote\QueuedJobs\Services\QueuedJob;
+use SilverStripe\Core\Injector\Injector;
 
 /**
  * Runs all jobs through the doorman engine
  */
 class DoormanRunner extends BaseRunner implements TaskRunnerEngine
 {
-
     /**
      * @var string
      */
@@ -48,9 +48,12 @@ class DoormanRunner extends BaseRunner implements TaskRunnerEngine
 
         // split jobs out into multiple tasks...
 
-        $manager = new ProcessManager();
+        $manager = Injector::inst()->create(ProcessManager::class);
         $manager->setWorker(BASE_PATH . "/vendor/silverstripe/framework/cli-script.php dev/tasks/ProcessJobQueueChildTask");
-        // $manager->setLogPath(__DIR__);
+        $logPath = Environment::getEnv('SS_DOORMAN_LOGPATH');
+        if ($logPath) {
+            $manager->setLogPath($logPath);
+        }
 
         // Assign default rules
         $defaultRules = $this->getDefaultRules();
