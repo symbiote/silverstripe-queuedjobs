@@ -898,7 +898,7 @@ class QueuedJobService
         if (Controller::has_curr()) {
             Security::setCurrentUser($originalUser);
         } else {
-            $_SESSION['loggedInAs'] = $originalUser->ID;
+            $_SESSION['loggedInAs'] = !empty($originalUser) ? $originalUser->ID : 0;
         }
     }
 
