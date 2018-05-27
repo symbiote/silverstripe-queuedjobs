@@ -4,6 +4,7 @@ namespace Symbiote\QueuedJobs\Controllers;
 
 use ReflectionClass;
 use SilverStripe\Admin\ModelAdmin;
+use SilverStripe\Control\HTTPResponse;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Forms\DatetimeField;
 use SilverStripe\Forms\DropdownField;
@@ -16,8 +17,8 @@ use SilverStripe\Forms\GridField\GridFieldConfig_RecordEditor;
 use SilverStripe\Forms\GridField\GridFieldDataColumns;
 use SilverStripe\Forms\TextareaField;
 use SilverStripe\ORM\DataList;
-use SilverStripe\Security\Member;
 use SilverStripe\Security\Permission;
+use SilverStripe\Security\Security;
 use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
 use Symbiote\QueuedJobs\Forms\GridFieldQueuedJobExecute;
 use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
@@ -43,7 +44,7 @@ class QueuedJobsAdmin extends ModelAdmin
     /**
      * @var string
      */
-    private static $menu_icon_class = 'font-icon-clipboard-pencil';
+    private static $menu_icon_class = 'font-icon-checklist';
 
     /**
      * @var array
@@ -185,11 +186,11 @@ class QueuedJobsAdmin extends ModelAdmin
 
             // If the user has select the European date format as their setting then replace '/' with '-' in the date string so PHP
             // treats the date as this format.
-            if (Member::currentUser()->DateFormat == self::$date_format_european) {
+            if (Security::getCurrentUser()->DateFormat == self::$date_format_european) {
                 $time = str_replace('/', '-', $time);
             }
 
-            if ($jobType && class_exists($jobType)) {
+            if ($jobType && class_exists($jobType) && is_subclass_of($jobType, QueuedJob::class)) {
                 $jobClass = new ReflectionClass($jobType);
                 $job = $jobClass->newInstanceArgs($params);
                 if ($this->jobQueue->queueJob($job, $time)) {
