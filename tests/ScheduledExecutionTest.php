@@ -4,6 +4,7 @@ namespace Symbiote\QueuedJobs\Tests;
 
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\ORM\FieldType\DBDatetime;
 use Symbiote\QueuedJobs\Tests\ScheduledExecutionTest\TestScheduledDataObject;
 
 /**
@@ -26,6 +27,13 @@ class ScheduledExecutionTest extends AbstractTest
     protected static $extra_dataobjects = array(
         TestScheduledDataObject::class
     );
+
+    protected function setUp()
+    {
+        parent::setUp();
+
+        DBDatetime::set_mock_now('2018-05-28 13:15:00');
+    }
 
     public function testScheduledExecutionTimes()
     {
