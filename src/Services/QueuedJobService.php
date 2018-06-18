@@ -892,13 +892,15 @@ class QueuedJobService
             } else {
                 $_SESSION['loggedInAs'] = null;
             }
+
+            return;
         }
 
         // Okay let's reset our user.
         if (Controller::has_curr()) {
             Security::setCurrentUser($originalUser);
         } else {
-            $_SESSION['loggedInAs'] = !empty($originalUser) ? $originalUser->ID : 0;
+            $_SESSION['loggedInAs'] = $originalUser->ID;
         }
     }
 
