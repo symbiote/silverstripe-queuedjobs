@@ -34,10 +34,13 @@ class QueuedJobsTest extends AbstractTest
 
         // Two restarts are allowed per job
         Config::modify()->set(QueuedJobService::class, 'stall_threshold', 2);
+
+        // Allow large memory limit in cases of integration tests
+        Config::modify()->set(QueuedJobService::class, 'memory_limit', 2 * 1024 * 1024 * 1024);
     }
 
     /**
-     * @return QueuedJobService
+     * @return TestQJService
      */
     protected function getService()
     {
@@ -53,7 +56,7 @@ class QueuedJobsTest extends AbstractTest
         $jobId = $svc->queueJob($job);
         $list = $svc->getJobList();
 
-        $this->assertEquals(1, $list->count());
+        $this->assertCount(1, $list);
 
         $myJob = null;
         foreach ($list as $job) {
@@ -64,7 +67,7 @@ class QueuedJobsTest extends AbstractTest
         }
 
         $this->assertNotNull($myJob);
-        $this->assertTrue($jobId > 0);
+        $this->assertGreaterThan(0, $jobId);
         $this->assertEquals(TestQueuedJob::class, $myJob->Implementation);
         $this->assertNotNull($myJob->SavedJobData);
     }
@@ -123,7 +126,7 @@ class QueuedJobsTest extends AbstractTest
 
         $jd = $data->jobData;
         $this->assertTrue(isset($jd->times));
-        $this->assertEquals(1, count($jd->times));
+        $this->assertCount(1, $jd->times);
 
         // now take the 'saved' data and try restoring the job
     }
@@ -148,7 +151,7 @@ class QueuedJobsTest extends AbstractTest
         $this->assertFalse($data->isComplete);
         $jd = $data->jobData;
         $this->assertTrue(isset($jd->times));
-        $this->assertEquals(2, count($jd->times));
+        $this->assertCount(2, $jd->times);
     }
 
     public function testInitialiseJob()
@@ -206,14 +209,14 @@ class QueuedJobsTest extends AbstractTest
         $id = $svc->queueJob($job);
 
         $jobs = $svc->getJobList(QueuedJob::IMMEDIATE);
-        $this->assertEquals(2, $jobs->count());
+        $this->assertCount(2, $jobs);
 
         // now fake a shutdown
         $svc->onShutdown();
 
         $jobs = $svc->getJobList(QueuedJob::IMMEDIATE);
         $this->assertInstanceOf(DataList::class, $jobs);
-        $this->assertEquals(0, $jobs->count());
+        $this->assertCount(0, $jobs);
     }
 
     public function testNextJob()
@@ -226,7 +229,7 @@ class QueuedJobsTest extends AbstractTest
         }
 
         $list = $svc->getJobList();
-        $this->assertEquals(0, $list->count());
+        $this->assertCount(0, $list);
 
         $job = new TestQueuedJob();
         $id1 = $svc->queueJob($job);
@@ -244,7 +247,7 @@ class QueuedJobsTest extends AbstractTest
         $this->assertEquals(2, $id3 - $id1);
 
         $list = $svc->getJobList();
-        $this->assertEquals(3, $list->count());
+        $this->assertCount(3, $list);
 
         // okay, lets get the first one and initialise it, then make sure that a subsequent init attempt fails
         $job = $svc->getNextPendingJob();
@@ -393,11 +396,11 @@ class QueuedJobsTest extends AbstractTest
 
         // we want to set the memory limit _really_ low so that our first run triggers
         $mem = Config::inst()->get('QueuedJobService', 'memory_limit');
-        Config::inst()->update('QueuedJobService', 'memory_limit', 1);
+        Config::modify()->set(QueuedJobService::class, 'memory_limit', 1);
 
         $svc->runJob($id);
 
-        Config::inst()->update('QueuedJobService', 'memory_limit', $mem);
+        Config::modify()->set(QueuedJobService::class, 'memory_limit', $mem);
 
         $descriptor = QueuedJobDescriptor::get()->byID($id);
 
@@ -437,11 +440,11 @@ class QueuedJobsTest extends AbstractTest
             )
         );
         //assert no jobs currently active
-        $this->assertEquals(0, $activeJobs->count());
+        $this->assertCount(0, $activeJobs);
 
         //add a default job to the queue
         $svc->checkdefaultJobs();
-        $this->assertEquals(1, $activeJobs->count());
+        $this->assertCount(1, $activeJobs);
         $descriptor = $activeJobs->filter(array_merge(
             array('Implementation' => $jobConfig['type']),
             $jobConfig['filter']
@@ -454,24 +457,24 @@ class QueuedJobsTest extends AbstractTest
         $descriptor->write();
         //check defaults the paused job shoudl be ignored
         $svc->checkdefaultJobs();
-        $this->assertEquals(1, $activeJobs->count());
+        $this->assertCount(1, $activeJobs);
         //assert we now still have 1 of our job (paused)
-        $this->assertEquals(1, QueuedJobDescriptor::get()->count());
+        $this->assertCount(1, QueuedJobDescriptor::get());
 
         //update Job to broken
         $descriptor->JobStatus = QueuedJob::STATUS_BROKEN;
         $descriptor->write();
         //check and add job for broken job
         $svc->checkdefaultJobs();
-        $this->assertEquals(1, $activeJobs->count());
+        $this->assertCount(1, $activeJobs);
         //assert we now have 2 of our job (one good one broken)
-        $this->assertEquals(2, QueuedJobDescriptor::get()->count());
+        $this->assertCount(2, QueuedJobDescriptor::get());
 
         //test not adding a job when job is there already
         $svc->checkdefaultJobs();
-        $this->assertEquals(1, $activeJobs->count());
+        $this->assertCount(1, $activeJobs);
         //assert we now have 2 of our job (one good one broken)
-        $this->assertEquals(2, QueuedJobDescriptor::get()->count());
+        $this->assertCount(2, QueuedJobDescriptor::get());
 
         //test add jobs with various start dates
         $job = $activeJobs->first();
@@ -484,7 +487,7 @@ class QueuedJobsTest extends AbstractTest
         $activeJobs->removeAll();
         $svc->checkdefaultJobs();
         //assert one jobs currently active
-        $this->assertEquals(1, $activeJobs->count());
+        $this->assertCount(1, $activeJobs);
         $job = $activeJobs->first();
         $this->assertEquals(date('Y-m-d 12:00:00', strtotime('+1 day')), $job->StartAfter);
         //test alert email
