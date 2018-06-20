@@ -907,7 +907,7 @@ class QueuedJobService
      */
     protected function markStarted()
     {
-        if ($this->startedAt) {
+        if (!$this->startedAt) {
             $this->startedAt = DBDatetime::now()->Format('U');
         }
     }
