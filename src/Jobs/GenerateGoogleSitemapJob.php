@@ -4,16 +4,16 @@ namespace Symbiote\QueuedJobs\Jobs;
 
 use Exception;
 use Page;
-use SilverStripe\CMS\Model\ErrorPage;
 use SilverStripe\Control\Director;
+use SilverStripe\Core\Environment;
+use SilverStripe\Core\TempFolder;
+use SilverStripe\ErrorPage\ErrorPage;
 use SilverStripe\ORM\DB;
 use SilverStripe\ORM\FieldType\DBDatetime;
-use SilverStripe\ORM\Versioning\Versioned;
+use SilverStripe\Versioned\Versioned;
 use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
 use Symbiote\QueuedJobs\Services\QueuedJob;
 use Symbiote\QueuedJobs\Services\QueuedJobService;
-use SilverStripe\Core\Environment;
-use SilverStripe\Core\TempFolder;
 
 /**
  * A job for generating a site's google sitemap
@@ -77,7 +77,7 @@ class GenerateGoogleSitemapJob extends AbstractQueuedJob
 
         $restart = $this->currentStep == 0;
         if (!$this->tempFile || !file_exists($this->tempFile)) {
-            $tmpfile = tempnam(TempFolder::getTempFolder(), 'sitemap');
+            $tmpfile = tempnam(TempFolder::getTempFolder(BASE_PATH), 'sitemap');
             if (file_exists($tmpfile)) {
                 $this->tempFile = $tmpfile;
             }
@@ -97,7 +97,7 @@ class GenerateGoogleSitemapJob extends AbstractQueuedJob
         parent::prepareForRestart();
         // if the file we've been building is missing, lets fix it up
         if (!$this->tempFile || !file_exists($this->tempFile)) {
-            $tmpfile = tempnam(TempFolder::getTempFolder(), 'sitemap');
+            $tmpfile = tempnam(TempFolder::getTempFolder(BASE_PATH), 'sitemap');
             if (file_exists($tmpfile)) {
                 $this->tempFile = $tmpfile;
             }
@@ -129,7 +129,7 @@ class GenerateGoogleSitemapJob extends AbstractQueuedJob
         $ID = array_shift($remainingChildren);
 
         // get the page
-        $page = Versioned::get_by_stage('Page', 'Live', '"SiteTree_Live"."ID" = '.$ID);
+        $page = Versioned::get_by_stage(Page::class, Versioned::LIVE, '"SiteTree_Live"."ID" = '.$ID);
 
         if (!$page || !$page->Count()) {
             $this->addMessage("Page ID #$ID could not be found, skipping");
@@ -139,9 +139,10 @@ class GenerateGoogleSitemapJob extends AbstractQueuedJob
 
         if ($page && $page instanceof Page && !($page instanceof ErrorPage)) {
             if ($page->canView() && (!isset($page->Priority) || $page->Priority > 0)) {
+                /** @var DBDatetime $created */
                 $created = $page->dbObject('Created');
-                $now = new DBDatetime();
-                $now->value = date('Y-m-d H:i:s');
+                $now = DBDatetime::create();
+                $now->setValue(date('Y-m-d H:i:s'));
                 $versions = $page->Version;
                 $timediff = $now->format('U') - $created->format('U');
 

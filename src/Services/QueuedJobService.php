@@ -3,28 +3,26 @@
 namespace Symbiote\QueuedJobs\Services;
 
 use Exception;
+use Psr\Log\LoggerInterface;
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
 use SilverStripe\Control\Email\Email;
-use SilverStripe\Control\Session;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Convert;
 use SilverStripe\Core\Extensible;
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Core\Injector\Injector;
-use SilverStripe\Dev\SapphireTest;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
 use SilverStripe\ORM\FieldType\DBDatetime;
 use SilverStripe\Security\Member;
-use SilverStripe\Security\Permission;
 use SilverStripe\Security\Security;
-use Psr\Log\LoggerInterface;
 use SilverStripe\Subsites\Model\Subsite;
 use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
 use Symbiote\QueuedJobs\QJUtils;
+use Symbiote\QueuedJobs\Tasks\Engines\TaskRunnerEngine;
 
 /**
  * A service that can be used for starting, stopping and listing queued jobs.
@@ -1094,13 +1092,10 @@ class QueuedJobService
 
         // Begin main loop
         do {
-            if (class_exists('Subsite')) {
+            if (class_exists(Subsite::class)) {
                 // clear subsite back to default to prevent any subsite changes from leaking to
                 // subsequent actions
-                /**
-                 * @todo Check for 4.x compatibility with Subsites once namespacing is implemented
-                 */
-                \Subsite::changeSubsite(0);
+                Subsite::changeSubsite(0);
             }
 
             $job = $this->getNextPendingJob($name);
