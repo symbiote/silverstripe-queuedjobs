@@ -649,6 +649,7 @@ class QueuedJobService
                     Subsite::changeSubsite($job->SubsiteID);
 
                     // lets set the base URL as far as Director is concerned so that our URLs are correct
+                    /** @var Subsite $subsite */
                     $subsite = DataObject::get_by_id(Subsite::class, $job->SubsiteID);
                     if ($subsite && $subsite->exists()) {
                         $domain = $subsite->domain();
@@ -718,8 +719,7 @@ class QueuedJobService
                                         'file' => $e->getFile(),
                                         'line' => $e->getLine(),
                                     ]
-                                ),
-                                'ERROR'
+                                )
                             );
                             $this->getLogger()->error(
                                 $e->getMessage(),
@@ -746,8 +746,7 @@ class QueuedJobService
                                     __CLASS__ . '.JOB_STALLED',
                                     'Job stalled after {attempts} attempts - please check',
                                     ['attempts' => $stallCount]
-                                ),
-                                'ERROR'
+                                )
                             );
                             $jobDescriptor->JobStatus = QueuedJob::STATUS_BROKEN;
                         }
@@ -1029,7 +1028,7 @@ class QueuedJobService
      *          The number of seconds to include jobs that have just finished, allowing a job list to be built that
      *          includes recently finished jobs
      *
-     * @return QueuedJobDescriptor
+     * @return DataList
      */
     public function getJobList($type = null, $includeUpUntil = 0)
     {
