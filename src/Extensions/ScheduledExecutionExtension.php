@@ -89,9 +89,6 @@ class ScheduledExecutionExtension extends DataExtension
                 ReadonlyField::create('NextRunDate', _t(__CLASS__ . '.NEXT_RUN_DATE', 'Next run date'), $jobTime)
             ));
         }
-
-        $dt->getDateField()->setConfig('showcalendar', true);
-        $dt->getTimeField()->setConfig('showdropdown', true);
     }
 
     public function onBeforeWrite()
