@@ -54,10 +54,18 @@ class ScheduledExecutionExtension extends DataExtension
      */
     public function updateCMSFields(FieldList $fields)
     {
+        $fields->removeByName([
+            'ExecuteInterval',
+            'ExecuteEvery',
+            'ExecuteFree',
+            'FirstExecution'
+        ]);
+
         $fields->findOrMakeTab(
             'Root.Schedule',
             _t(__CLASS__ . '.ScheduleTabTitle', 'Schedule')
         );
+
         $fields->addFieldsToTab('Root.Schedule', array(
             $dt = DatetimeField::create('FirstExecution', _t(__CLASS__ . '.FIRST_EXECUTION', 'First Execution')),
             FieldGroup::create(
