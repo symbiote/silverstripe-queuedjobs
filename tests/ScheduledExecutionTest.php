@@ -2,6 +2,7 @@
 
 namespace Symbiote\QueuedJobs\Tests;
 
+use DateTime;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBDatetime;
@@ -99,16 +100,11 @@ class ScheduledExecutionTest extends AbstractTest
 
         $job = $test->ScheduledJob();
 
-        // should reschedule in 1 minute time
-        $expectedMinutes = date('i', time());
-        $expectedMinutes = intval($expectedMinutes, 10);
-        if ($expectedMinutes + 1 > 59) { // Wrap around the hour
-            $expectedMinutes = $expectedMinutes - 59;
-        }
-        $scheduledMinutes = substr($job->StartAfter, 14, 2);
-        $scheduledMinutes = intval($scheduledMinutes, 10);
+        $expected = new DateTime('+1 minute');
+        $actual = new DateTime($job->StartAfter);
 
-        $this->assertEquals($expectedMinutes + 1, $scheduledMinutes, 'Did not reschedule 1 minute later');
+        // Allow within 1 second.
+        $this->assertLessThanOrEqual(1, abs($actual->diff($expected)->s), 'Did not reschedule 1 minute later');
 
         // test a custom interval of 3 minutes
 
@@ -122,15 +118,9 @@ class ScheduledExecutionTest extends AbstractTest
 
         $job = $test->ScheduledJob();
 
-        // should reschedule in 3 minutes time
-        $expectedMinutes = date('i', time());
-        $expectedMinutes = intval($expectedMinutes, 10);
-        if ($expectedMinutes + 3 > 59) {
-            $expectedMinutes = $expectedMinutes - 59;
-        }
-        $scheduledMinutes = substr($job->StartAfter, 14, 2);
-        $scheduledMinutes = intval($scheduledMinutes, 10);
+        $expected = new DateTime('+3 minutes');
+        $actual = new DateTime($job->StartAfter);
 
-        $this->assertEquals($expectedMinutes + 3, $scheduledMinutes, 'Did not reschedule 3 minutes later');
+        $this->assertLessThanOrEqual(1, abs($actual->diff($expected)->s), 'Did not reschedule 3 minutes later');
     }
 }
