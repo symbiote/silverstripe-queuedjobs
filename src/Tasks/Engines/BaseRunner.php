@@ -5,6 +5,7 @@ namespace Symbiote\QueuedJobs\Tasks\Engines;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Convert;
 use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
+use Symbiote\QueuedJobs\Services\QueuedJobService;
 
 /**
  * Class BaseRunner
@@ -20,7 +21,7 @@ class BaseRunner
      */
     public function getService()
     {
-        return singleton('Symbiote\\QueuedJobs\\Services\\QueuedJobService');
+        return singleton(QueuedJobService::class);
     }
 
     /**
