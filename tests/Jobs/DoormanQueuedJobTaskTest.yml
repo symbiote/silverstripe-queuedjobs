@@ -1,0 +1,16 @@
+Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor:
+  dummy_job:
+    JobTitle: Dummy
+    Signature: 1b9dcebac8eefbef4052fe7693ee896f
+    Implementation: Symbiote\QueuedJobs\Tasks\DummyQueuedJob
+    StartAfter: 2015-01-01 09:00:00
+    JobStarted: NULL
+    JobRestarted: NULL
+    JobFinished: NULL
+    TotalSteps: 1
+    StepsProcessed: 0
+    LastProcessedCount: -1
+    ResumeCounts: 0
+    JobStatus: New
+    JobType: 2
+    RunAsID: 1
