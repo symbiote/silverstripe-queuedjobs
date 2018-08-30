@@ -206,6 +206,13 @@ class DoormanQueuedJobTask implements Task, Expires, Process, Cancellable
     public function isCancelled()
     {
         $this->refreshDescriptor();
-        return $this->descriptor->JobStatus === QueuedJob::STATUS_CANCELLED;
+
+        // Treat completed jobs as cancelled when it comes to how Doorman handles picking up jobs to run
+        $cancelledStates = [
+            QueuedJob::STATUS_CANCELLED,
+            QueuedJob::STATUS_COMPLETE,
+        ];
+
+        return in_array($this->descriptor->JobStatus, $cancelledStates, true);
     }
 }
