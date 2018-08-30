@@ -24,10 +24,12 @@ class DoormanRunner extends BaseRunner implements TaskRunnerEngine
      * Assign default rules for this task
      *
      * @param array $rules
+     * @return $this
      */
     public function setDefaultRules($rules)
     {
         $this->defaultRules = $rules;
+        return $this;
     }
 
     /**
