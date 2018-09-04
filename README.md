@@ -242,6 +242,26 @@ Symbiote\QueuedJobs\Jobs\CleanupJob:
     - Complete
 ```
 
+## Health Checking
+
+Jobs track their execution in steps - as the job runs it increments the "steps" that have been run. Periodically jobs
+are checked to ensure they are healthy. This asserts the count of steps on a job is always increasing between health
+checks. By default health checks are performed when a worker picks starts running a queue.
+
+In a multi-worker environment this can cause issues when health checks are performed too frequently. You can disable the
+automatic health check with the following configuration:
+
+```yaml
+Symbiote\QueuedJobs\Services\QueuedJobService:
+  disable_health_check: true
+```
+
+In addition to the config setting there is a task that can be used with a cron to ensure that unhealthy jobs are
+detected:
+
+```
+*/5 * * * * php /path/to/silverstripe/vendor/bin/sake dev/tasks/CheckJobHealthTask
+```
 
 ## Troubleshooting
 

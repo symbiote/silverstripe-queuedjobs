@@ -82,6 +82,18 @@ class QueuedJobService
     private static $time_limit = 0;
 
     /**
+     * Disable health checks that usually occur when a runner first picks up a queue. Note that completely disabling
+     * health checks could result in many jobs that are always marked as running - that will never be restarted. If
+     * this option is disabled you may alternatively use the build task
+     *
+     * @see \Symbiote\QueuedJobs\Tasks\CheckJobHealthTask
+     *
+     * @var bool
+     * @config
+     */
+    private static $disable_health_check = false;
+
+    /**
      * Timestamp (in seconds) when the queue was started
      *
      * @var int
@@ -377,6 +389,8 @@ class QueuedJobService
                 ]
             );
         }
+
+        return $stalledJobs->count();
     }
 
     /**
@@ -1074,7 +1088,9 @@ class QueuedJobService
      */
     public function runQueue($queue)
     {
-        $this->checkJobHealth($queue);
+        if (!self::config()->disable_health_check) {
+            $this->checkJobHealth($queue);
+        }
         $this->checkdefaultJobs($queue);
         $this->queueRunner->runQueue($queue);
     }
