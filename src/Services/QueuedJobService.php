@@ -434,8 +434,8 @@ class QueuedJobService
                         ]
                     );
                     Email::create()
-                        ->setTo(isset($jobConfig['email']) ? $jobConfig['email'] : Config::inst()->get('Email', 'queued_job_admin_email'))
-                        ->setFrom(Config::inst()->get('Email', 'queued_job_admin_email'))
+                        ->setTo(isset($jobConfig['email']) ? $jobConfig['email'] : Config::inst()->get(Email::class, 'queued_job_admin_email'))
+                        ->setFrom(Config::inst()->get(Email::class, 'queued_job_admin_email'))
                         ->setSubject('Default Job "' . $title . '" missing')
                         ->setData($jobConfig)
                         ->addData('Title', $title)
@@ -505,7 +505,13 @@ class QueuedJobService
         $from = Config::inst()->get(Email::class, 'admin_email');
         $to = Config::inst()->get(Email::class, 'queued_job_admin_email');
         $subject = _t(__CLASS__ . '.STALLED_JOB', 'Stalled job');
-        $mail = new Email($from, $to, $subject, $message);
+        $mail = Email::create($from, $to, $subject)
+            ->setData([
+                'JobID' => $stalledJob->ID,
+                'Message' => $message,
+                'Site' => Director::absoluteBaseURL(),
+            ])
+            ->setHTMLTemplate('QueuedJobsStalledJob');
         $mail->send();
     }
 
