@@ -434,7 +434,7 @@ class QueuedJobService
                         ]
                     );
                     Email::create()
-                        ->setTo(isset($jobConfig['email']) ? $jobConfig['email'] : Config::inst()->get('Email', 'queued_job_admin_email'))
+                        ->setTo(isset($jobConfig['email']) ? $jobConfig['email'] : Config::inst()->get('Email', 'admin_email'))
                         ->setFrom(Config::inst()->get('Email', 'queued_job_admin_email'))
                         ->setSubject('Default Job "' . $title . '" missing')
                         ->setData($jobConfig)
