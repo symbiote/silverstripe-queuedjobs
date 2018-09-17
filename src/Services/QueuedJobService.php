@@ -457,7 +457,7 @@ class QueuedJobService
                             Injector::inst()->createWithArgs($jobConfig['type'], $jobConfig['construct']),
                             date($jobConfig['startDateFormat'], strtotime($jobConfig['startTimeString']))
                         );
-                        $this->getLogger()->error(
+                        $this->getLogger()->info(
                             "Default Job config: $title has been re-added to the Queue",
                             [
                                 'file' => __FILE__,
