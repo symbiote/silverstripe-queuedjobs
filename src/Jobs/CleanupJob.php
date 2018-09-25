@@ -158,7 +158,7 @@ class CleanupJob extends AbstractQueuedJob implements QueuedJob
 
     private function reenqueue()
     {
-        if (Config::inst()->get('CleanupJob', 'is_enabled')) {
+        if (Config::inst()->get(self::class, 'is_enabled')) {
             $this->addMessage("Queueing the next Cleanup Job.");
             $cleanup = new CleanupJob();
             singleton('QueuedJobService')->queueJob($cleanup, date('Y-m-d H:i:s', time() + 86400));
