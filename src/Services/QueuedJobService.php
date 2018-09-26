@@ -586,7 +586,7 @@ class QueuedJobService
             return false;
         }
 
-        if (DB::getConn()->affectedRows() === 0 && $jobDescriptor->JobStatus !== QueuedJob::STATUS_INIT) {
+        if (DB::get_conn()->affectedRows() === 0 && $jobDescriptor->JobStatus !== QueuedJob::STATUS_INIT) {
             return false;
         }
 

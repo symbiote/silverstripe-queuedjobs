@@ -16,9 +16,9 @@ use SilverStripe\Core\Injector\Injector;
 class DoormanRunner extends BaseRunner implements TaskRunnerEngine
 {
     /**
-     * @var string
+     * @var string[]
      */
-    protected $defaultRules = array();
+    protected $defaultRules = [];
 
     /**
      * Assign default rules for this task
@@ -47,9 +47,9 @@ class DoormanRunner extends BaseRunner implements TaskRunnerEngine
      */
     public function runQueue($queue)
     {
-
         // split jobs out into multiple tasks...
 
+        /** @var ProcessManager $manager */
         $manager = Injector::inst()->create(ProcessManager::class);
         $manager->setWorker(BASE_PATH . "/vendor/silverstripe/framework/cli-script.php dev/tasks/ProcessJobQueueChildTask");
         $logPath = Environment::getEnv('SS_DOORMAN_LOGPATH');
