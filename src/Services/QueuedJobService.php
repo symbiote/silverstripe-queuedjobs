@@ -505,7 +505,13 @@ class QueuedJobService
         $from = Config::inst()->get(Email::class, 'admin_email');
         $to = Config::inst()->get(Email::class, 'queued_job_admin_email');
         $subject = _t(__CLASS__ . '.STALLED_JOB', 'Stalled job');
-        $mail = new Email($from, $to, $subject, $message);
+        $mail = Email::create($from, $to, $subject)
+            ->setData([
+                'JobID' => $stalledJob->ID,
+                'Message' => $message,
+                'Site' => Director::absoluteBaseURL(),
+            ])
+            ->setHTMLTemplate('QueuedJobsStalledJob');
         $mail->send();
     }
 
@@ -580,7 +586,7 @@ class QueuedJobService
             return false;
         }
 
-        if (DB::getConn()->affectedRows() === 0 && $jobDescriptor->JobStatus !== QueuedJob::STATUS_INIT) {
+        if (DB::get_conn()->affectedRows() === 0 && $jobDescriptor->JobStatus !== QueuedJob::STATUS_INIT) {
             return false;
         }
 
