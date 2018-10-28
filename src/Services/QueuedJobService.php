@@ -254,14 +254,8 @@ class QueuedJobService
         $messages = @unserialize($jobDescriptor->SavedJobMessages);
 
         if (!$jobData) {
-            // SS's convert:: function doesn't do this detection for us!!
-            if (function_exists('json_decode')) {
-                $jobData = json_decode($jobDescriptor->SavedJobData);
-                $messages = json_decode($jobDescriptor->SavedJobMessages);
-            } else {
-                $jobData = Convert::json2obj($jobDescriptor->SavedJobData);
-                $messages = Convert::json2obj($jobDescriptor->SavedJobMessages);
-            }
+            $jobData = json_decode($jobDescriptor->SavedJobData);
+            $messages = json_decode($jobDescriptor->SavedJobMessages);
         }
 
         $job->setJobData(
