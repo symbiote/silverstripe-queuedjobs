@@ -1,0 +1,8 @@
+---
+Name: queuedjobstests
+---
+SilverStripe\Core\Injector\Injector:
+  SilverStripe\Dev\State\SapphireTestState:
+    properties:
+      States:
+        queuedjobsstate: '%$Symbiote\QueuedJobs\Dev\State\QueuedJobsTestState'

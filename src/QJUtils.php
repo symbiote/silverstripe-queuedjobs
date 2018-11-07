@@ -91,7 +91,7 @@ class QJUtils
      */
     public function ajaxResponse($message, $status)
     {
-        return Convert::raw2json(array(
+        return json_encode(array(
             'message' => $message,
             'status' => $status,
         ));
