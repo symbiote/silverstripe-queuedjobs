@@ -41,6 +41,13 @@ class CleanupJob extends AbstractQueuedJob implements QueuedJob {
 	);
 
 	/**
+	 * Database query limit
+	 * @config
+	 * @var integer
+	 */
+	private static $query_limit = 100000;
+
+	/**
 	 * Check whether is enabled or not for BC
 	 * @config
 	 * @var boolean
@@ -79,6 +86,13 @@ class CleanupJob extends AbstractQueuedJob implements QueuedJob {
 	 * Clear out stale jobs based on the cleanup values
 	 */
 	public function process() {
+		// construct limit statement if query_limit is valid int value
+		$limit = '';
+		$query_limit = $this->config()->get('query_limit');
+		if (is_numeric($query_limit) && $query_limit >= 0) {
+			$limit = ' LIMIT ' . ((int)$query_limit);
+		}
+
 		$statusList = implode('\', \'', $this->config()->cleanup_statuses);
 		switch($this->config()->cleanup_method) {
 			// If Age, we need to get jobs that are at least n days old
@@ -94,8 +108,8 @@ class CleanupJob extends AbstractQueuedJob implements QueuedJob {
 					'SELECT "ID" 
 					FROM "QueuedJobDescriptor" 
 					WHERE "JobStatus" 
-					IN (\'' . $statusList . '\')
-					AND "LastEdited" < \'' . $cutOff .'\''
+					IN (\'' . $statusList . '\') 
+					AND "LastEdited" < \'' . $cutOff . '\'' . $limit
 				);
 				$staleJobs = $stale->column("ID");
 				break;
@@ -115,7 +129,7 @@ class CleanupJob extends AbstractQueuedJob implements QueuedJob {
 					WHERE "ID" 
 					NOT IN (\'' . $freshJobIDs . '\') 
 					AND "JobStatus" 
-					IN (\'' . $statusList . '\')'
+					IN (\'' . $statusList . '\')' . $limit
 				);
 				$staleJobs = $stale->column("ID");
 				break;
