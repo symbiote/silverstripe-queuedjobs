@@ -222,13 +222,14 @@ Each of these methods will have a value associated with it - this is an integer,
 For "age", this will be converted into days; for "number", it is the minimum number of records to keep, sorted by LastEdited.
 The default value is 30, as we are expecting days.
 
-You can also determine which JobStatuses are allowed to be cleaned up. The default setting is to clean up "Broken" and "Complete" jobs. All other statuses can be configured with `cleanup_statuses`.
+You can determine which JobStatuses are allowed to be cleaned up. The default setting is to clean up "Broken" and "Complete" jobs. All other statuses can be configured with `cleanup_statuses`. You can also define `query_limit` to limit the number of rows queried/deleted by the cleanup job (defaults to 100k).
 
 The default configuration looks like this:
 
 ```yaml
 Symbiote\QueuedJobs\Jobs\CleanupJob:
   is_enabled: false
+  query_limit: 100000
   cleanup_method: "age"
   cleanup_value: 30
   cleanup_statuses:
