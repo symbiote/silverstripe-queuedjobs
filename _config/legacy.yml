@@ -1,0 +1,4 @@
+SilverStripe\ORM\DatabaseAdmin:
+  classname_value_remapping:
+    QueuedJobDescriptor: Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor
+    QueuedJobRule: Symbiote\QueuedJobs\DataObjects\QueuedJobRule
