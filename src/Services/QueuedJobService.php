@@ -265,10 +265,9 @@ class QueuedJobService
         $jobData = @unserialize($jobDescriptor->SavedJobData);
         $messages = @unserialize($jobDescriptor->SavedJobMessages);
 
-        if (!$jobData) {
-            $jobData = json_decode($jobDescriptor->SavedJobData);
-            $messages = json_decode($jobDescriptor->SavedJobMessages);
-        }
+        // try decoding as json if null
+        $jobData = $jobData ?: json_decode($jobDescriptor->SavedJobData);
+        $messages = $messages ?: json_decode($jobDescriptor->SavedJobMessages);
 
         $job->setJobData(
             $jobDescriptor->TotalSteps,
