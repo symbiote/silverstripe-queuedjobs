@@ -15,6 +15,8 @@ use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Forms\GridField\GridFieldAddNewButton;
 use SilverStripe\Forms\GridField\GridFieldConfig_RecordEditor;
 use SilverStripe\Forms\GridField\GridFieldDataColumns;
+use SilverStripe\Forms\GridField\GridFieldPageCount;
+use SilverStripe\Forms\GridField\GridFieldToolbarHeader;
 use SilverStripe\Forms\TextareaField;
 use SilverStripe\ORM\DataList;
 use SilverStripe\Security\Permission;
@@ -106,7 +108,11 @@ class QueuedJobsAdmin extends ModelAdmin
             ->addComponent(new GridFieldQueuedJobExecute('resume', function ($record) {
                 return $record->JobStatus == QueuedJob::STATUS_PAUSED || $record->JobStatus == QueuedJob::STATUS_BROKEN;
             }))
-            ->removeComponentsByType(GridFieldAddNewButton::class);
+            ->removeComponentsByType([
+                GridFieldAddNewButton::class,
+                GridFieldPageCount::class,
+                GridFieldToolbarHeader::class,
+            ]);
 
         // Set messages to HTML display format
         $formatting = array(
@@ -121,7 +127,7 @@ class QueuedJobsAdmin extends ModelAdmin
         /** @skipUpgrade */
         $grid = GridField::create(
             'QueuedJobDescriptor',
-            _t(__CLASS__ . '.JobsFieldTitle', 'Jobs'),
+            '',
             $list,
             $gridFieldConfig
         );
