@@ -235,7 +235,7 @@ class QueuedJobService
      * Copies data from a job into a descriptor for persisting
      *
      * @param QueuedJob $job
-     * @param JobDescriptor $jobDescriptor
+     * @param QueuedJobDescriptor $jobDescriptor
      */
     protected function copyJobToDescriptor($job, $jobDescriptor)
     {
@@ -675,6 +675,7 @@ class QueuedJobService
                 // while not finished
                 while (!$job->jobFinished() && !$broken) {
                     // see that we haven't been set to 'paused' or otherwise by another process
+                    /** @var QueuedJobDescriptor $jobDescriptor */
                     $jobDescriptor = DataObject::get_by_id(
                         QueuedJobDescriptor::class,
                         (int)$jobId
