@@ -45,7 +45,7 @@ class QueuedJobsAdminTest extends FunctionalTest
         // The shutdown handler doesn't play nicely with SapphireTest's database handling
         QueuedJobService::config()->set('use_shutdown_function', false);
 
-        $this->admin = new QueuedJobsAdmin;
+        $this->admin = new QueuedJobsAdmin();
         $this->admin->setRequest(new HTTPRequest('GET', '/'));
         $this->admin->getRequest()->setSession($this->session());
 
@@ -61,7 +61,7 @@ class QueuedJobsAdminTest extends FunctionalTest
      */
     public function testConstructorParamsShouldBeATextarea()
     {
-        $fields = $this->admin->getEditForm('foo', new FieldList)->Fields();
+        $fields = $this->admin->getEditForm('foo', new FieldList())->Fields();
         $this->assertInstanceOf(TextareaField::class, $fields->fieldByName('JobParams'));
     }
 
@@ -80,7 +80,7 @@ class QueuedJobsAdminTest extends FunctionalTest
                 return $job instanceof PublishItemsJob && $job->rootID === 'foo123';
             }));
 
-        $form = $this->admin->getEditForm('foo', new FieldList);
+        $form = $this->admin->getEditForm('foo', new FieldList());
         $form->Fields()->fieldByName('JobParams')->setValue(implode(PHP_EOL, ['foo123', 'bar']));
         $form->Fields()->fieldByName('JobType')->setValue(PublishItemsJob::class);
 

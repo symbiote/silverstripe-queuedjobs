@@ -64,18 +64,19 @@ that processes this queue. Its time of execution can be left a little longer.
 use Symbiote\QueuedJobs\Services\QueuedJobService;
 
 $publish = new PublishItemsJob(21);
-singleton(QueuedJobService::class)->queueJob($publish);
+QueuedJobService::singleton()->queueJob($publish);
 ```
 
 * To schedule a job to be executed at some point in the future, pass a date through with the call to queueJob
 The following will run the publish job in 1 day's time from now.
 
 ```php
+use SilverStripe\ORM\FieldType\DBDatetime;
 use Symbiote\QueuedJobs\Services\QueuedJobService;
 
 $publish = new PublishItemsJob(21);
-singleton(QueuedJobService::class)
-    ->queueJob($publish, date('Y-m-d H:i:s', time() + 86400));
+QueuedJobService::singleton()
+    ->queueJob($publish, DBDatetime::create()->setValue(DBDatetime::now()->getTimestamp() + 86400)->Rfc2822());
 ```
 
 ## Using Doorman for running jobs

@@ -10,6 +10,7 @@ use SilverStripe\Forms\NumericField;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\Forms\TextField;
 use SilverStripe\ORM\DataExtension;
+use SilverStripe\ORM\FieldType\DBDatetime;
 use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
 use Symbiote\QueuedJobs\Jobs\ScheduledExecutionJob;
 use Symbiote\QueuedJobs\Services\QueuedJobService;
@@ -50,7 +51,7 @@ class ScheduledExecutionExtension extends DataExtension
     );
 
     /**
-     * @param FieldSet $fields
+     * @param FieldList $fields
      */
     public function updateCMSFields(FieldList $fields)
     {
@@ -122,12 +123,12 @@ class ScheduledExecutionExtension extends DataExtension
 
             if (!$this->owner->ScheduledJobID) {
                 $job = new ScheduledExecutionJob($this->owner);
-                $time = date('Y-m-d H:i:s');
+                $time = DBDatetime::now()->Rfc2822();
                 if ($this->owner->FirstExecution) {
-                    $time = date('Y-m-d H:i:s', strtotime($this->owner->FirstExecution));
+                    $time = DBDatetime::create()->setValue($this->owner->FirstExecution)->Rfc2822();
                 }
 
-                $this->owner->ScheduledJobID = singleton(QueuedJobService::class)
+                $this->owner->ScheduledJobID = QueuedJobService::singleton()
                     ->queueJob($job, $time);
             }
         }

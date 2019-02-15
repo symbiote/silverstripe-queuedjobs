@@ -18,7 +18,6 @@ use SilverStripe\Forms\GridField\GridFieldDataColumns;
 use SilverStripe\Forms\GridField\GridFieldPageCount;
 use SilverStripe\Forms\GridField\GridFieldToolbarHeader;
 use SilverStripe\Forms\TextareaField;
-use SilverStripe\ORM\DataList;
 use SilverStripe\Security\Permission;
 use SilverStripe\Security\Security;
 use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
@@ -97,8 +96,7 @@ class QueuedJobsAdmin extends ModelAdmin
 
         $filter = $this->jobQueue->getJobListFilter(null, self::config()->max_finished_jobs_age);
 
-        $list = DataList::create(QueuedJobDescriptor::class);
-        $list = $list->where($filter)->sort('Created', 'DESC');
+        $list = QueuedJobDescriptor::get()->where($filter)->sort('Created', 'DESC');
 
         $gridFieldConfig = GridFieldConfig_RecordEditor::create()
             ->addComponent(new GridFieldQueuedJobExecute('execute'))
@@ -144,7 +142,11 @@ class QueuedJobsAdmin extends ModelAdmin
                     unset($types[$class]);
                 }
             }
-            $jobType = DropdownField::create('JobType', _t(__CLASS__ . '.CREATE_JOB_TYPE', 'Create job of type'), $types);
+            $jobType = DropdownField::create(
+                'JobType',
+                _t(__CLASS__ . '.CREATE_JOB_TYPE', 'Create job of type'),
+                $types
+            );
             $jobType->setEmptyString('(select job to create)');
             $form->Fields()->push($jobType);
 
@@ -190,8 +192,8 @@ class QueuedJobsAdmin extends ModelAdmin
             $params = isset($data['JobParams']) ? explode(PHP_EOL, $data['JobParams']) : array();
             $time = isset($data['JobStart']) && is_array($data['JobStart']) ? implode(" ", $data['JobStart']) : null;
 
-            // If the user has select the European date format as their setting then replace '/' with '-' in the date string so PHP
-            // treats the date as this format.
+            // If the user has select the European date format as their setting then replace '/' with '-' in the
+            // date string so PHP treats the date as this format.
             if (Security::getCurrentUser()->DateFormat == self::$date_format_european) {
                 $time = str_replace('/', '-', $time);
             }

@@ -177,7 +177,10 @@ class CleanupJob extends AbstractQueuedJob implements QueuedJob
         if (Config::inst()->get(self::class, 'is_enabled')) {
             $this->addMessage("Queueing the next Cleanup Job.");
             $cleanup = new CleanupJob();
-            QueuedJobService::singleton()->queueJob($cleanup, date('Y-m-d H:i:s', time() + 86400));
+            QueuedJobService::singleton()->queueJob(
+                $cleanup,
+                DBDatetime::create()->setValue(DBDatetime::now()->getTimestamp() + 86400)->Rfc2822()
+            );
         }
     }
 }

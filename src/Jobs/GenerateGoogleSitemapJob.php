@@ -5,7 +5,9 @@ namespace Symbiote\QueuedJobs\Jobs;
 use Exception;
 use Page;
 use SilverStripe\Control\Director;
+use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Environment;
+use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Core\TempFolder;
 use SilverStripe\ErrorPage\ErrorPage;
 use SilverStripe\ORM\DB;
@@ -25,7 +27,10 @@ use Symbiote\QueuedJobs\Services\QueuedJobService;
  */
 class GenerateGoogleSitemapJob extends AbstractQueuedJob
 {
+    use Configurable;
+
     /**
+     * @config
      * @var int
      */
     private static $regenerate_time = 43200;
@@ -129,7 +134,7 @@ class GenerateGoogleSitemapJob extends AbstractQueuedJob
         $ID = array_shift($remainingChildren);
 
         // get the page
-        $page = Versioned::get_by_stage(Page::class, Versioned::LIVE, '"SiteTree_Live"."ID" = '.$ID);
+        $page = Versioned::get_by_stage(Page::class, Versioned::LIVE, '"SiteTree_Live"."ID" = ' . $ID);
 
         if (!$page || !$page->Count()) {
             $this->addMessage("Page ID #$ID could not be found, skipping");
@@ -142,7 +147,7 @@ class GenerateGoogleSitemapJob extends AbstractQueuedJob
                 /** @var DBDatetime $created */
                 $created = $page->dbObject('Created');
                 $now = DBDatetime::create();
-                $now->setValue(date('Y-m-d H:i:s'));
+                $now->setValue(DBDatetime::now()->Rfc2822());
                 $versions = $page->Version;
                 $timediff = $now->format('U') - $created->format('U');
 
@@ -150,15 +155,15 @@ class GenerateGoogleSitemapJob extends AbstractQueuedJob
                 // Page for a rough estimate of it's changing frequency.
                 $period = $timediff / ($versions + 1);
 
-                if ($period > 60*60*24*365) { // > 1 year
+                if ($period > 60 * 60 * 24 * 365) { // > 1 year
                     $page->ChangeFreq = 'yearly';
-                } elseif ($period > 60*60*24*30) { // > ~1 month
+                } elseif ($period > 60 * 60 * 24 * 30) { // > ~1 month
                     $page->ChangeFreq = 'monthly';
-                } elseif ($period > 60*60*24*7) { // > 1 week
+                } elseif ($period > 60 * 60 * 24 * 7) { // > 1 week
                     $page->ChangeFreq = 'weekly';
-                } elseif ($period > 60*60*24) { // > 1 day
+                } elseif ($period > 60 * 60 * 24) { // > 1 day
                     $page->ChangeFreq = 'daily';
-                } elseif ($period > 60*60) { // > 1 hour
+                } elseif ($period > 60 * 60) { // > 1 hour
                     $page->ChangeFreq = 'hourly';
                 } else { // < 1 hour
                     $page->ChangeFreq = 'always';
@@ -197,7 +202,7 @@ class GenerateGoogleSitemapJob extends AbstractQueuedJob
         $content .= file_get_contents($this->tempFile);
         $content .= '</urlset>';
 
-        $sitemap = Director::baseFolder() .'/sitemap.xml';
+        $sitemap = Director::baseFolder() . '/sitemap.xml';
 
         file_put_contents($sitemap, $content);
 
@@ -205,7 +210,12 @@ class GenerateGoogleSitemapJob extends AbstractQueuedJob
             unlink($this->tempFile);
         }
 
-        $nextgeneration = new GenerateGoogleSitemapJob();
-        singleton(QueuedJobService::class)->queueJob($nextgeneration, date('Y-m-d H:i:s', time() + self::$regenerate_time));
+        $nextgeneration = Injector::inst()->create(GenerateGoogleSitemapJob::class);
+        QueuedJobService::singleton()->queueJob(
+            $nextgeneration,
+            DBDatetime::create()->setValue(
+                DBDatetime::now()->getTimestamp() + $this->config()->get('regenerate_time')
+            )->Rfc2822()
+        );
     }
 }

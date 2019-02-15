@@ -3,7 +3,6 @@
 namespace Symbiote\QueuedJobs;
 
 use SilverStripe\Core\Convert;
-use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\DB;
 
 /**
@@ -41,7 +40,8 @@ class QJUtils
 
             if (strpos($field, '.')) {
                 list($tb, $fl) = explode('.', $field);
-                $string .= $sep . $quoteChar . $tb . $quoteChar . '.' . $quoteChar . $fl . $quoteChar . " $operator " . $value;
+                $string .= $sep . $quoteChar . $tb . $quoteChar . '.' . $quoteChar . $fl . $quoteChar
+                    . " $operator " . $value;
             } else {
                 if (is_numeric($field)) {
                     $string .= $sep . $value;
@@ -68,8 +68,9 @@ class QJUtils
                 $return[] = $this->recursiveQuote($v);
             }
 
-            return '('.implode(',', $return).')';
-        } elseif (is_null($val)) {
+            return '(' . implode(',', $return) . ')';
+        }
+        if (is_null($val)) {
             $val = 'NULL';
         } elseif (is_int($val)) {
             $val = (int) $val;
