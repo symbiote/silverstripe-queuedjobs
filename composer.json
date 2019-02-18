@@ -22,5 +22,8 @@
 	},
     "extra": {
         "installer-name": "queuedjobs"
+    },
+    "replace": {
+        "silverstripe/queuedjobs": "self.version"
     }
 }
