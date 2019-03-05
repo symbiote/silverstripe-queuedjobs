@@ -474,21 +474,24 @@ class QueuedJobService
     {
         if ($stalledJob->ResumeCounts < static::config()->get('stall_threshold')) {
             $stalledJob->restart();
+            $logLevel = 'warning';
             $message = _t(
                 __CLASS__ . '.STALLED_JOB_RESTART_MSG',
-                'A job named {name} appears to have stalled. It will be stopped and restarted, please login to make sure it has continued',
-                ['name' => $stalledJob->JobTitle]
+                'A job named {name} (#{id}) appears to have stalled. It will be stopped and restarted, please login to make sure it has continued',
+                ['name' => $stalledJob->JobTitle, 'id' => $stalledJob->ID]
             );
         } else {
             $stalledJob->pause();
+            $logLevel = 'error';
             $message = _t(
                 __CLASS__ . '.STALLED_JOB_MSG',
-                'A job named {name} appears to have stalled. It has been paused, please login to check it',
-                ['name' => $stalledJob->JobTitle]
+                'A job named {name} (#{id}) appears to have stalled. It has been paused, please login to check it',
+                ['name' => $stalledJob->JobTitle, 'id' => $stalledJob->ID]
             );
         }
 
-        $this->getLogger()->error(
+        $this->getLogger()->log(
+            $logLevel,
             $message,
             [
                 'file' => __FILE__,
@@ -498,14 +501,17 @@ class QueuedJobService
         $from = Config::inst()->get(Email::class, 'admin_email');
         $to = Config::inst()->get(Email::class, 'queued_job_admin_email');
         $subject = _t(__CLASS__ . '.STALLED_JOB', 'Stalled job');
-        $mail = Email::create($from, $to, $subject)
-            ->setData([
-                'JobID' => $stalledJob->ID,
-                'Message' => $message,
-                'Site' => Director::absoluteBaseURL(),
-            ])
-            ->setHTMLTemplate('QueuedJobsStalledJob');
-        $mail->send();
+
+        if ($to) {
+            $mail = Email::create($from, $to, $subject)
+                ->setData([
+                    'JobID' => $stalledJob->ID,
+                    'Message' => $message,
+                    'Site' => Director::absoluteBaseURL(),
+                ])
+                ->setHTMLTemplate('QueuedJobsStalledJob');
+            $mail->send();
+        }
     }
 
     /**
