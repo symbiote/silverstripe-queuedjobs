@@ -82,9 +82,9 @@ class QueuedJobsAdmin extends ModelAdmin
 
     /**
      * @config The number of seconds to include jobs that have finished
-     * default: 300 (5 minutes), examples: 3600(1h), 86400(1d)
+     * default: 7200 (2 hours), examples: 3600(1h), 86400(1d)
      */
-    private static $max_finished_jobs_age = 300;
+    private static $max_finished_jobs_age = 7200;
 
     /**
      * @param int $id
