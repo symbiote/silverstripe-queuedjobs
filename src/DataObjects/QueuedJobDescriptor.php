@@ -129,9 +129,10 @@ class QueuedJobDescriptor extends DataObject
             'JobTitle' => _t(__CLASS__ . '.TABLE_TITLE', 'Title'),
             'Created' => _t(__CLASS__ . '.TABLE_ADDE', 'Added'),
             'JobStarted' => _t(__CLASS__ . '.TABLE_STARTED', 'Started'),
+            'JobFinished' => _t(__CLASS__ . '.TABLE_FINISHED', 'Finished'),
 //          'JobRestarted' => _t(__CLASS__ . '.TABLE_RESUMED', 'Resumed'),
             'StartAfter' => _t(__CLASS__ . '.TABLE_START_AFTER', 'Start After'),
-            'JobType' => _t(__CLASS__ . '.JOB_TYPE', 'Job Type'),
+            'JobTypeString' => _t(__CLASS__ . '.JOB_TYPE', 'Job Type'),
             'JobStatus' => _t(__CLASS__ . '.TABLE_STATUS', 'Status'),
             'LastMessage' => _t(__CLASS__ . '.TABLE_MESSAGES', 'Message'),
             'StepsProcessed' => _t(__CLASS__ . '.TABLE_NUM_PROCESSED', 'Done'),
@@ -285,6 +286,30 @@ class QueuedJobDescriptor extends DataObject
     }
 
     /**
+     * Return a string representation of the numeric JobType
+     * @return string
+     */
+    public function getJobTypeString()
+    {
+        $map = $this->getJobTypeValues();
+        return isset($map[$this->JobType]) ? $map[$this->JobType] : '(Unknown)';
+    }
+
+
+    /**
+     * Return a map of numeric JobType values to localisable string representations.
+     * @return array
+     */
+    public function getJobTypeValues()
+    {
+        return [
+            QueuedJob::IMMEDIATE => _t(__CLASS__ . '.TYPE_IMMEDIATE', 'Immediate'),
+            QueuedJob::QUEUED => _t(__CLASS__ . '.TYPE_QUEUED', 'Queued'),
+            QueuedJob::LARGE => _t(__CLASS__ . '.TYPE_LARGE', 'Large'),
+        ];
+    }
+
+    /**
      * @return FieldList
      */
     public function getCMSFields()
@@ -292,11 +317,7 @@ class QueuedJobDescriptor extends DataObject
         $fields = parent::getCMSFields();
         $fields->replaceField(
             'JobType',
-            new DropdownField('JobType', $this->fieldLabel('JobType'), [
-                QueuedJob::IMMEDIATE => 'Immediate',
-                QueuedJob::QUEUED => 'Queued',
-                QueuedJob::LARGE => 'Large',
-            ])
+            new DropdownField('JobType', $this->fieldLabel('JobType'), $this->getJobTypeValues())
         );
         $statuses = [
             QueuedJob::STATUS_NEW,
