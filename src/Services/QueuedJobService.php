@@ -9,7 +9,6 @@ use SilverStripe\Control\Director;
 use SilverStripe\Control\Email\Email;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Config\Configurable;
-use SilverStripe\Core\Convert;
 use SilverStripe\Core\Extensible;
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Core\Injector\Injector;
@@ -235,7 +234,7 @@ class QueuedJobService
      * Copies data from a job into a descriptor for persisting
      *
      * @param QueuedJob $job
-     * @param JobDescriptor $jobDescriptor
+     * @param QueuedJobDescriptor $jobDescriptor
      */
     protected function copyJobToDescriptor($job, $jobDescriptor)
     {
@@ -600,6 +599,7 @@ class QueuedJobService
     public function runJob($jobId)
     {
         // first retrieve the descriptor
+        /** @var QueuedJobDescriptor $jobDescriptor */
         $jobDescriptor = DataObject::get_by_id(
             QueuedJobDescriptor::class,
             (int)$jobId
@@ -708,7 +708,11 @@ class QueuedJobService
                     }
 
                     if (!$broken) {
-                        // Collect output as job messages as well as sending it to the screen
+                        // Inject real-time logger
+                        $queuedJobLogger = new QueuedJobLogger($job, $jobDescriptor);
+                        Injector::inst()->registerService($queuedJobLogger, LoggerInterface::class);
+
+                        // Collect output as job messages as well as sending it to the screen after processing
                         $obLogger = function ($buffer, $phase) use ($job, $jobDescriptor) {
                             $job->addMessage($buffer);
                             if ($jobDescriptor) {
