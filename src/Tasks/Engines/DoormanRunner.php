@@ -51,7 +51,9 @@ class DoormanRunner extends BaseRunner implements TaskRunnerEngine
 
         /** @var ProcessManager $manager */
         $manager = Injector::inst()->create(ProcessManager::class);
-        $manager->setWorker(BASE_PATH . "/vendor/silverstripe/framework/cli-script.php dev/tasks/ProcessJobQueueChildTask");
+        $manager->setWorker(
+            BASE_PATH . "/vendor/silverstripe/framework/cli-script.php dev/tasks/ProcessJobQueueChildTask"
+        );
         $logPath = Environment::getEnv('SS_DOORMAN_LOGPATH');
         if ($logPath) {
             $manager->setLogPath($logPath);

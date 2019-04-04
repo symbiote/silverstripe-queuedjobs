@@ -38,7 +38,7 @@ class ScheduledExecutionTest extends AbstractTest
 
     public function testScheduledExecutionTimes()
     {
-        $test = new TestScheduledDataObject;
+        $test = new TestScheduledDataObject();
 
         $test->Title = 'Test execute of stuff';
         $test->write();
@@ -67,7 +67,7 @@ class ScheduledExecutionTest extends AbstractTest
 
     public function testScheduledExecutionInterval()
     {
-        $test = new TestScheduledDataObject;
+        $test = new TestScheduledDataObject();
 
         $test->Title = 'Test execute at custom interval sizes';
         $test->write();

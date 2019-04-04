@@ -3,8 +3,8 @@
 namespace Symbiote\QueuedJobs\Tasks;
 
 use SilverStripe\Control\HTTPRequest;
-use Symbiote\QueuedJobs\Services\QueuedJob;
 use SilverStripe\Dev\BuildTask;
+use Symbiote\QueuedJobs\Services\QueuedJob;
 use Symbiote\QueuedJobs\Services\QueuedJobService;
 
 /**

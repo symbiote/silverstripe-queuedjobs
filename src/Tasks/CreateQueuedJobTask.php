@@ -5,6 +5,7 @@ namespace Symbiote\QueuedJobs\Tasks;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Dev\BuildTask;
+use SilverStripe\ORM\FieldType\DBDatetime;
 use Symbiote\QueuedJobs\Services\QueuedJobService;
 
 /**
@@ -33,7 +34,8 @@ class CreateQueuedJobTask extends BuildTask
     {
         return _t(
             __CLASS__ . '.Description',
-            'A task used to create a queued job. Pass the queued job class name as the "name" parameter, pass an optional "start" parameter (parseable by strtotime) to set a start time for the job.'
+            'A task used to create a queued job. Pass the queued job class name as the "name" parameter, '
+            . 'pass an optional "start" parameter (parseable by strtotime) to set a start time for the job.'
         );
     }
 
@@ -44,24 +46,24 @@ class CreateQueuedJobTask extends BuildTask
     {
         if (isset($request['name']) && ClassInfo::exists($request['name'])) {
             $clz = $request['name'];
-            $job = new $clz;
+            $job = new $clz();
         } else {
             $job = new DummyQueuedJob(mt_rand(10, 100));
         }
 
         if (isset($request['start'])) {
             $start = strtotime($request['start']);
-            $now = time();
+            $now = DBDatetime::now()->getTimestamp();
             if ($start >= $now) {
-                $friendlyStart = date('Y-m-d H:i:s', $start);
-                echo "Job ".$request['name']. " queued to start at: <b>".$friendlyStart."</b>";
-                singleton(QueuedJobService::class)->queueJob($job, $start);
+                $friendlyStart = DBDatetime::create()->setValue($start)->Rfc2822();
+                echo "Job " . $request['name'] . " queued to start at: <b>" . $friendlyStart . "</b>";
+                QueuedJobService::singleton()->queueJob($job, $start);
             } else {
                 echo "'start' parameter must be a date/time in the future, parseable with strtotime";
             }
         } else {
             echo "Job Queued";
-            singleton(QueuedJobService::class)->queueJob($job);
+            QueuedJobService::singleton()->queueJob($job);
         }
     }
 }

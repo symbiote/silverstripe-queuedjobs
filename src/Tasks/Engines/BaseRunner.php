@@ -4,6 +4,7 @@ namespace Symbiote\QueuedJobs\Tasks\Engines;
 
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Convert;
+use SilverStripe\ORM\FieldType\DBDatetime;
 use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
 use Symbiote\QueuedJobs\Services\QueuedJobService;
 
@@ -21,7 +22,7 @@ class BaseRunner
      */
     public function getService()
     {
-        return singleton(QueuedJobService::class);
+        return QueuedJobService::singleton();
     }
 
     /**
@@ -33,7 +34,7 @@ class BaseRunner
     protected function writeLogLine($line, $prefix = null)
     {
         if (!$prefix) {
-            $prefix = '[' . date('Y-m-d H:i:s') . '] ';
+            $prefix = '[' . DBDatetime::now()->Rfc2822() . '] ';
         }
 
         if (Director::is_cli()) {

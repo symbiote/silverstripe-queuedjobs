@@ -6,16 +6,18 @@ use SilverStripe\Assets\Filesystem;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Convert;
 use SilverStripe\Forms\DropdownField;
+use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\LiteralField;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBField;
+use SilverStripe\Security\Member;
 use SilverStripe\Security\Permission;
 use Symbiote\QueuedJobs\Services\QueuedJob;
 use Symbiote\QueuedJobs\Services\QueuedJobService;
 
 /**
  * A QueuedJobDescriptor is the stored representation of a piece of work that could take a while to execute,
- * because of which it is desireable to not have it executing in parallel to other jobs.
+ * because of which it is desirable to not have it executing in parallel to other jobs.
  *
  * A queued job should always attempt to report how many potential dataobjects will be affected by being executed;
  * this will determine which queue it is placed within so that some shorter jobs can execute immediately without needing
@@ -74,7 +76,7 @@ class QueuedJobDescriptor extends DataObject
      * @var array
      */
     private static $has_one = [
-        'RunAs' => 'SilverStripe\\Security\\Member',
+        'RunAs' => Member::class,
     ];
 
     /**
@@ -173,7 +175,7 @@ class QueuedJobDescriptor extends DataObject
             $this->JobStatus = QueuedJob::STATUS_WAIT;
             $this->ResumeCounts++;
             $this->write();
-            singleton(QueuedJobService::class)->startJob($this);
+            QueuedJobService::singleton()->startJob($this);
             return true;
         }
         return false;
@@ -210,7 +212,7 @@ class QueuedJobDescriptor extends DataObject
     {
         // make sure our temp dir is in place. This is what will be inotify watched
         $jobDir = Config::inst()->get(QueuedJobService::class, 'cache_dir');
-        if ($jobDir{0} != '/') {
+        if ($jobDir{0} !== '/') {
             $jobDir = TEMP_FOLDER . '/' . $jobDir;
         }
 
@@ -222,7 +224,7 @@ class QueuedJobDescriptor extends DataObject
 
     public function execute()
     {
-        $service = singleton(QueuedJobService::class);
+        $service = QueuedJobService::singleton();
         $service->runJob($this->ID);
     }
 
@@ -248,14 +250,17 @@ class QueuedJobDescriptor extends DataObject
     /**
      * Get all job messages as an HTML unordered list.
      *
-     * @return string|void
+     * @return string|null
      */
     public function getMessages()
     {
         if (strlen($this->SavedJobMessages)) {
             $messages = @unserialize($this->SavedJobMessages);
             if (!empty($messages)) {
-                return DBField::create_field('HTMLText', '<ul><li>' . nl2br(implode('</li><li>', Convert::raw2xml($messages))) . '</li></ul>');
+                return DBField::create_field(
+                    'HTMLText',
+                    '<ul><li>' . nl2br(implode('</li><li>', Convert::raw2xml($messages))) . '</li></ul>'
+                );
             }
             return '';
         }
@@ -264,15 +269,14 @@ class QueuedJobDescriptor extends DataObject
     /**
      * Get the last job message as a raw string
      *
-     * @return string|void
+     * @return string|null
      */
     public function getLastMessage()
     {
         if (strlen($this->SavedJobMessages)) {
             $msgs = @unserialize($this->SavedJobMessages);
             if (is_array($msgs) && sizeof($msgs)) {
-                $msg = array_pop($msgs);
-                return $msg;
+                return array_pop($msgs);
             }
         }
     }
@@ -338,7 +342,7 @@ class QueuedJobDescriptor extends DataObject
         $fields->removeByName('SavedJobMessages');
 
         if (strlen($this->SavedJobMessages)) {
-            $fields->addFieldToTab('Root.Messages', new LiteralField('Messages', $this->getMessages()));
+            $fields->addFieldToTab('Root.Messages', LiteralField::create('Messages', $this->getMessages()));
         }
 
         if (Permission::check('ADMIN')) {
