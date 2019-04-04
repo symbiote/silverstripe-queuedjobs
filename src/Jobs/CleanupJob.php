@@ -2,11 +2,13 @@
 
 namespace Symbiote\QueuedJobs\Jobs;
 
-use SilverStripe\Core\Config\Config;
+use SilverStripe\Core\Config\Configurable;
+use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\DB;
 use SilverStripe\ORM\FieldType\DBDatetime;
 use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
 use Symbiote\QueuedJobs\Services\QueuedJob;
+use Symbiote\QueuedJobs\Services\QueuedJobService;
 
 /**
  * An queued job to clean out the QueuedJobDescriptor Table
@@ -14,8 +16,9 @@ use Symbiote\QueuedJobs\Services\QueuedJob;
  *
  * @author Andrew Aitken-Fincham <andrew@symbiote.com.au>
  */
-class CleanupJob extends AbstractQueuedJob implements QueuedJob
+class CleanupJob extends AbstractQueuedJob
 {
+    use Configurable;
 
     /**
      * How we will determine "stale"
@@ -65,15 +68,6 @@ class CleanupJob extends AbstractQueuedJob implements QueuedJob
     private static $is_enabled = false;
 
     /**
-     * Required because we aren't extending object
-     * @return Config_ForClass
-     */
-    public function config()
-    {
-        return Config::forClass(get_called_class());
-    }
-
-    /**
      * Defines the title of the job
      * @return string
      */
@@ -107,8 +101,8 @@ class CleanupJob extends AbstractQueuedJob implements QueuedJob
             $limit = ' LIMIT ' . ((int)$query_limit);
         }
 
-        $statusList = implode('\', \'', $this->config()->cleanup_statuses);
-        switch ($this->config()->cleanup_method) {
+        $statusList = implode('\', \'', $this->config()->get('cleanup_statuses'));
+        switch ($this->config()->get('cleanup_method')) {
             // If Age, we need to get jobs that are at least n days old
             case "age":
                 $cutOff = date(
@@ -167,16 +161,14 @@ class CleanupJob extends AbstractQueuedJob implements QueuedJob
         // let's make sure there is a cleanupJob in the queue
         $this->reenqueue();
         $this->isComplete = true;
-        return;
     }
-
 
     private function reenqueue()
     {
-        if (Config::inst()->get('CleanupJob', 'is_enabled')) {
+        if ($this->config()->get('is_enabled')) {
             $this->addMessage("Queueing the next Cleanup Job.");
-            $cleanup = new CleanupJob();
-            singleton('QueuedJobService')->queueJob($cleanup, date('Y-m-d H:i:s', time() + 86400));
+            $cleanup = Injector::inst()->create(CleanupJob::class);
+            QueuedJobService::singleton()->queueJob($cleanup, date('Y-m-d H:i:s', time() + 86400));
         }
     }
 }
