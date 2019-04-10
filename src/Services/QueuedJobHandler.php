@@ -28,7 +28,7 @@ class QueuedJobHandler extends AbstractProcessingHandler
     /**
      * @return QueuedJob
      */
-    public function getJob(): QueuedJob
+    public function getJob()
     {
         return $this->job;
     }
