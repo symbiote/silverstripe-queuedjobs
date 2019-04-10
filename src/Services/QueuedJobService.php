@@ -709,12 +709,15 @@ class QueuedJobService
                     }
 
                     if (!$broken) {
-                        // Inject real-time logger
+                        // Inject real-time log handler
                         $logger = Injector::inst()->get(LoggerInterface::class);
-                        if (!($logger instanceof Logger)) {
-                            throw new InvalidArgumentException("Monolog needs to be set as the LoggerInterface!");
+                        if ($logger instanceof Logger) {
+                            $logger->pushHandler(new QueuedJobHandler($job, $jobDescriptor));
+                        } else {
+                            if ($logger instanceof LoggerInterface) {
+                                $logger->warning('Monolog not found, messages will not output while the job is running');
+                            }
                         }
-                        $logger->pushHandler(new QueuedJobHandler($job, $jobDescriptor));
 
                         // Collect output as job messages as well as sending it to the screen after processing
                         $obLogger = function ($buffer, $phase) use ($job, $jobDescriptor) {
