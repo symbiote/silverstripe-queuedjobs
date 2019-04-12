@@ -735,10 +735,12 @@ class QueuedJobService
                         // Inject real-time log handler
                         $logger = Injector::inst()->get(LoggerInterface::class);
                         if ($logger instanceof Logger) {
-                            $logger->pushHandler(new QueuedJobHandler($job, $jobDescriptor));
+                            $logger->pushHandler(QueuedJobHandler::create($job, $jobDescriptor));
                         } else {
                             if ($logger instanceof LoggerInterface) {
-                                $logger->warning('Monolog not found, messages will not output while the job is running');
+                                $logger->warning(
+                                    'Monolog not found, messages will not output while the job is running'
+                                );
                             }
                         }
 
