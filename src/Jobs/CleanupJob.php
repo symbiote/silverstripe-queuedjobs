@@ -7,6 +7,7 @@ use SilverStripe\ORM\DB;
 use SilverStripe\ORM\FieldType\DBDatetime;
 use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
 use Symbiote\QueuedJobs\Services\QueuedJob;
+use Symbiote\QueuedJobs\Services\QueuedJobService;
 
 /**
  * An queued job to clean out the QueuedJobDescriptor Table
@@ -173,10 +174,13 @@ class CleanupJob extends AbstractQueuedJob implements QueuedJob
 
     private function reenqueue()
     {
-        if (Config::inst()->get('CleanupJob', 'is_enabled')) {
+        if (Config::inst()->get(self::class, 'is_enabled')) {
             $this->addMessage("Queueing the next Cleanup Job.");
             $cleanup = new CleanupJob();
-            singleton('QueuedJobService')->queueJob($cleanup, date('Y-m-d H:i:s', time() + 86400));
+            QueuedJobService::singleton()->queueJob(
+                $cleanup,
+                DBDatetime::create()->setValue(DBDatetime::now()->getTimestamp() + 86400)->Rfc2822()
+            );
         }
     }
 }

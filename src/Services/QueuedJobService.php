@@ -182,7 +182,7 @@ class QueuedJobService
             ],
         ];
 
-        $existing = DataList::create(QueuedJobDescriptor::class)
+        $existing = QueuedJobDescriptor::get()
             ->filter($filter)
             ->first();
 
@@ -218,12 +218,12 @@ class QueuedJobService
     /**
      * Start a job (or however the queue handler determines it should be started)
      *
-     * @param JobDescriptor $jobDescriptor
-     * @param date $startAfter
+     * @param QueuedJobDescriptor $jobDescriptor
+     * @param string $startAfter
      */
     public function startJob($jobDescriptor, $startAfter = null)
     {
-        if ($startAfter && strtotime($startAfter) > time()) {
+        if ($startAfter && strtotime($startAfter) > DBDatetime::now()->getTimestamp()) {
             $this->queueHandler->scheduleJob($jobDescriptor, $startAfter);
         } else {
             // immediately start it on the queue, however that works
@@ -245,7 +245,7 @@ class QueuedJobService
         $jobDescriptor->StepsProcessed = $data->currentStep;
         if ($data->isComplete) {
             $jobDescriptor->JobStatus = QueuedJob::STATUS_COMPLETE;
-            $jobDescriptor->JobFinished = date('Y-m-d H:i:s');
+            $jobDescriptor->JobFinished = DBDatetime::now()->Rfc2822();
         }
 
         $jobDescriptor->SavedJobData = serialize($data->jobData);
@@ -284,7 +284,7 @@ class QueuedJobService
      *
      * @param string $type Job type
      *
-     * @return QueuedJobDescriptor
+     * @return QueuedJobDescriptor|false
      */
     public function getNextPendingJob($type = null)
     {
@@ -295,6 +295,7 @@ class QueuedJobService
             ->sort('ID', 'ASC');
 
         // see if there's any blocked jobs that need to be resumed
+        /** @var QueuedJobDescriptor $waitingJob */
         $waitingJob = $list
             ->filter('JobStatus', QueuedJob::STATUS_WAIT)
             ->first();
@@ -312,6 +313,7 @@ class QueuedJobService
         }
 
         // Otherwise, lets find any 'new' jobs that are waiting to execute
+        /** @var QueuedJobDescriptor $newJob */
         $newJob = $list
             ->filter('JobStatus', QueuedJob::STATUS_NEW)
             ->where(sprintf(
@@ -427,8 +429,12 @@ class QueuedJobService
                         ]
                     );
                     Email::create()
-                        ->setTo(isset($jobConfig['email']) ? $jobConfig['email'] : Config::inst()->get(Email::class, 'queued_job_admin_email'))
-                        ->setFrom(Config::inst()->get(Email::class, 'queued_job_admin_email'))
+                        ->setTo(
+                            isset($jobConfig['email'])
+                                ? $jobConfig['email']
+                                : Config::inst()->get(Email::class, 'queued_job_admin_email')
+                        )
+                        ->setFrom(Config::inst()->get(Email::class, 'admin_email'))
                         ->setSubject('Default Job "' . $title . '" missing')
                         ->setData($jobConfig)
                         ->addData('Title', $title)
@@ -436,7 +442,10 @@ class QueuedJobService
                         ->setHTMLTemplate('QueuedJobsDefaultJob')
                         ->send();
                     if (isset($jobConfig['recreate']) && $jobConfig['recreate']) {
-                        if (!array_key_exists('construct', $jobConfig) || !isset($jobConfig['startDateFormat']) || !isset($jobConfig['startTimeString'])) {
+                        if (!array_key_exists('construct', $jobConfig)
+                            || !isset($jobConfig['startDateFormat'])
+                            || !isset($jobConfig['startTimeString'])
+                        ) {
                             $this->getLogger()->error(
                                 "Default Job config: $title incorrectly set up. Please check the readme for examples",
                                 [
@@ -446,11 +455,11 @@ class QueuedJobService
                             );
                             continue;
                         }
-                        singleton('Symbiote\\QueuedJobs\\Services\\QueuedJobService')->queueJob(
+                        QueuedJobService::singleton()->queueJob(
                             Injector::inst()->createWithArgs($jobConfig['type'], $jobConfig['construct']),
                             date($jobConfig['startDateFormat'], strtotime($jobConfig['startTimeString']))
                         );
-                        $this->getLogger()->error(
+                        $this->getLogger()->info(
                             "Default Job config: $title has been re-added to the Queue",
                             [
                                 'file' => __FILE__,
@@ -474,21 +483,25 @@ class QueuedJobService
     {
         if ($stalledJob->ResumeCounts < static::config()->get('stall_threshold')) {
             $stalledJob->restart();
+            $logLevel = 'warning';
             $message = _t(
                 __CLASS__ . '.STALLED_JOB_RESTART_MSG',
-                'A job named {name} appears to have stalled. It will be stopped and restarted, please login to make sure it has continued',
-                ['name' => $stalledJob->JobTitle]
+                'A job named {name} (#{id}) appears to have stalled. It will be stopped and restarted, please '
+                . 'login to make sure it has continued',
+                ['name' => $stalledJob->JobTitle, 'id' => $stalledJob->ID]
             );
         } else {
             $stalledJob->pause();
+            $logLevel = 'error';
             $message = _t(
                 __CLASS__ . '.STALLED_JOB_MSG',
-                'A job named {name} appears to have stalled. It has been paused, please login to check it',
-                ['name' => $stalledJob->JobTitle]
+                'A job named {name} (#{id}) appears to have stalled. It has been paused, please login to check it',
+                ['name' => $stalledJob->JobTitle, 'id' => $stalledJob->ID]
             );
         }
 
-        $this->getLogger()->error(
+        $this->getLogger()->log(
+            $logLevel,
             $message,
             [
                 'file' => __FILE__,
@@ -498,14 +511,17 @@ class QueuedJobService
         $from = Config::inst()->get(Email::class, 'admin_email');
         $to = Config::inst()->get(Email::class, 'queued_job_admin_email');
         $subject = _t(__CLASS__ . '.STALLED_JOB', 'Stalled job');
-        $mail = Email::create($from, $to, $subject)
-            ->setData([
-                'JobID' => $stalledJob->ID,
-                'Message' => $message,
-                'Site' => Director::absoluteBaseURL(),
-            ])
-            ->setHTMLTemplate('QueuedJobsStalledJob');
-        $mail->send();
+
+        if ($to) {
+            $mail = Email::create($from, $to, $subject)
+                ->setData([
+                    'JobID' => $stalledJob->ID,
+                    'Message' => $message,
+                    'Site' => Director::absoluteBaseURL(),
+                ])
+                ->setHTMLTemplate('QueuedJobsStalledJob');
+            $mail->send();
+        }
     }
 
     /**
@@ -520,11 +536,13 @@ class QueuedJobService
      *          The Job descriptor of a job to prepare for execution
      *
      * @return QueuedJob|boolean
+     * @throws Exception
      */
     protected function initialiseJob(QueuedJobDescriptor $jobDescriptor)
     {
         // create the job class
         $impl = $jobDescriptor->Implementation;
+        /** @var QueuedJob $job */
         $job = Injector::inst()->create($impl);
         /* @var $job QueuedJob */
         if (!$job) {
@@ -596,6 +614,7 @@ class QueuedJobService
      *          The ID of the job to start executing
      *
      * @return boolean
+     * @throws Exception
      */
     public function runJob($jobId)
     {
@@ -617,6 +636,7 @@ class QueuedJobService
         // We need to use $_SESSION directly because SS ties the session to a controller that no longer exists at
         // this point of execution in some circumstances
         $originalUserID = isset($_SESSION['loggedInAs']) ? $_SESSION['loggedInAs'] : 0;
+        /** @var Member|null $originalUser */
         $originalUser = $originalUserID
             ? DataObject::get_by_id(Member::class, $originalUserID)
             : null;
@@ -643,9 +663,9 @@ class QueuedJobService
 
                 // get the job ready to begin.
                 if (!$jobDescriptor->JobStarted) {
-                    $jobDescriptor->JobStarted = date('Y-m-d H:i:s');
+                    $jobDescriptor->JobStarted = DBDatetime::now()->Rfc2822();
                 } else {
-                    $jobDescriptor->JobRestarted = date('Y-m-d H:i:s');
+                    $jobDescriptor->JobRestarted = DBDatetime::now()->Rfc2822();
                 }
 
                 // Only write to job as "Running" if 'isComplete' was NOT set to true
@@ -676,6 +696,7 @@ class QueuedJobService
                 // while not finished
                 while (!$job->jobFinished() && !$broken) {
                     // see that we haven't been set to 'paused' or otherwise by another process
+                    /** @var QueuedJobDescriptor $jobDescriptor */
                     $jobDescriptor = DataObject::get_by_id(
                         QueuedJobDescriptor::class,
                         (int)$jobId
@@ -702,9 +723,11 @@ class QueuedJobService
                     }
                     if ($jobDescriptor->JobStatus != QueuedJob::STATUS_RUN) {
                         // we've been paused by something, so we'll just exit
-                        $job->addMessage(
-                            _t(__CLASS__ . '.JOB_PAUSED', 'Job paused at {time}', ['time' => date('Y-m-d H:i:s')])
-                        );
+                        $job->addMessage(_t(
+                            __CLASS__ . '.JOB_PAUSED',
+                            'Job paused at {time}',
+                            ['time' => DBDatetime::now()->Rfc2822()]
+                        ));
                         $broken = true;
                     }
 
@@ -712,10 +735,12 @@ class QueuedJobService
                         // Inject real-time log handler
                         $logger = Injector::inst()->get(LoggerInterface::class);
                         if ($logger instanceof Logger) {
-                            $logger->pushHandler(new QueuedJobHandler($job, $jobDescriptor));
+                            $logger->pushHandler(QueuedJobHandler::create($job, $jobDescriptor));
                         } else {
                             if ($logger instanceof LoggerInterface) {
-                                $logger->warning('Monolog not found, messages will not output while the job is running');
+                                $logger->warning(
+                                    'Monolog not found, messages will not output while the job is running'
+                                );
                             }
                         }
 
@@ -834,6 +859,7 @@ class QueuedJobService
                 }
 
                 if ($job->jobFinished()) {
+                    /** @var AbstractQueuedJob|QueuedJob $job */
                     $job->afterComplete();
                     $jobDescriptor->cleanupJob();
                 }
@@ -1052,7 +1078,7 @@ class QueuedJobService
      *          The number of seconds to include jobs that have just finished, allowing a job list to be built that
      *          includes recently finished jobs
      *
-     * @return DataList
+     * @return DataList|QueuedJobDescriptor[]
      */
     public function getJobList($type = null, $includeUpUntil = 0)
     {
@@ -1079,7 +1105,9 @@ class QueuedJobService
 
         $filter = ['JobStatus <>' => QueuedJob::STATUS_COMPLETE];
         if ($includeUpUntil) {
-            $filter['JobFinished > '] = date('Y-m-d H:i:s', time() - $includeUpUntil);
+            $filter['JobFinished > '] = DBDatetime::create()->setValue(
+                DBDatetime::now()->getTimestamp() - $includeUpUntil
+            )->Rfc2822();
         }
 
         $filter = $util->dbQuote($filter, ' OR ');
@@ -1098,7 +1126,7 @@ class QueuedJobService
      */
     public function runQueue($queue)
     {
-        if (!self::config()->disable_health_check) {
+        if (!self::config()->get('disable_health_check')) {
             $this->checkJobHealth($queue);
         }
         $this->checkdefaultJobs($queue);

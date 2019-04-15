@@ -2,7 +2,6 @@
 
 namespace Symbiote\QueuedJobs\Tests;
 
-use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
@@ -10,8 +9,8 @@ use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
 use Symbiote\QueuedJobs\Services\QueuedJob;
 use Symbiote\QueuedJobs\Services\QueuedJobService;
 use Symbiote\QueuedJobs\Tests\QueuedJobsTest\TestExceptingJob;
-use Symbiote\QueuedJobs\Tests\QueuedJobsTest\TestQueuedJob;
 use Symbiote\QueuedJobs\Tests\QueuedJobsTest\TestQJService;
+use Symbiote\QueuedJobs\Tests\QueuedJobsTest\TestQueuedJob;
 
 /**
  * @author Marcus Nyeholt <marcus@symbiote.com.au>
@@ -331,7 +330,11 @@ class QueuedJobsTest extends AbstractTest
         $this->assertEquals(0, $descriptor->StepsProcessed);
         $this->assertEquals(0, $descriptor->LastProcessedCount);
         $this->assertEquals(1, $descriptor->ResumeCounts);
-        $this->assertContains('A job named A Test job appears to have stalled. It will be stopped and restarted, please login to make sure it has continued', $logger->getMessages());
+        $this->assertContains(
+            'A job named A Test job appears to have stalled. It will be stopped and restarted, please login to '
+            . 'make sure it has continued',
+            $logger->getMessages()
+        );
 
         // Run 2 - First restart (work is done)
         $descriptor->JobStatus = QueuedJob::STATUS_RUN;
@@ -368,7 +371,11 @@ class QueuedJobsTest extends AbstractTest
         $this->assertEquals(1, $descriptor->StepsProcessed);
         $this->assertEquals(1, $descriptor->LastProcessedCount);
         $this->assertEquals(2, $descriptor->ResumeCounts);
-        $this->assertContains('A job named A Test job appears to have stalled. It will be stopped and restarted, please login to make sure it has continued', $logger->getMessages());
+        $this->assertContains(
+            'A job named A Test job appears to have stalled. It will be stopped and restarted, please login '
+            . 'to make sure it has continued',
+            $logger->getMessages()
+        );
 
         // Run 3 - Second and last restart (no work is done)
         $descriptor->JobStatus = QueuedJob::STATUS_RUN;
@@ -383,7 +390,10 @@ class QueuedJobsTest extends AbstractTest
         $descriptor = QueuedJobDescriptor::get()->byID($id);
         $this->assertEquals(QueuedJob::STATUS_PAUSED, $descriptor->JobStatus);
         $this->assertEmpty($nextJob);
-        $this->assertContains('A job named A Test job appears to have stalled. It has been paused, please login to check it', $logger->getMessages());
+        $this->assertContains(
+            'A job named A Test job appears to have stalled. It has been paused, please login to check it',
+            $logger->getMessages()
+        );
     }
 
     public function testExceptionWithMemoryExhaustion()

@@ -3,6 +3,9 @@
 namespace Symbiote\QueuedJobs\Workers;
 
 use SilverStripe\ORM\DataList;
+use SilverStripe\ORM\FieldType\DBDatetime;
+use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
+use Symbiote\QueuedJobs\Services\QueuedJobService;
 
 /**
  * @author marcus@symbiote.com.au
@@ -36,10 +39,10 @@ if (interface_exists('GearmanHandler')) {
         public function jobqueueExecute($jobId)
         {
             $this->queuedJobService->checkJobHealth();
-            $job = DataList::create('Symbiote\\QueuedJobs\\DataObjects\\QueuedJobDescriptor')->byID($jobId);
+            $job = QueuedJobDescriptor::get()->byID($jobId);
             if ($job) {
                 // check that we're not trying to execute something tooo soon
-                if (strtotime($job->StartAfter) > time()) {
+                if (strtotime($job->StartAfter) > DBDatetime::now()->getTimestamp()) {
                     return;
                 }
 

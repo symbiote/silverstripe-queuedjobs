@@ -2,10 +2,11 @@
 
 namespace Symbiote\QueuedJobs\Tasks;
 
+use SilverStripe\ORM\FieldType\DBDatetime;
 use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
 use Symbiote\QueuedJobs\Services\QueuedJob;
 
-class DummyQueuedJob extends AbstractQueuedJob implements QueuedJob
+class DummyQueuedJob extends AbstractQueuedJob
 {
     /**
      * @param int $number
@@ -45,10 +46,11 @@ class DummyQueuedJob extends AbstractQueuedJob implements QueuedJob
     {
         $times = $this->times;
         // needed due to quirks with __set
-        $times[] = date('Y-m-d H:i:s');
+        $time = DBDatetime::now()->Rfc2822();
+        $times[] = $time;
         $this->times = $times;
 
-        $this->addMessage('Updated time to ' . date('Y-m-d H:i:s'));
+        $this->addMessage('Updated time to ' . $time);
         sleep(1);
 
         // make sure we're incrementing

@@ -2,6 +2,7 @@
 
 namespace Symbiote\QueuedJobs\Services;
 
+use SilverStripe\ORM\FieldType\DBDatetime;
 use SilverStripe\Subsites\State\SubsiteState;
 use stdClass;
 use SilverStripe\Core\Config\Config;
@@ -73,7 +74,7 @@ abstract class AbstractQueuedJob implements QueuedJob
 
     /**
      * @param string $name
-     * @return DataObject|void
+     * @return DataObject|null
      */
     protected function getObject($name = 'Object')
     {
@@ -103,7 +104,7 @@ abstract class AbstractQueuedJob implements QueuedJob
      */
     protected function randomSignature()
     {
-        return md5(get_class($this) . time() . mt_rand(0, 100000));
+        return md5(get_class($this) . DBDatetime::now()->getTimestamp() . mt_rand(0, 100000));
     }
 
     /**
@@ -237,7 +238,7 @@ abstract class AbstractQueuedJob implements QueuedJob
     public function addMessage($message, $severity = 'INFO')
     {
         $severity = strtoupper($severity);
-        $this->messages[] = '[' . date('Y-m-d H:i:s') . "][$severity] $message";
+        $this->messages[] = '[' . DBDatetime::now()->Rfc2822() . "][$severity] $message";
     }
 
     /**

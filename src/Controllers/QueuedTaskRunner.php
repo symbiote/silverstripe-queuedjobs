@@ -2,7 +2,9 @@
 
 namespace Symbiote\QueuedJobs\Controllers;
 
+use SilverStripe\Admin\AdminRootController;
 use SilverStripe\Control\Director;
+use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Core\Convert;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\BuildTask;
@@ -45,7 +47,10 @@ class QueuedTaskRunner extends TaskRunner
         if (!Director::is_cli()) {
             $renderer = new DebugView();
             echo $renderer->renderHeader();
-            echo $renderer->renderInfo("SilverStripe Development Tools: Tasks (QueuedJobs version)", Director::absoluteBaseURL());
+            echo $renderer->renderInfo(
+                "SilverStripe Development Tools: Tasks (QueuedJobs version)",
+                Director::absoluteBaseURL()
+            );
             $base = Director::absoluteBaseURL();
 
             echo "<div class=\"options\">";
@@ -62,7 +67,8 @@ class QueuedTaskRunner extends TaskRunner
                 $immediateLink = $base . "dev/tasks/" . $task['segment'];
 
                 echo "<li><p>";
-                echo "<a href=\"$queueLink\">" . $task['title'] . "</a> <a style=\"font-size: 80%; padding-left: 20px\" href=\"$immediateLink\">[run immediately]</a><br />";
+                echo "<a href=\"$queueLink\">" . $task['title'] . "</a> <a style=\"font-size: 80%; padding-left: 20px\""
+                    . " href=\"$immediateLink\">[run immediately]</a><br />";
                 echo "<span class=\"description\">" . $task['description'] . "</span>";
                 echo "</p></li>\n";
             }
@@ -131,7 +137,8 @@ class QueuedTaskRunner extends TaskRunner
                 $jobID = Injector::inst()->get(QueuedJobService::class)->queueJob($job);
 
                 $message('Done: queued with job ID ' . $jobID);
-                $adminLink = Director::baseURL() . "admin/queuedjobs/" . str_replace('\\', '-', QueuedJobDescriptor::class);
+                $adminUrl = Director::baseURL() . AdminRootController::config()->get('url_base');
+                $adminLink = $adminUrl . "/queuedjobs/" . str_replace('\\', '-', QueuedJobDescriptor::class);
                 $message("Visit <a href=\"$adminLink\">queued jobs admin</a> to see job status");
                 return;
             }

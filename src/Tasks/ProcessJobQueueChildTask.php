@@ -38,6 +38,6 @@ class ProcessJobQueueChildTask extends BuildTask
      */
     protected function getService()
     {
-        return singleton(QueuedJobService::class);
+        return QueuedJobService::singleton();
     }
 }

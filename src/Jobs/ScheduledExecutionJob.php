@@ -2,7 +2,9 @@
 
 namespace Symbiote\QueuedJobs\Jobs;
 
+use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\ORM\FieldType\DBDatetime;
 use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
 use Symbiote\QueuedJobs\Services\QueuedJobService;
 
@@ -74,11 +76,11 @@ class ScheduledExecutionJob extends AbstractQueuedJob
             }
 
             $next = strtotime($timeStr);
-            if ($next > time()) {
+            if ($next > DBDatetime::now()->getTimestamp()) {
                 // in the future
-                $nextGen = date('Y-m-d H:i:s', $next);
-                $nextId = singleton(QueuedJobService::class)->queueJob(
-                    new ScheduledExecutionJob($object, $this->timesExecuted + 1),
+                $nextGen = DBDatetime::create()->setValue($next)->Rfc2822();
+                $nextId = QueuedJobService::singleton()->queueJob(
+                    Injector::inst()->create(ScheduledExecutionJob::class, $object, $this->timesExecuted + 1),
                     $nextGen
                 );
                 $object->ScheduledJobID = $nextId;

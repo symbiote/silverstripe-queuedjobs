@@ -2,12 +2,10 @@
 <ruleset name="SilverStripe">
     <description>CodeSniffer ruleset for SilverStripe coding conventions.</description>
 
-    <!-- base rules are PSR-2 -->
-    <rule ref="PSR2">
+    <!-- base rules are PSR-12 -->
+    <rule ref="PSR12">
         <!-- Current exclusions -->
         <exclude name="PSR1.Methods.CamelCapsMethodName"/>
         <exclude name="Squiz.Classes.ValidClassName.NotCamelCaps"/>
-        <exclude name="Generic.Files.LineLength.TooLong"/>
     </rule>
 </ruleset>
-
