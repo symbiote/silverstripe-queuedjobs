@@ -21,6 +21,8 @@ class QueuedJobHandler extends AbstractProcessingHandler
 
     public function __construct(QueuedJob $job, QueuedJobDescriptor $jobDescriptor)
     {
+        parent::__construct($job, $jobDescriptor);
+
         $this->job = $job;
         $this->jobDescriptor = $jobDescriptor;
     }

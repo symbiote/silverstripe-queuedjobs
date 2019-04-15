@@ -735,7 +735,19 @@ class QueuedJobService
                         // Inject real-time log handler
                         $logger = Injector::inst()->get(LoggerInterface::class);
                         if ($logger instanceof Logger) {
-                            $logger->pushHandler(QueuedJobHandler::create($job, $jobDescriptor));
+                            // Check if there is already a handler
+                            $exists = false;
+                            foreach ($logger->getHandlers() as $handler) {
+                                if ($handler instanceof QueuedJobHandler) {
+                                    $exists = true;
+                                    break;
+                                }
+                            }
+
+                            if (!$exists) {
+                                // Add the handler
+                                $logger->pushHandler(QueuedJobHandler::create($job, $jobDescriptor));
+                            }
                         } else {
                             if ($logger instanceof LoggerInterface) {
                                 $logger->warning(
