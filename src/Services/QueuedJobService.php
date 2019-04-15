@@ -3,6 +3,7 @@
 namespace Symbiote\QueuedJobs\Services;
 
 use Exception;
+use Monolog\Logger;
 use Psr\Log\LoggerInterface;
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
@@ -731,7 +732,31 @@ class QueuedJobService
                     }
 
                     if (!$broken) {
-                        // Collect output as job messages as well as sending it to the screen
+                        // Inject real-time log handler
+                        $logger = Injector::inst()->get(LoggerInterface::class);
+                        if ($logger instanceof Logger) {
+                            // Check if there is already a handler
+                            $exists = false;
+                            foreach ($logger->getHandlers() as $handler) {
+                                if ($handler instanceof QueuedJobHandler) {
+                                    $exists = true;
+                                    break;
+                                }
+                            }
+
+                            if (!$exists) {
+                                // Add the handler
+                                $logger->pushHandler(QueuedJobHandler::create($job, $jobDescriptor));
+                            }
+                        } else {
+                            if ($logger instanceof LoggerInterface) {
+                                $logger->warning(
+                                    'Monolog not found, messages will not output while the job is running'
+                                );
+                            }
+                        }
+
+                        // Collect output as job messages as well as sending it to the screen after processing
                         $obLogger = function ($buffer, $phase) use ($job, $jobDescriptor) {
                             $job->addMessage($buffer);
                             if ($jobDescriptor) {
