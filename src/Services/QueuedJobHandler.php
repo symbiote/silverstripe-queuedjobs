@@ -21,7 +21,7 @@ class QueuedJobHandler extends AbstractProcessingHandler
 
     public function __construct(QueuedJob $job, QueuedJobDescriptor $jobDescriptor)
     {
-        parent::__construct($job, $jobDescriptor);
+        parent::__construct();
 
         $this->job = $job;
         $this->jobDescriptor = $jobDescriptor;
@@ -48,12 +48,19 @@ class QueuedJobHandler extends AbstractProcessingHandler
      *
      * @param  array $record
      * @return void
-     * @throws \SilverStripe\ORM\ValidationException
      */
     protected function write(array $record)
     {
-        $this->job->addMessage($record['message']);
+        $this->handleBatch([$record]);
+    }
+
+    public function handleBatch(array $records)
+    {
+        foreach ($records as $record) {
+            $this->job->addMessage($record['message']);
+        };
         $this->jobDescriptor->SavedJobMessages = serialize($this->job->getJobData()->messages);
+
         $this->jobDescriptor->write();
     }
 }
