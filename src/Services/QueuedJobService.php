@@ -3,6 +3,7 @@
 namespace Symbiote\QueuedJobs\Services;
 
 use Exception;
+use Monolog\Handler\BufferHandler;
 use Monolog\Logger;
 use Psr\Log\LoggerInterface;
 use SilverStripe\Control\Controller;
@@ -746,7 +747,19 @@ class QueuedJobService
 
                             if (!$exists) {
                                 // Add the handler
-                                $logger->pushHandler(QueuedJobHandler::create($job, $jobDescriptor));
+                                /** @var QueuedJobHandler $queuedJobHandler */
+                                $queuedJobHandler = QueuedJobHandler::create($job, $jobDescriptor);
+
+                                // We only write for every 100 file
+                                $bufferHandler = new BufferHandler(
+                                    $queuedJobHandler,
+                                    100,
+                                    Logger::DEBUG,
+                                    true,
+                                    true
+                                );
+
+                                $logger->pushHandler($bufferHandler);
                             }
                         } else {
                             if ($logger instanceof LoggerInterface) {
@@ -790,6 +803,11 @@ class QueuedJobService
                             );
                             $jobDescriptor->JobStatus =  QueuedJob::STATUS_BROKEN;
                             $this->extend('updateJobDescriptorAndJobOnException', $jobDescriptor, $job, $e);
+                        }
+
+                        // Write any remaining batched messages at the end
+                        if (isset($bufferHandler)) {
+                            $bufferHandler->flush();
                         }
 
                         ob_end_flush();
