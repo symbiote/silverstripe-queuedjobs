@@ -422,7 +422,7 @@ class QueuedJobService
                     $jobConfig['filter']
                 ));
                 if (!$job->count()) {
-                    $this->getLogger()->error(
+                    $this->getLogger()->info(
                         "Default Job config: $title was missing from Queue",
                         [
                             'file' => __FILE__,
