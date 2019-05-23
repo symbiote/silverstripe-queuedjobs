@@ -9,6 +9,7 @@ use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
 use Symbiote\QueuedJobs\Jobs\DoormanQueuedJobTask;
 use Symbiote\QueuedJobs\Services\QueuedJob;
 use SilverStripe\Core\Injector\Injector;
+use Symbiote\QueuedJobs\Services\QueuedJobService;
 
 /**
  * Runs all jobs through the doorman engine
@@ -47,6 +48,13 @@ class DoormanRunner extends BaseRunner implements TaskRunnerEngine
      */
     public function runQueue($queue)
     {
+        // check if queue can be processed
+        $service = QueuedJobService::singleton();
+        if ($service->isAtMaxJobs()) {
+            $service->getLogger()->info('Not processing queue as jobs are at max initialisation limit.');
+            return;
+        }
+
         // split jobs out into multiple tasks...
 
         /** @var ProcessManager $manager */

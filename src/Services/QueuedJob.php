@@ -85,6 +85,23 @@ interface QueuedJob
     public function getJobType();
 
     /**
+     * Specifies what user ID should be when running the job
+     * valid values:
+     * null - (default) - run the job as current user
+     * 0 - run the job without a user
+     * greater than zero - run the job as a specific user
+     *
+     * This is useful in situations like:
+     * - a job needs to always run without a user (like a static cache job)
+     * - a job needs to run as a specific user (for example data migration job)
+     *
+     * Note that this value can be overriden in the @see QueuedJobService::queueJob()
+     *
+     * @return int|null
+     */
+    public function getRunAsMemberID();
+
+    /**
      * A job is run within an external processing loop that will call this method while there are still steps left
      * to complete in the job.
      *

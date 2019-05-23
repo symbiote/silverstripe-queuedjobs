@@ -18,6 +18,7 @@ use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
 use SilverStripe\ORM\FieldType\DBDatetime;
+use SilverStripe\ORM\ValidationException;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\Security;
 use SilverStripe\Subsites\Model\Subsite;
@@ -95,6 +96,21 @@ class QueuedJobService
     private static $disable_health_check = false;
 
     /**
+     * Maximum number of jobs that can be initialised at any one time.
+     *
+     * Prevents too many jobs getting into this state in case something goes wrong with the child processes.
+     * We shouldn't have too many jobs in the initialising state anyway.
+     *
+     * Valid values:
+     * 0 - unlimited (default)
+     * greater than 0 - maximum number of jobs in initialised state
+     *
+     * @var int
+     * @config
+     */
+    private static $max_init_jobs = 0;
+
+    /**
      * Timestamp (in seconds) when the queue was started
      *
      * @var int
@@ -159,16 +175,12 @@ class QueuedJobService
     /**
      * Adds a job to the queue to be started
      *
-     * Relevant data about the job will be persisted using a QueuedJobDescriptor
-     *
-     * @param QueuedJob $job
-     *          The job to start.
-     * @param $startAfter
-     *          The date (in Y-m-d H:i:s format) to start execution after
-     * @param int $userId
-     *          The ID of a user to execute the job as. Defaults to the current user
-     *
+     * @param QueuedJob $job The job to start.
+     * @param null|string $startAfter The date (in Y-m-d H:i:s format) to start execution after
+     * @param null|int $userId The ID of a user to execute the job as. Defaults to the current user
+     * @param null|int $queueName
      * @return int
+     * @throws ValidationException
      */
     public function queueJob(QueuedJob $job, $startAfter = null, $userId = null, $queueName = null)
     {
@@ -198,13 +210,31 @@ class QueuedJobService
         $jobDescriptor->Implementation = get_class($job);
         $jobDescriptor->StartAfter = $startAfter;
 
-        $runAsID = 0;
-        if ($userId) {
-            $runAsID = $userId;
-        } elseif (Security::getCurrentUser() && Security::getCurrentUser()->exists()) {
-            $runAsID = Security::getCurrentUser()->ID;
+        // no user provided - fallback to job user default
+        if ($userId === null) {
+            $userId = $job->getRunAsMemberID();
         }
+
+        // still no user - fallback to current user
+        if ($userId === null) {
+            if (Security::getCurrentUser() && Security::getCurrentUser()->exists()) {
+                // current user available
+                $runAsID = Security::getCurrentUser()->ID;
+            } else {
+                // current user unavailable
+                $runAsID = 0;
+            }
+        } else {
+            $runAsID = $userId;
+        }
+
         $jobDescriptor->RunAsID = $runAsID;
+
+        // use this to populate custom data columns before job is queued
+        // note: you can pass arbitrary data to your job and then move it to job descriptor
+        // this is useful if you need some data that needs to be exposed as a separate
+        // DB column as opposed to serialised data
+        $this->extend('updateJobDescriptorBeforeQueued', $jobDescriptor, $job);
 
         // copy data
         $this->copyJobToDescriptor($job, $jobDescriptor);
@@ -230,6 +260,29 @@ class QueuedJobService
             // immediately start it on the queue, however that works
             $this->queueHandler->startJobOnQueue($jobDescriptor);
         }
+    }
+
+    /**
+     * Check if maximum number of jobs are currently initialised.
+     *
+     * @return bool
+     */
+    public function isAtMaxJobs()
+    {
+        $initJobsMax = $this->config()->get('max_init_jobs');
+        if (!$initJobsMax) {
+            return false;
+        }
+
+        $initJobsCount = QueuedJobDescriptor::get()
+            ->filter(['JobStatus' => QueuedJob::STATUS_INIT])
+            ->count();
+
+        if ($initJobsCount >= $initJobsMax) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -892,18 +945,16 @@ class QueuedJobService
                     /** @var AbstractQueuedJob|QueuedJob $job */
                     $job->afterComplete();
                     $jobDescriptor->cleanupJob();
+
+                    $this->extend('updateJobDescriptorAndJobOnCompletion', $jobDescriptor, $job);
                 }
             } catch (Exception $e) {
-                // okay, we'll just catch this exception for now
-                $this->getLogger()->error(
-                    $e->getMessage(),
-                    [
-                        'exception' => $e,
-                    ]
-                );
-                $jobDescriptor->JobStatus =  QueuedJob::STATUS_BROKEN;
-                $this->extend('updateJobDescriptorAndJobOnException', $jobDescriptor, $job, $e);
-                $jobDescriptor->write();
+                // PHP 5.6 exception handling
+                $this->handleBrokenJobException($jobDescriptor, $job, $e);
+                $broken = true;
+            } catch (\Throwable $e) {
+                // PHP 7 Error handling)
+                $this->handleBrokenJobException($jobDescriptor, $job, $e);
                 $broken = true;
             }
         }
@@ -915,6 +966,25 @@ class QueuedJobService
         $this->unsetRunAsUser($runAsUser, $originalUser);
 
         return !$broken;
+    }
+
+    /**
+     * @param QueuedJobDescriptor $jobDescriptor
+     * @param QueuedJob $job
+     * @param Exception|\Throwable $e
+     */
+    protected function handleBrokenJobException(QueuedJobDescriptor $jobDescriptor, QueuedJob $job, $e)
+    {
+        // okay, we'll just catch this exception for now
+        $this->getLogger()->info(
+            $e->getMessage(),
+            [
+                'exception' => $e,
+            ]
+        );
+        $jobDescriptor->JobStatus =  QueuedJob::STATUS_BROKEN;
+        $this->extend('updateJobDescriptorAndJobOnException', $jobDescriptor, $job, $e);
+        $jobDescriptor->write();
     }
 
     /**
