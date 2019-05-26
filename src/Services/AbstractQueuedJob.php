@@ -117,6 +117,11 @@ abstract class AbstractQueuedJob implements QueuedJob
         return QueuedJob::QUEUED;
     }
 
+    public function getRunAsMemberID()
+    {
+        return null;
+    }
+
     /**
      * Performs setup tasks the first time this job is run.
      *
