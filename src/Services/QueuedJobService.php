@@ -9,7 +9,6 @@ use SilverStripe\Control\Director;
 use SilverStripe\Control\Email\Email;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Config\Configurable;
-use SilverStripe\Core\Convert;
 use SilverStripe\Core\Extensible;
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Core\Injector\Injector;
@@ -551,15 +550,18 @@ class QueuedJobService
         // and thus the row would always be affected.
         try {
             DB::query(sprintf(
-                'UPDATE "QueuedJobDescriptor" SET "JobStatus" = \'%s\' WHERE "ID" = %s',
+                'UPDATE "QueuedJobDescriptor" SET "JobStatus" = \'%s\' WHERE "ID" = %s'
+                . ' AND "JobFinished" IS NULL AND "JobStatus" NOT IN (%s)',
                 QueuedJob::STATUS_INIT,
-                $jobDescriptor->ID
+                $jobDescriptor->ID,
+                "'" . QueuedJob::STATUS_RUN . "', '" . QueuedJob::STATUS_COMPLETE . "', '"
+                . QueuedJob::STATUS_PAUSED . "', '" . QueuedJob::STATUS_CANCELLED . "'"
             ));
         } catch (Exception $e) {
             return false;
         }
 
-        if (DB::getConn()->affectedRows() === 0 && $jobDescriptor->JobStatus !== QueuedJob::STATUS_INIT) {
+        if (DB::get_conn()->affectedRows() === 0 && $jobDescriptor->JobStatus !== QueuedJob::STATUS_INIT) {
             return false;
         }
 
