@@ -18,17 +18,33 @@ use Symbiote\QueuedJobs\Tasks\DeleteAllJobsTask;
 use Symbiote\QueuedJobs\Tasks\ProcessJobQueueChildTask;
 use Symbiote\QueuedJobs\Tasks\ProcessJobQueueTask;
 
+/**
+ * Class QueuedTaskRunner
+ *
+ * @package Symbiote\QueuedJobs\Controllers
+ */
 class QueuedTaskRunner extends TaskRunner
 {
-
+    /**
+     * @var array
+     */
     private static $url_handlers = [
         'queue/$TaskName' => 'queueTask',
     ];
 
+    /**
+     * @var array
+     */
     private static $allowed_actions = [
         'queueTask',
     ];
 
+    /**
+     * Tasks on this list will be available to be run only via browser
+     *
+     * @config
+     * @var array
+     */
     private static $task_blacklist = [
         ProcessJobQueueTask::class,
         ProcessJobQueueChildTask::class,
@@ -36,12 +52,22 @@ class QueuedTaskRunner extends TaskRunner
         DeleteAllJobsTask::class,
     ];
 
+    /**
+     * Tasks on this list will be available to be run only via jobs queue
+     *
+     * @config
+     * @var array
+     */
+    private static $queued_only_tasks = [];
+
     public function index()
     {
         $tasks = $this->getTasks();
 
-        $blacklist = (array)$this->config()->task_blacklist;
+        $blacklist = (array) $this->config()->get('task_blacklist');
+        $queuedOnlyList = (array) $this->config()->get('queued_only_tasks');
         $backlistedTasks = [];
+        $queuedOnlyTasks = [];
 
         // Web mode
         if (!Director::is_cli()) {
@@ -60,6 +86,13 @@ class QueuedTaskRunner extends TaskRunner
             foreach ($tasks as $task) {
                 if (in_array($task['class'], $blacklist)) {
                     $backlistedTasks[] = $task;
+
+                    continue;
+                }
+
+                if (in_array($task['class'], $queuedOnlyList)) {
+                    $queuedOnlyTasks[] = $task;
+
                     continue;
                 }
 
@@ -83,6 +116,20 @@ class QueuedTaskRunner extends TaskRunner
 
                 echo "<li><p>";
                 echo "<a href=\"$immediateLink\">" . $task['title'] . "</a><br />";
+                echo "<span class=\"description\">" . $task['description'] . "</span>";
+                echo "</p></li>\n";
+            }
+            echo "</ul></div>";
+
+            echo "<div class=\"options\">";
+            echo "<h2>Queueable only tasks</h2>\n";
+            echo "<p>These tasks must be be added the queuejobs queue, running it immediately is not allowed.</p>\n";
+            echo "<ul>";
+            foreach ($queuedOnlyTasks as $task) {
+                $queueLink = $base . "dev/tasks/queue/" . $task['segment'];
+
+                echo "<li><p>";
+                echo "<a href=\"$queueLink\">" . $task['title'] . "</a><br />";
                 echo "<span class=\"description\">" . $task['description'] . "</span>";
                 echo "</p></li>\n";
             }
