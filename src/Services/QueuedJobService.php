@@ -3,22 +3,19 @@
 namespace Symbiote\QueuedJobs\Services;
 
 use Exception;
+use Psr\Log\LoggerInterface;
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
 use SilverStripe\Control\Email\Email;
-use SilverStripe\Control\Session;
 use SilverStripe\Core\Config\Config;
-use SilverStripe\Core\Convert;
 use SilverStripe\Core\Injector\Injector;
-use SilverStripe\Dev\SapphireTest;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
 use SilverStripe\ORM\FieldType\DBDatetime;
-use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\Permission;
-use Psr\Log\LoggerInterface;
+use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
 
 /**
  * A service that can be used for starting, stopping and listing queued jobs.
@@ -450,7 +447,7 @@ class QueuedJobService
             return false;
         }
 
-        if (DB::getConn()->affectedRows() === 0 && $jobDescriptor->JobStatus !== QueuedJob::STATUS_INIT) {
+        if (DB::get_conn()->affectedRows() === 0 && $jobDescriptor->JobStatus !== QueuedJob::STATUS_INIT) {
             return false;
         }
 
