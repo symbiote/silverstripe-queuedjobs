@@ -643,9 +643,12 @@ class QueuedJobService
         // and thus the row would always be affected.
         try {
             DB::query(sprintf(
-                'UPDATE "QueuedJobDescriptor" SET "JobStatus" = \'%s\' WHERE "ID" = %s',
+                'UPDATE "QueuedJobDescriptor" SET "JobStatus" = \'%s\' WHERE "ID" = %s'
+                . ' AND "JobFinished" IS NULL AND "JobStatus" NOT IN (%s)',
                 QueuedJob::STATUS_INIT,
-                $jobDescriptor->ID
+                $jobDescriptor->ID,
+                "'" . QueuedJob::STATUS_RUN . "', '" . QueuedJob::STATUS_COMPLETE . "', '"
+                . QueuedJob::STATUS_PAUSED . "', '" . QueuedJob::STATUS_CANCELLED . "'"
             ));
         } catch (Exception $e) {
             return false;
