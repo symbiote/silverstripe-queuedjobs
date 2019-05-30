@@ -163,7 +163,11 @@ class QueuedJobService
         if (static::config()->get('use_shutdown_function') && Director::is_cli()) {
             register_shutdown_function([$this, 'onShutdown']);
         }
-        if (Config::inst()->get(Email::class, 'queued_job_admin_email') == '') {
+
+        $queuedEmail = Config::inst()->get(Email::class, 'queued_job_admin_email');
+
+        // if not set (and not explictly set to false), fallback to the admin email.
+        if (!$queuedEmail && $queuedEmail !== false) {
             Config::modify()->set(
                 Email::class,
                 'queued_job_admin_email',
@@ -482,19 +486,23 @@ class QueuedJobService
                             'line' => __LINE__,
                         ]
                     );
-                    Email::create()
-                        ->setTo(
-                            isset($jobConfig['email'])
-                                ? $jobConfig['email']
-                                : Config::inst()->get(Email::class, 'queued_job_admin_email')
-                        )
-                        ->setFrom(Config::inst()->get(Email::class, 'admin_email'))
-                        ->setSubject('Default Job "' . $title . '" missing')
-                        ->setData($jobConfig)
-                        ->addData('Title', $title)
-                        ->addData('Site', Director::absoluteBaseURL())
-                        ->setHTMLTemplate('QueuedJobsDefaultJob')
-                        ->send();
+
+                    $to = isset($jobConfig['email'])
+                        ? $jobConfig['email']
+                        : Config::inst()->get('Email', 'queued_job_admin_email');
+
+                    if ($to) {
+                        Email::create()
+                            ->setTo($to)
+                            ->setFrom(Config::inst()->get('Email', 'queued_job_admin_email'))
+                            ->setSubject('Default Job "' . $title . '" missing')
+                            ->setData($jobConfig)
+                            ->addData('Title', $title)
+                            ->addData('Site', Director::absoluteBaseURL())
+                            ->setHTMLTemplate('QueuedJobsDefaultJob')
+                            ->send();
+                    }
+
                     if (isset($jobConfig['recreate']) && $jobConfig['recreate']) {
                         if (!array_key_exists('construct', $jobConfig)
                             || !isset($jobConfig['startDateFormat'])
