@@ -48,14 +48,14 @@ The module comes with
 same user as your webserver - this prevents any problems with file permissions.
 
 ```
-*/1 * * * * php /path/to/silverstripe/vendor/bin/sake dev/tasks/ProcessJobQueueTask
+*/1 * * * * /path/to/silverstripe/vendor/bin/sake dev/tasks/ProcessJobQueueTask
 ```
 
 * If your code is to make use of the 'long' jobs, ie that could take days to process, also install another task
 that processes this queue. Its time of execution can be left a little longer.
 
 ```
-*/15 * * * * php /path/to/silverstripe/vendor/bin/sake dev/tasks/ProcessJobQueueTask queue=large
+*/15 * * * * /path/to/silverstripe/vendor/bin/sake dev/tasks/ProcessJobQueueTask queue=large
 ```
 
 * From your code, add a new job for execution.
@@ -262,7 +262,7 @@ In addition to the config setting there is a task that can be used with a cron t
 detected:
 
 ```
-*/5 * * * * php /path/to/silverstripe/vendor/bin/sake dev/tasks/CheckJobHealthTask
+*/5 * * * * /path/to/silverstripe/vendor/bin/sake dev/tasks/CheckJobHealthTask
 ```
 
 ## Troubleshooting
