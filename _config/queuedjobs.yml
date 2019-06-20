@@ -25,6 +25,10 @@ SilverStripe\Core\Injector\Injector:
       DefaultRules:
         - '%$DefaultRule'
 
+SilverStripe\SiteConfig\SiteConfig:
+  extensions:
+    - Symbiote\QueuedJobs\Extensions\MaintenanceLockExtension
+
 ---
 Name: gearman_queue_settings
 Only:

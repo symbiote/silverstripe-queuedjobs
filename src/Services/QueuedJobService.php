@@ -137,6 +137,31 @@ class QueuedJobService
     private static $cache_dir = 'queuedjobs';
 
     /**
+     * Maintenance lock file feature enabled / disable setting
+     *
+     * @config
+     * @var bool
+     */
+    private static $lock_file_enabled = false;
+
+    /**
+     * Maintenance lock file name
+     *
+     * @config
+     * @var string
+     */
+    private static $lock_file_name = 'maintenance-lock.txt';
+
+    /**
+     * Maintenance lock path (relative path starting at the base folder)
+     * Note that this path needs to point to a folder on a shared drive if multiple instances are used
+     *
+     * @config
+     * @var string
+     */
+    private static $lock_file_path = '';
+
+    /**
      * @var DefaultQueueHandler
      */
     public $queueHandler;
@@ -1294,5 +1319,58 @@ class QueuedJobService
     public function getLogger()
     {
         return Injector::inst()->get(LoggerInterface::class);
+    }
+
+    public function enableMaintenanceLock()
+    {
+        if (!$this->config()->get('lock_file_enabled')) {
+            return;
+        }
+
+        $path = $this->lockFilePath();
+        $contents = date('Y-m-d H:i:s');
+
+        file_put_contents($path, $contents);
+    }
+
+    public function disableMaintenanceLock()
+    {
+        if (!$this->config()->get('lock_file_enabled')) {
+            return;
+        }
+
+        $path = $this->lockFilePath();
+        if (!file_exists($path)) {
+            return;
+        }
+
+        unlink($path);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isMaintenanceLockActive()
+    {
+        if (!$this->config()->get('lock_file_enabled')) {
+            return false;
+        }
+
+        $path = $this->lockFilePath();
+
+        return file_exists($path);
+    }
+
+    /**
+     * @return string
+     */
+    private function lockFilePath()
+    {
+        return sprintf(
+            '%s%s/%s',
+            Director::baseFolder(),
+            static::config()->get('lock_file_path'),
+            static::config()->get('lock_file_name')
+        );
     }
 }

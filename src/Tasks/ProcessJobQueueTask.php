@@ -37,6 +37,10 @@ class ProcessJobQueueTask extends BuildTask
      */
     public function run($request)
     {
+        if (QueuedJobService::singleton()->isMaintenanceLockActive()) {
+            return;
+        }
+
         $service = $this->getService();
 
         if ($request->getVar('list')) {
