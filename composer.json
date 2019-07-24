@@ -22,6 +22,9 @@
         "symbiote/silverstripe-multivaluefield": "^3.0",
         "asyncphp/doorman": "^1.2"
     },
+    "require-dev": {
+        "phpunit/phpunit": "^5.7"
+    },
     "extra": {
         "installer-name": "queuedjobs"
     },
