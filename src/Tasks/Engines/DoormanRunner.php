@@ -4,11 +4,11 @@ namespace Symbiote\QueuedJobs\Tasks\Engines;
 
 use AsyncPHP\Doorman\Manager\ProcessManager;
 use SilverStripe\Core\Environment;
+use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\FieldType\DBDatetime;
 use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
 use Symbiote\QueuedJobs\Jobs\DoormanQueuedJobTask;
 use Symbiote\QueuedJobs\Services\QueuedJob;
-use SilverStripe\Core\Injector\Injector;
 use Symbiote\QueuedJobs\Services\QueuedJobService;
 
 /**
@@ -78,6 +78,11 @@ class DoormanRunner extends BaseRunner implements TaskRunnerEngine
         $descriptor = $this->getNextJobDescriptorWithoutMutex($queue);
 
         while ($manager->tick() || $descriptor) {
+            if (QueuedJobService::singleton()->isMaintenanceLockActive()) {
+                $service->getLogger()->info('Skipped queued job descriptor since maintenance log is active.');
+                return;
+            }
+
             $this->logDescriptorStatus($descriptor, $queue);
 
             if ($descriptor instanceof QueuedJobDescriptor) {

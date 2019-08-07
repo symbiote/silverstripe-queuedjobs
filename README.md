@@ -244,6 +244,22 @@ Symbiote\QueuedJobs\Jobs\CleanupJob:
     - Complete
 ```
 
+## Jobs queue pause setting
+
+It's possible to enable a setting which allows the pausing of the queued jobs processing. To enable it, add following code to your config YAML file:
+
+```yaml
+Symbiote\QueuedJobs\Services\QueuedJobService:
+  lock_file_enabled: true
+  lock_file_path: '/shared-folder-path'
+```
+
+`Queue settings` tab will appear in the CMS settings and there will be an option to pause the queued jobs processing. If enabled, no new jobs will start running however, the jobs already running will be left to finish.
+ This is really useful in case of planned downtime like queue jobs related third party service maintenance or DB restore / backup operation.
+
+Note that this maintenance lock state is stored in a file. This is intentionally not using DB as a storage as it may not be available during some maintenance operations.
+Please make sure that the `lock_file_path` is pointing to a folder on a shared drive in case you are running a server with multiple instances.
+
 ## Health Checking
 
 Jobs track their execution in steps - as the job runs it increments the "steps" that have been run. Periodically jobs
