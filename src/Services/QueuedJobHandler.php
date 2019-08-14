@@ -57,7 +57,7 @@ class QueuedJobHandler extends AbstractProcessingHandler
     public function handleBatch(array $records)
     {
         foreach ($records as $record) {
-            $this->job->addMessage($record['message']);
+            $this->job->addMessage($record['message'], $record['level_name'], $record['datetime']);
         };
         $this->jobDescriptor->SavedJobMessages = serialize($this->job->getJobData()->messages);
 
