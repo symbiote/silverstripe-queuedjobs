@@ -23,6 +23,7 @@ use SilverStripe\Security\Member;
 use SilverStripe\Security\Security;
 use SilverStripe\Subsites\Model\Subsite;
 use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
+use Symbiote\QueuedJobs\Interfaces\UserContextInterface;
 use Symbiote\QueuedJobs\QJUtils;
 use Symbiote\QueuedJobs\Tasks\Engines\TaskRunnerEngine;
 
@@ -240,7 +241,7 @@ class QueuedJobService
         $jobDescriptor->StartAfter = $startAfter;
 
         // no user provided - fallback to job user default
-        if ($userId === null) {
+        if ($userId === null && $job instanceof UserContextInterface) {
             $userId = $job->getRunAsMemberID();
         }
 
