@@ -2,11 +2,12 @@
 
 namespace Symbiote\QueuedJobs\Services;
 
+use SilverStripe\Core\Config\Config;
+use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBDatetime;
 use SilverStripe\Subsites\State\SubsiteState;
 use stdClass;
-use SilverStripe\Core\Config\Config;
-use SilverStripe\ORM\DataObject;
+use Symbiote\QueuedJobs\Interfaces\UserContextInterface;
 
 /**
  * A base implementation of a queued job that provides some convenience for implementations
@@ -19,7 +20,7 @@ use SilverStripe\ORM\DataObject;
  * @license BSD http://silverstripe.org/bsd-license/
  * @skipUpgrade
  */
-abstract class AbstractQueuedJob implements QueuedJob
+abstract class AbstractQueuedJob implements QueuedJob, UserContextInterface
 {
     /**
      * @var stdClass
