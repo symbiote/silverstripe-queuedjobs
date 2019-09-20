@@ -2,21 +2,23 @@
 
 namespace Symbiote\QueuedJobs\Workers;
 
+use Exception;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\FieldType\DBDatetime;
 use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
 use Symbiote\QueuedJobs\Services\QueuedJobService;
 
-/**
- * @author marcus@symbiote.com.au
- * @license BSD License http://silverstripe.org/bsd-license/
- */
-
-// GearmanHandler is an extension that could be not available.
-/**
- * @todo Test and implement against it for SilverStripe 4.x compatibility
- */
 if (interface_exists('GearmanHandler')) {
+    /**
+     * Class JobWorker
+     *
+     * GearmanHandler is an extension that could be not available.
+     * @todo Test and implement against it for SilverStripe 4.x compatibility
+     *
+     * @author marcus@symbiote.com.au
+     * @license BSD License http://silverstripe.org/bsd-license/
+     * @package Symbiote\QueuedJobs\Workers
+     */
     class JobWorker implements \GearmanHandler
     {
         /**
@@ -34,7 +36,7 @@ if (interface_exists('GearmanHandler')) {
 
         /**
          * @param int $jobId
-         * @return void
+         * @throws Exception
          */
         public function jobqueueExecute($jobId)
         {
