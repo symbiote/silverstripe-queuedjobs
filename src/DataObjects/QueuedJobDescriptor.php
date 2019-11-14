@@ -151,10 +151,12 @@ class QueuedJobDescriptor extends DataObject
      */
     public function pause($force = false)
     {
-        if ($force || in_array(
-            $this->JobStatus,
-            [QueuedJob::STATUS_WAIT, QueuedJob::STATUS_RUN, QueuedJob::STATUS_INIT]
-        )) {
+        if (
+            $force || in_array(
+                $this->JobStatus,
+                [QueuedJob::STATUS_WAIT, QueuedJob::STATUS_RUN, QueuedJob::STATUS_INIT]
+            )
+        ) {
             $this->JobStatus = QueuedJob::STATUS_PAUSED;
             $this->write();
             return true;
@@ -196,7 +198,8 @@ class QueuedJobDescriptor extends DataObject
     public function activateOnQueue()
     {
         // if it's an immediate job, lets cache it to disk to be picked up later
-        if ($this->JobType == QueuedJob::IMMEDIATE
+        if (
+            $this->JobType == QueuedJob::IMMEDIATE
             && !Config::inst()->get(QueuedJobService::class, 'use_shutdown_function')
         ) {
             touch($this->getJobDir() . '/queuedjob-' . $this->ID);
