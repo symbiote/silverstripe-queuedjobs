@@ -7,6 +7,7 @@ use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Dev\FunctionalTest;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\TextareaField;
+use SilverStripe\ORM\FieldType\DBDatetime;
 use Symbiote\QueuedJobs\Controllers\QueuedJobsAdmin;
 use Symbiote\QueuedJobs\Jobs\PublishItemsJob;
 use Symbiote\QueuedJobs\Services\QueuedJobService;
@@ -83,6 +84,32 @@ class QueuedJobsAdminTest extends FunctionalTest
         $form = $this->admin->getEditForm('foo', new FieldList());
         $form->Fields()->fieldByName('JobParams')->setValue(implode(PHP_EOL, ['foo123', 'bar']));
         $form->Fields()->fieldByName('JobType')->setValue(PublishItemsJob::class);
+
+        $this->admin->createjob($form->getData(), $form);
+    }
+
+    /**
+     * @covers ::createjob
+     */
+    public function testCreateJobWithStartAfterOption()
+    {
+        $startTimeAfter = DBDatetime::now();
+
+        $this->admin->jobQueue
+            ->expects($this->once())
+            ->method('queueJob')
+            ->with(
+                $this->callback(static function ($job) {
+                    return $job instanceof PublishItemsJob;
+                }),
+                $this->callback(static function ($givenStartAfter) use ($startTimeAfter) {
+                    return $givenStartAfter === $startTimeAfter->forTemplate();
+                })
+            );
+
+        $form = $this->admin->getEditForm('foo', new FieldList());
+        $form->Fields()->fieldByName('JobType')->setValue(PublishItemsJob::class);
+        $form->Fields()->fieldByName('JobStart')->setValue($startTimeAfter);
 
         $this->admin->createjob($form->getData(), $form);
     }

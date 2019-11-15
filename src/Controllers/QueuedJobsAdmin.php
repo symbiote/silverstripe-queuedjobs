@@ -190,7 +190,12 @@ class QueuedJobsAdmin extends ModelAdmin
         if (Permission::check('ADMIN')) {
             $jobType = isset($data['JobType']) ? $data['JobType'] : '';
             $params = isset($data['JobParams']) ? explode(PHP_EOL, $data['JobParams']) : array();
-            $time = isset($data['JobStart']) && is_array($data['JobStart']) ? implode(" ", $data['JobStart']) : null;
+
+            if (isset($data['JobStart'])) {
+                $time = is_array($data['JobStart']) ? implode(' ', $data['JobStart']) : $data['JobStart'];
+            } else {
+                $time = null;
+            }
 
             // If the user has select the European date format as their setting then replace '/' with '-' in the
             // date string so PHP treats the date as this format.

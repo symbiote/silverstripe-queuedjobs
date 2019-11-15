@@ -530,7 +530,8 @@ class QueuedJobService
                     }
 
                     if (isset($jobConfig['recreate']) && $jobConfig['recreate']) {
-                        if (!array_key_exists('construct', $jobConfig)
+                        if (
+                            !array_key_exists('construct', $jobConfig)
                             || !isset($jobConfig['startDateFormat'])
                             || !isset($jobConfig['startTimeString'])
                         ) {
