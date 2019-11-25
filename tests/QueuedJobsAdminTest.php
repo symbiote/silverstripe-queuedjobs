@@ -4,6 +4,7 @@ namespace Symbiote\QueuedJobs\Tests;
 
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Control\HTTPRequest;
+use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\FunctionalTest;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\TextareaField;
@@ -46,8 +47,10 @@ class QueuedJobsAdminTest extends FunctionalTest
         QueuedJobService::config()->set('use_shutdown_function', false);
 
         $this->admin = new QueuedJobsAdmin();
-        $this->admin->setRequest(new HTTPRequest('GET', '/'));
-        $this->admin->getRequest()->setSession($this->session());
+        $request = new HTTPRequest('GET', '/');
+        $request->setSession($this->session());
+        Injector::inst()->registerService($request, HTTPRequest::class);
+        $this->admin->setRequest($request);
 
         $mockQueue = $this->createMock(QueuedJobService::class);
         $this->admin->jobQueue = $mockQueue;
