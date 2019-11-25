@@ -1,4 +1,5 @@
 <?php
+
 namespace Symbiote\QueuedJobs\Tasks;
 
 use SilverStripe\Control\HTTPRequest;
