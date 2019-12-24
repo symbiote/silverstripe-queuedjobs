@@ -161,6 +161,15 @@ class QueuedJobService
      * @var string
      */
     private static $lock_file_path = '';
+    
+    /**
+     * Whether to log an error stating that there are broken jobs in the queue. This is usually
+     * used to send notification emails to developers/admins
+     *
+     * @config
+     * @var boolean
+     */
+    private static $notify_broken_jobs = true;
 
     /**
      * @var DefaultQueueHandler
@@ -449,24 +458,26 @@ class QueuedJobService
         }
 
         // finally, find the list of broken jobs and send an email if there's some found
-        $brokenJobs = QueuedJobDescriptor::get()->filter('JobStatus', QueuedJob::STATUS_BROKEN);
-        if ($brokenJobs && $brokenJobs->count()) {
-            $this->getLogger()->error(
-                print_r(
+        if ($this->config()->notify_broken_jobs) {
+            $brokenJobs = QueuedJobDescriptor::get()->filter('JobStatus', QueuedJob::STATUS_BROKEN);
+            if ($brokenJobs && $brokenJobs->count()) {
+                $this->getLogger()->error(
+                    print_r(
+                        [
+                            'errno' => 0,
+                            'errstr' => 'Broken jobs were found in the job queue',
+                            'errfile' => __FILE__,
+                            'errline' => __LINE__,
+                            'errcontext' => [],
+                        ],
+                        true
+                    ),
                     [
-                        'errno' => 0,
-                        'errstr' => 'Broken jobs were found in the job queue',
-                        'errfile' => __FILE__,
-                        'errline' => __LINE__,
-                        'errcontext' => [],
-                    ],
-                    true
-                ),
-                [
-                    'file' => __FILE__,
-                    'line' => __LINE__,
-                ]
-            );
+                        'file' => __FILE__,
+                        'line' => __LINE__,
+                    ]
+                );
+            }
         }
 
         return $stalledJobs->count();
