@@ -3,12 +3,15 @@
 namespace Symbiote\QueuedJobs\Services;
 
 use Exception;
+use SilverStripe\Core\Injector\Injectable;
 
 /**
  * Class used to handle errors for a single job
  */
 class JobErrorHandler
 {
+    use Injectable;
+
     public function __construct()
     {
         set_error_handler(array($this, 'handleError'));

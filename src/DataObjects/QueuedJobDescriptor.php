@@ -37,6 +37,10 @@ use Symbiote\QueuedJobs\Services\QueuedJobService;
  * @property string $SavedJobMessages List of messages saved for this job
  * @property string $JobStatus Status of this job
  * @property string $JobType Type of job
+ * @property string $Worker
+ * @property string $Expiry
+ * @property bool $NotifiedBroken
+ * @property int $WorkerCount
  *
  * @method Member RunAs() Member to run this job as
  *
@@ -70,6 +74,10 @@ class QueuedJobDescriptor extends DataObject
         'SavedJobMessages' => 'Text',
         'JobStatus' => 'Varchar(16)',
         'JobType' => 'Varchar(16)',
+        'Worker' => 'Varchar(32)',
+        'Expiry' => 'DBDatetime',
+        'NotifiedBroken' => 'Boolean',
+        'WorkerCount' => 'Int',
     ];
 
     /**
