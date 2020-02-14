@@ -1,16 +1,16 @@
 <?php
 
-namespace Symbiote\QueuedJobs\Workers;
+/**
+ * @author marcus@symbiote.com.au
+ * @license BSD License http://silverstripe.org/bsd-license/
+ */
+
+ namespace Symbiote\QueuedJobs\Workers;
 
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\FieldType\DBDatetime;
 use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
 use Symbiote\QueuedJobs\Services\QueuedJobService;
-
-/**
- * @author marcus@symbiote.com.au
- * @license BSD License http://silverstripe.org/bsd-license/
- */
 
 // GearmanHandler is an extension that could be not available.
 /**
