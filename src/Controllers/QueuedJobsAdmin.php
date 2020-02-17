@@ -133,7 +133,7 @@ class QueuedJobsAdmin extends ModelAdmin
         /** @skipUpgrade */
         $form->Fields()->replaceField($this->sanitiseClassName(QueuedJobDescriptor::class), $grid);
 
-        if (Permission::check('ADMIN')) {
+        if (QueuedJobDescriptor::singleton()->canCreate()) {
             $types = ClassInfo::subclassesFor(AbstractQueuedJob::class);
             $types = array_combine($types, $types);
             foreach ($types as $class) {
@@ -187,7 +187,7 @@ class QueuedJobsAdmin extends ModelAdmin
      */
     public function createjob($data, Form $form)
     {
-        if (Permission::check('ADMIN')) {
+        if (QueuedJobDescriptor::singleton()->canCreate()) {
             $jobType = isset($data['JobType']) ? $data['JobType'] : '';
             $params = isset($data['JobParams']) ? explode(PHP_EOL, $data['JobParams']) : array();
 
