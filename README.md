@@ -196,15 +196,21 @@ SilverStripe\Core\Injector\Injector:
             # 1 or more Fieldname: 'value' sets that will be queried on REQUIRED
             #  These can be valid ORM filter
             JobTitle: 'Scheduled import from Services'
+          # Parameters set on the recreated object OPTIONAL
+          construct:
+            # 1 or more Fieldname: 'value' sets be passed to the constructor REQUIRED
+            # If your constructor needs none, put something arbitrary
+            repeat: 300
+            title: 'Scheduled import from Services'
+          # A date/time format string for the job's StartAfter field REQUIRED
+          # The shown example generates strings like "2020-02-27 01:00:00"
+          startDateFormat: 'Y-m-d H:i:s'
+          # A string acceptable to PHP's date() function for the job's StartAfter field REQUIRED
+          startTimeString: 'tomorrow 01:00'
           # Sets whether the job will be recreated or not OPTIONAL
           recreate: 1
           # Set the email address to send the alert to if not set site admin email is used OPTIONAL
           email: 'admin@email.com'
-          # Parameters set on the recreated object OPTIONAL
-          construct:
-            # 1 or more Fieldname: 'value' sets be passed to the constructor OPTIONAL
-            repeat: 300
-            title: 'Scheduled import from Services'
         # Minimal implementation will send alerts but not recreate
         AnotherTitle:
           type: 'AJob'
