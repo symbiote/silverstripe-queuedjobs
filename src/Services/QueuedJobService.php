@@ -2,15 +2,17 @@
 
 namespace Symbiote\QueuedJobs\Services;
 
+use DateInterval;
+use DateTime;
 use Exception;
 use Monolog\Handler\BufferHandler;
 use Monolog\Logger;
 use Psr\Log\LoggerInterface;
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
-use SilverStripe\Control\Email\Email;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Config\Configurable;
+use SilverStripe\Core\Convert;
 use SilverStripe\Core\Extensible;
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Core\Injector\Injector;
@@ -18,6 +20,8 @@ use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
 use SilverStripe\ORM\FieldType\DBDatetime;
+use SilverStripe\ORM\FieldType\DBField;
+use SilverStripe\ORM\Queries\SQLUpdate;
 use SilverStripe\ORM\ValidationException;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\Security;
@@ -112,6 +116,14 @@ class QueuedJobService
     private static $max_init_jobs = 0;
 
     /**
+     * Duration for TTL of queue workers based on ISO 8601 duration specification.
+     * Defaults to 5 minutes.
+     *
+     * @var string
+     */
+    private static $worker_ttl = 'PT5M';
+
+    /**
      * Timestamp (in seconds) when the queue was started
      *
      * @var int
@@ -181,25 +193,17 @@ class QueuedJobService
     public $defaultJobs = [];
 
     /**
-     * Register our shutdown handler
+     * QueuedJobService constructor.
      */
     public function __construct()
     {
+        if (!$this->config()->get('use_shutdown_function') || !Director::is_cli()) {
+            return;
+        }
+
+        // Register our shutdown handler
         // bind a shutdown function to process all 'immediate' queued jobs if needed, but only in CLI mode
-        if (static::config()->get('use_shutdown_function') && Director::is_cli()) {
-            register_shutdown_function([$this, 'onShutdown']);
-        }
-
-        $queuedEmail = Config::inst()->get(Email::class, 'queued_job_admin_email');
-
-        // if not set (and not explictly set to false), fallback to the admin email.
-        if (!$queuedEmail && $queuedEmail !== false) {
-            Config::modify()->set(
-                Email::class,
-                'queued_job_admin_email',
-                Config::inst()->get(Email::class, 'admin_email')
-            );
-        }
+        register_shutdown_function([$this, 'onShutdown']);
     }
 
     /**
@@ -375,25 +379,18 @@ class QueuedJobService
         // Filter jobs by type
         $type = $type ?: QueuedJob::QUEUED;
         $list = QueuedJobDescriptor::get()
-            ->filter('JobType', $type)
+            ->filter([
+                'JobType' => $type,
+                'Worker:ExactMatch' => null,
+            ])
             ->sort('ID', 'ASC');
 
         // see if there's any blocked jobs that need to be resumed
         /** @var QueuedJobDescriptor $waitingJob */
-        $waitingJob = $list
-            ->filter('JobStatus', QueuedJob::STATUS_WAIT)
-            ->first();
+        $waitingJob = $list->find('JobStatus', QueuedJob::STATUS_WAIT);
+
         if ($waitingJob) {
             return $waitingJob;
-        }
-
-        // If there's an existing job either running or pending, the lets just return false to indicate
-        // that we're still executing
-        $runningJob = $list
-            ->filter('JobStatus', [QueuedJob::STATUS_INIT, QueuedJob::STATUS_RUN])
-            ->first();
-        if ($runningJob) {
-            return false;
         }
 
         // Otherwise, lets find any 'new' jobs that are waiting to execute
@@ -417,11 +414,16 @@ class QueuedJobService
      * handler or exception checker; in this case, we detect these stalled jobs later and fix (try) to
      * fix them
      *
+     * This function returns the IDs of stalled and broken jobs
+     * this information can be used to implement some custom follow up actions such as sending email reports
+     *
      * @param int $queue The queue to check against
+     * @return array stalled job and broken job IDs
      */
     public function checkJobHealth($queue = null)
     {
         $queue = $queue ?: QueuedJob::QUEUED;
+
         // Select all jobs currently marked as running
         $runningJobs = QueuedJobDescriptor::get()
             ->filter([
@@ -434,9 +436,15 @@ class QueuedJobService
 
         // If no steps have been processed since the last run, consider it a broken job
         // Only check jobs that have been viewed before. LastProcessedCount defaults to -1 on new jobs.
+        // Only check jobs that are past expiry to ensure another process isn't currently executing the job
+        $now = DBDatetime::now()->Rfc2822();
         $stalledJobs = $runningJobs
-            ->filter('LastProcessedCount:GreaterThanOrEqual', 0)
+            ->filter([
+                'LastProcessedCount:GreaterThanOrEqual' => 0,
+                'Expiry:LessThanOrEqual' => $now,
+            ])
             ->where('"StepsProcessed" = "LastProcessedCount"');
+
         foreach ($stalledJobs as $stalledJob) {
             $this->restartStalledJob($stalledJob);
         }
@@ -444,32 +452,56 @@ class QueuedJobService
         // now, find those that need to be marked before the next check
         // foreach job, mark it as having been incremented
         foreach ($runningJobs as $job) {
+            /** @var QueuedJobDescriptor $job */
             $job->LastProcessedCount = $job->StepsProcessed;
             $job->write();
         }
 
         // finally, find the list of broken jobs and send an email if there's some found
-        $brokenJobs = QueuedJobDescriptor::get()->filter('JobStatus', QueuedJob::STATUS_BROKEN);
-        if ($brokenJobs && $brokenJobs->count()) {
-            $this->getLogger()->error(
-                print_r(
-                    [
-                        'errno' => 0,
-                        'errstr' => 'Broken jobs were found in the job queue',
-                        'errfile' => __FILE__,
-                        'errline' => __LINE__,
-                        'errcontext' => [],
-                    ],
-                    true
-                ),
-                [
-                    'file' => __FILE__,
-                    'line' => __LINE__,
-                ]
-            );
+        // make sure that we report broken job only once
+        $brokenJobs = QueuedJobDescriptor::get()->filter([
+            'JobStatus' => QueuedJob::STATUS_BROKEN,
+            'NotifiedBroken' => 0,
+        ]);
+
+        $stalledIDs = $stalledJobs->column('ID');
+        $brokenIDs = $brokenJobs->column('ID');
+        $result = [
+            'stalled' => $stalledIDs,
+            'broken' => $brokenIDs,
+        ];
+
+        if (count($brokenIDs) === 0) {
+            return $result;
         }
 
-        return $stalledJobs->count();
+        $this->getLogger()->error(
+            print_r(
+                [
+                    'errno' => 0,
+                    'errstr' => 'Broken jobs were found in the job queue',
+                    'errfile' => __FILE__,
+                    'errline' => __LINE__,
+                    'errcontext' => [],
+                ],
+                true
+            ),
+            [
+                'file' => __FILE__,
+                'line' => __LINE__,
+            ]
+        );
+
+        $placeholders = implode(', ', array_fill(0, count($brokenIDs), '?'));
+        $query = SQLUpdate::create(
+            '"QueuedJobDescriptor"',
+            ['"NotifiedBroken"' => 1],
+            ['"ID" IN (' . $placeholders . ')' => $brokenIDs]
+        );
+
+        $query->execute();
+
+        return $result;
     }
 
     /**
@@ -513,20 +545,9 @@ class QueuedJobService
                         ]
                     );
 
-                    $to = isset($jobConfig['email'])
-                        ? $jobConfig['email']
-                        : Config::inst()->get('Email', 'queued_job_admin_email');
-
-                    if ($to) {
-                        Email::create()
-                            ->setTo($to)
-                            ->setFrom(Config::inst()->get('Email', 'queued_job_admin_email'))
-                            ->setSubject('Default Job "' . $title . '" missing')
-                            ->setData($jobConfig)
-                            ->addData('Title', $title)
-                            ->addData('Site', Director::absoluteBaseURL())
-                            ->setHTMLTemplate('QueuedJobsDefaultJob')
-                            ->send();
+                    $email = EmailService::singleton()->createMissingDefaultJobReport($jobConfig, $title);
+                    if ($email !== null) {
+                        $email->send();
                     }
 
                     if (isset($jobConfig['recreate']) && $jobConfig['recreate']) {
@@ -565,11 +586,12 @@ class QueuedJobService
      * Attempt to restart a stalled job
      *
      * @param QueuedJobDescriptor $stalledJob
-     *
-     * @return bool True if the job was successfully restarted
      */
     protected function restartStalledJob($stalledJob)
     {
+        // release job lock on the descriptor so it can run again
+        $stalledJob->Worker = null;
+
         if ($stalledJob->ResumeCounts < static::config()->get('stall_threshold')) {
             $stalledJob->restart();
             $logLevel = 'warning';
@@ -597,19 +619,12 @@ class QueuedJobService
                 'line' => __LINE__,
             ]
         );
-        $from = Config::inst()->get(Email::class, 'admin_email');
-        $to = Config::inst()->get(Email::class, 'queued_job_admin_email');
-        $subject = _t(__CLASS__ . '.STALLED_JOB', 'Stalled job');
 
-        if ($to) {
-            $mail = Email::create($from, $to, $subject)
-                ->setData([
-                    'JobID' => $stalledJob->ID,
-                    'Message' => $message,
-                    'Site' => Director::absoluteBaseURL(),
-                ])
-                ->setHTMLTemplate('QueuedJobsStalledJob');
-            $mail->send();
+        $subject = _t(__CLASS__ . '.STALLED_JOB', 'Stalled job');
+        $email = EmailService::singleton()->createStalledJobReport($subject, $message, (int) $stalledJob->ID);
+
+        if ($email) {
+            $email->send();
         }
     }
 
@@ -668,32 +683,66 @@ class QueuedJobService
      *
      * @param QueuedJobDescriptor $jobDescriptor
      *
-     * @return boolean
+     * @return bool
      */
     protected function grabMutex(QueuedJobDescriptor $jobDescriptor)
     {
-        // write the status and determine if any rows were affected, for protection against a
-        // potential race condition where two or more processes init the same job at once.
-        // This deliberately does not use write() as that would always update LastEdited
-        // and thus the row would always be affected.
+        $descriptorId = (int) $jobDescriptor->ID;
+
         try {
-            DB::query(sprintf(
-                'UPDATE "QueuedJobDescriptor" SET "JobStatus" = \'%s\' WHERE "ID" = %s'
-                . ' AND "JobFinished" IS NULL AND "JobStatus" NOT IN (%s)',
-                QueuedJob::STATUS_INIT,
-                $jobDescriptor->ID,
-                "'" . QueuedJob::STATUS_RUN . "', '" . QueuedJob::STATUS_COMPLETE . "', '"
-                . QueuedJob::STATUS_PAUSED . "', '" . QueuedJob::STATUS_CANCELLED . "'"
-            ));
+            // Start a transaction which will hold until we have a lock on this descriptor.
+            DB::get_conn()->withTransaction(function () use ($descriptorId) {
+                $query = 'SELECT "ID" FROM "QueuedJobDescriptor" WHERE "ID" = %s AND "Worker" IS NULL FOR UPDATE';
+
+                $row = DB::query(sprintf($query, Convert::raw2sql($descriptorId)))->first();
+
+                if (!array_key_exists('ID', $row) || !$row['ID']) {
+                    throw new Exception('Failed to read job lock');
+                }
+
+                $mutex = bin2hex(random_bytes(16));
+                $expiry = $this->getWorkerExpiry();
+
+                // Lock this descriptor.
+                $query = 'UPDATE "QueuedJobDescriptor" SET "Expiry" = %s , "Worker" = %s'
+                    . ', "WorkerCount" = "WorkerCount" + 1 WHERE "ID" = %s';
+
+                DB::query(sprintf(
+                    $query,
+                    Convert::raw2sql($expiry, true),
+                    Convert::raw2sql($mutex, true),
+                    Convert::raw2sql($descriptorId)
+                ));
+
+                /** @var QueuedJobDescriptor $updatedDescriptor */
+                $updatedDescriptor = QueuedJobDescriptor::get()->byID($descriptorId);
+
+                // If we couldn't find the descriptor or the descriptor is not the one we expect to have
+                if ($updatedDescriptor === null || $updatedDescriptor->Worker !== $mutex) {
+                    throw new Exception('Wrong status or process. Job reserved already');
+                }
+            });
+
+            return true;
         } catch (Exception $e) {
+            // note that error here may not be an issue as failing to acquire a job lock is a valid state
+            // which happens when other process claimed the job lock first
+            $this->getLogger()->debug(
+                sprintf(
+                    '[%s] - Queued Jobs - Failed to acquire job lock %s %d %s',
+                    DBDatetime::now()->Rfc2822(),
+                    $e->getMessage(),
+                    $descriptorId,
+                    PHP_EOL
+                ),
+                [
+                    'file' => __FILE__,
+                    'line' => __LINE__,
+                ]
+            );
+
             return false;
         }
-
-        if (DB::get_conn()->affectedRows() === 0 && $jobDescriptor->JobStatus !== QueuedJob::STATUS_INIT) {
-            return false;
-        }
-
-        return true;
     }
 
     /**
@@ -739,17 +788,15 @@ class QueuedJobService
             $runAsUser = $this->setRunAsUser($jobDescriptor->RunAs(), $originalUser);
         }
 
-        // set up a custom error handler for this processing
-        $errorHandler = new JobErrorHandler();
-
-        $job = null;
-
         $broken = false;
 
-        // Push a config context onto the stack for the duration of this job run.
-        Config::nest();
+        $this->withNestedState(function () use ($jobDescriptor, $jobId, &$broken) {
+            if (!$this->grabMutex($jobDescriptor)) {
+                return;
+            }
 
-        if ($this->grabMutex($jobDescriptor)) {
+            $job = null;
+
             try {
                 $job = $this->initialiseJob($jobDescriptor);
 
@@ -995,15 +1042,34 @@ class QueuedJobService
                 $this->handleBrokenJobException($jobDescriptor, $job, $e);
                 $broken = true;
             }
-        }
-
-        $errorHandler->clear();
-
-        Config::unnest();
+        });
 
         $this->unsetRunAsUser($runAsUser, $originalUser);
 
         return !$broken;
+    }
+
+    /**
+     * Provides a wrapper when executing arbitrary code contained in job implementation
+     * this ensures that job specific code doesn't alter the configuration of the queue runner execution
+     *
+     * @param callable $callback
+     * @return mixed
+     */
+    protected function withNestedState(callable $callback)
+    {
+        // set up a custom error handler for this processing
+        $errorHandler = JobErrorHandler::create();
+
+        // Push a config context onto the stack for the duration of this job run.
+        Config::nest();
+
+        try {
+            return $callback();
+        } finally {
+            Config::unnest();
+            $errorHandler->clear();
+        }
     }
 
     /**
@@ -1330,7 +1396,7 @@ class QueuedJobService
         }
 
         $path = $this->lockFilePath();
-        $contents = date('Y-m-d H:i:s');
+        $contents = DBDatetime::now()->Rfc2822();
 
         file_put_contents($path, $contents);
     }
@@ -1361,6 +1427,29 @@ class QueuedJobService
         $path = $this->lockFilePath();
 
         return file_exists($path);
+    }
+
+    /**
+     * Get expiry time for a worker to be operating on a job, helps to identify jobs
+     * that have stalled more accurately.
+     *
+     * @return string
+     * @throws Exception
+     */
+    protected function getWorkerExpiry(): string
+    {
+        $now = DBDatetime::now()->Rfc2822();
+        $time = new DateTime($now);
+        $timeToLive = $this->config()->get('worker_ttl');
+
+        if ($timeToLive) {
+            $time->add(new DateInterval($timeToLive));
+        }
+
+        /** @var DBDatetime $expiry */
+        $expiry = DBField::create_field('Datetime', $time->getTimestamp());
+
+        return $expiry->Rfc2822();
     }
 
     /**

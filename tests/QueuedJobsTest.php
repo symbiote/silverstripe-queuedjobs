@@ -2,9 +2,14 @@
 
 namespace Symbiote\QueuedJobs\Tests;
 
+use Psr\Log\LoggerInterface;
+use ReflectionClass;
 use SilverStripe\Core\Config\Config;
+use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\ORM\FieldType\DBDatetime;
+use SilverStripe\ORM\ValidationException;
 use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
 use Symbiote\QueuedJobs\Services\QueuedJob;
 use Symbiote\QueuedJobs\Services\QueuedJobService;
@@ -36,6 +41,19 @@ class QueuedJobsTest extends AbstractTest
 
         // Allow large memory limit in cases of integration tests
         Config::modify()->set(QueuedJobService::class, 'memory_limit', 2 * 1024 * 1024 * 1024);
+
+        Injector::inst()->registerService($this->createMock(LoggerInterface::class), LoggerInterface::class);
+
+        Config::modify()->set(QueuedJobService::class, 'use_shutdown_function', false);
+
+        DBDatetime::set_mock_now('2016-01-01 16:00:00');
+    }
+
+    protected function tearDown()
+    {
+        parent::tearDown();
+
+        DBDatetime::clear_mock_now();
     }
 
     /**
@@ -218,6 +236,9 @@ class QueuedJobsTest extends AbstractTest
         $this->assertCount(0, $jobs);
     }
 
+    /**
+     * @throws ValidationException
+     */
     public function testNextJob()
     {
         $svc = $this->getService();
@@ -254,10 +275,17 @@ class QueuedJobsTest extends AbstractTest
         $this->assertEquals($id1, $job->ID);
         $svc->testInit($job);
 
-        // now try and get another, it should be === false
-        $next = $svc->getNextPendingJob();
+        // assign job locking properties
+        $job->Worker = 'test worker';
+        $job->WorkerCount = (int) $job->WorkerCount + 1;
+        $job->Expiry = '2016-01-01 16:00:01';
+        $job->write();
 
-        $this->assertFalse($next);
+        // now try and get another, it should be different from the job that is already being processed
+        $next = $svc->getNextPendingJob();
+        $this->assertNotNull($next);
+        $this->assertTrue($next->isInDB());
+        $this->assertNotEquals((int) $job->ID, (int) $next->ID);
     }
 
     /**
@@ -276,6 +304,8 @@ class QueuedJobsTest extends AbstractTest
         $job = new TestQueuedJob(QueuedJob::IMMEDIATE);
         $job->firstJob = true;
         $id = $svc->queueJob($job);
+
+        /** @var QueuedJobDescriptor $descriptor */
         $descriptor = QueuedJobDescriptor::get()->byID($id);
 
         // Verify initial state is new and LastProcessedCount is not marked yet
@@ -283,6 +313,9 @@ class QueuedJobsTest extends AbstractTest
         $this->assertEquals(0, $descriptor->StepsProcessed);
         $this->assertEquals(-1, $descriptor->LastProcessedCount);
         $this->assertEquals(0, $descriptor->ResumeCounts);
+        $this->assertNull($descriptor->Worker);
+        $this->assertEquals(0, (int) $descriptor->WorkerCount);
+        $this->assertNull($descriptor->Expiry);
 
         // Loop 1 - Pick up new job and attempt to run it
         // Job health should not attempt to cleanup unstarted jobs
@@ -296,9 +329,17 @@ class QueuedJobsTest extends AbstractTest
         $this->assertEquals(0, $descriptor->StepsProcessed);
         $this->assertEquals(-1, $descriptor->LastProcessedCount);
         $this->assertEquals(0, $descriptor->ResumeCounts);
+        $this->assertNull($descriptor->Worker);
+        $this->assertEquals(0, (int) $descriptor->WorkerCount);
+        $this->assertNull($descriptor->Expiry);
 
         // Run 1 - Start the job (no work is done)
         $descriptor->JobStatus = QueuedJob::STATUS_INIT;
+
+        // assign job locking properties
+        $descriptor->Worker = 'test worker';
+        $descriptor->WorkerCount = (int) $descriptor->WorkerCount + 1;
+        $descriptor->Expiry = '2016-01-01 16:00:01';
         $descriptor->write();
 
         // Assume that something bad happens at this point, the process dies during execution, and
@@ -306,20 +347,36 @@ class QueuedJobsTest extends AbstractTest
 
         // Loop 2 - Detect broken job, and mark it for future checking.
         $svc->checkJobHealth(QueuedJob::IMMEDIATE);
+
+        // job in init or running state always has assigned worker
+        // getNextPendingJob will ignore such jobs so we have to check for null
         $nextJob = $svc->getNextPendingJob(QueuedJob::IMMEDIATE);
 
         // Note that we don't immediately try to restart it until StepsProcessed = LastProcessedCount
         $descriptor = QueuedJobDescriptor::get()->byID($id);
-        $this->assertFalse($nextJob); // Don't run it this round please!
+        $this->assertNull($nextJob); // Don't run it this round please!
         $this->assertEquals(QueuedJob::STATUS_INIT, $descriptor->JobStatus);
         $this->assertEquals(0, $descriptor->StepsProcessed);
         $this->assertEquals(0, $descriptor->LastProcessedCount);
         $this->assertEquals(0, $descriptor->ResumeCounts);
+        $this->assertEquals('test worker', $descriptor->Worker);
+        $this->assertEquals(1, (int) $descriptor->WorkerCount);
+        $this->assertEquals('2016-01-01 16:00:01', $descriptor->Expiry);
 
         // Loop 3 - We've previously marked this job as broken, so restart it this round
         // If no more work has been done on the job at this point, assume that we are able to
         // restart it
         $logger->clear();
+
+        // run health check without moving the time forward - we should get no next job as it is still locked
+        $svc->checkJobHealth(QueuedJob::IMMEDIATE);
+        $nextJob = $svc->getNextPendingJob(QueuedJob::IMMEDIATE);
+        $this->assertNull($nextJob);
+
+        // we have to move current time to the future as the job is locked for a while
+        // this will enable the queue health procedure to pick it up
+        DBDatetime::set_mock_now('2017-01-01 16:00:00');
+
         $svc->checkJobHealth(QueuedJob::IMMEDIATE);
         $nextJob = $svc->getNextPendingJob(QueuedJob::IMMEDIATE);
 
@@ -330,6 +387,12 @@ class QueuedJobsTest extends AbstractTest
         $this->assertEquals(0, $descriptor->StepsProcessed);
         $this->assertEquals(0, $descriptor->LastProcessedCount);
         $this->assertEquals(1, $descriptor->ResumeCounts);
+        $this->assertNull($descriptor->Worker);
+        $this->assertEquals(1, (int) $descriptor->WorkerCount);
+        $this->assertEquals('2016-01-01 16:00:01', $descriptor->Expiry);
+
+        // worker job lock should be cleared by now
+        $this->assertNull($descriptor->Worker);
         $this->assertContains(
             'A job named A Test job appears to have stalled. It will be stopped and restarted, please login to '
             . 'make sure it has continued',
@@ -339,6 +402,11 @@ class QueuedJobsTest extends AbstractTest
         // Run 2 - First restart (work is done)
         $descriptor->JobStatus = QueuedJob::STATUS_RUN;
         $descriptor->StepsProcessed++; // Essentially delays the next restart by 1 loop
+
+        // assign job locking properties
+        $descriptor->Worker = 'test worker';
+        $descriptor->WorkerCount = (int) $descriptor->WorkerCount + 1;
+        $descriptor->Expiry = '2017-01-01 16:00:01';
         $descriptor->write();
 
         // Once again, at this point, assume the job fails and crashes
@@ -352,11 +420,23 @@ class QueuedJobsTest extends AbstractTest
         $nextJob = $svc->getNextPendingJob(QueuedJob::IMMEDIATE);
 
         $descriptor = QueuedJobDescriptor::get()->byID($id);
-        $this->assertFalse($nextJob); // Don't run jobs we aren't sure should be restarted
+        $this->assertNull($nextJob); // Don't run jobs we aren't sure should be restarted
         $this->assertEquals(QueuedJob::STATUS_RUN, $descriptor->JobStatus);
         $this->assertEquals(1, $descriptor->StepsProcessed);
         $this->assertEquals(1, $descriptor->LastProcessedCount);
         $this->assertEquals(1, $descriptor->ResumeCounts);
+        $this->assertEquals('test worker', $descriptor->Worker);
+        $this->assertEquals(2, (int) $descriptor->WorkerCount);
+        $this->assertEquals('2017-01-01 16:00:01', $descriptor->Expiry);
+
+        // run health check without moving the time forward - we should get no next job as it is still locked
+        $svc->checkJobHealth(QueuedJob::IMMEDIATE);
+        $nextJob = $svc->getNextPendingJob(QueuedJob::IMMEDIATE);
+        $this->assertNull($nextJob);
+
+        // we have to move current time to the future as the job is locked for a while
+        // this will enable the queue health procedure to pick it up
+        DBDatetime::set_mock_now('2018-01-01 16:00:00');
 
         // Loop 5 - Job is again found to not have been restarted since last iteration, so perform second
         // restart. The job should be attempted to run this loop
@@ -371,14 +451,26 @@ class QueuedJobsTest extends AbstractTest
         $this->assertEquals(1, $descriptor->StepsProcessed);
         $this->assertEquals(1, $descriptor->LastProcessedCount);
         $this->assertEquals(2, $descriptor->ResumeCounts);
+        $this->assertNull($descriptor->Worker);
+        $this->assertEquals(2, (int) $descriptor->WorkerCount);
+        $this->assertEquals('2017-01-01 16:00:01', $descriptor->Expiry);
         $this->assertContains(
             'A job named A Test job appears to have stalled. It will be stopped and restarted, please login '
             . 'to make sure it has continued',
             $logger->getMessages()
         );
 
+        // we have to move current time to the future as the job is locked for a while
+        // this will enable the queue health procedure to pick it up
+        DBDatetime::set_mock_now('2019-01-01 16:00:00');
+
         // Run 3 - Second and last restart (no work is done)
         $descriptor->JobStatus = QueuedJob::STATUS_RUN;
+
+        // assign job locking properties
+        $descriptor->Worker = 'test worker';
+        $descriptor->WorkerCount = (int) $descriptor->WorkerCount + 1;
+        $descriptor->Expiry = '2018-01-01 16:00:01';
         $descriptor->write();
 
         // Loop 6 - As no progress has been made since loop 3, we can mark this as dead
@@ -389,7 +481,10 @@ class QueuedJobsTest extends AbstractTest
         // Since no StepsProcessed has been done, don't wait another loop to mark this as dead
         $descriptor = QueuedJobDescriptor::get()->byID($id);
         $this->assertEquals(QueuedJob::STATUS_PAUSED, $descriptor->JobStatus);
-        $this->assertEmpty($nextJob);
+        $this->assertNull($nextJob);
+        $this->assertNull($descriptor->Worker);
+        $this->assertEquals(3, (int) $descriptor->WorkerCount);
+        $this->assertEquals('2018-01-01 16:00:01', $descriptor->Expiry);
         $this->assertContains(
             'A job named A Test job appears to have stalled. It has been paused, please login to check it',
             $logger->getMessages()
@@ -510,5 +605,95 @@ class QueuedJobsTest extends AbstractTest
         $svc->defaultJobs = $testDefaultJobsArray;
         $activeJobs->removeAll();
         $svc->checkdefaultJobs();
+    }
+
+    public function testGrabMutex(): void
+    {
+        Config::modify()->set(QueuedJobService::class, 'worker_ttl', 'PT5M');
+
+        /** @var QueuedJobDescriptor $descriptor */
+        $descriptor = QueuedJobDescriptor::create();
+        $descriptor->write();
+
+        $descriptor = QueuedJobDescriptor::get()->byID($descriptor->ID);
+
+        // job descriptor is unlocked
+        $this->assertEquals('', $descriptor->Worker);
+        $this->assertEquals(0, $descriptor->WorkerCount);
+        $this->assertEquals('', $descriptor->Expiry);
+
+        $class = new ReflectionClass(QueuedJobService::class);
+        $method = $class->getMethod('grabMutex');
+        $method->setAccessible(true);
+
+        // attempt to claim lock on descriptor
+        $result = $method->invokeArgs(QueuedJobService::singleton(), [$descriptor]);
+
+        // lock is successful
+        $this->assertTrue($result);
+
+        $descriptor = QueuedJobDescriptor::get()->byID($descriptor->ID);
+
+        // lock data is in place
+        $this->assertNotEmpty($descriptor->Worker);
+        $this->assertEquals(1, (int) $descriptor->WorkerCount);
+        $this->assertEquals('2016-01-01 16:05:00', $descriptor->Expiry);
+
+        // attempt to claim lock on descriptor
+        $result = $method->invokeArgs(QueuedJobService::singleton(), [$descriptor]);
+
+        // lock is not granted as it's already claimed
+        $this->assertFalse($result);
+    }
+
+    /**
+     * @param array $jobs
+     * @param int $expected
+     * @throws ValidationException
+     * @dataProvider jobsProvider
+     */
+    public function testBrokenJobNotification(array $jobs, int $expected): void
+    {
+        /** @var QueuedJobDescriptor $descriptor */
+        foreach ($jobs as $notified) {
+            $descriptor = QueuedJobDescriptor::create();
+            $descriptor->JobType = QueuedJob::IMMEDIATE;
+            $descriptor->JobStatus = QueuedJob::STATUS_BROKEN;
+
+            if ($notified) {
+                $descriptor->NotifiedBroken = 1;
+            }
+
+            $descriptor->write();
+        }
+
+        $result = QueuedJobService::singleton()->checkJobHealth(QueuedJob::IMMEDIATE);
+
+        $this->assertArrayHasKey('broken', $result);
+        $this->assertArrayHasKey('stalled', $result);
+        $this->assertCount($expected, $result['broken']);
+        $this->assertCount(0, QueuedJobDescriptor::get()->filter(['NotifiedBroken' => 0]));
+    }
+
+    public function jobsProvider(): array
+    {
+        return [
+            [
+                [true, true, true, true, true],
+                0,
+            ],
+            [
+                [false, true, true, true, true],
+                1,
+            ],
+            [
+                [false, false, true, true, true],
+                2,
+            ],
+            [
+                [false, false, false, false, false],
+                5,
+            ],
+        ];
     }
 }
