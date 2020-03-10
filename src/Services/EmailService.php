@@ -43,7 +43,7 @@ class EmailService
     public function createMissingDefaultJobReport(array $jobConfig, string $title): ?Email
     {
         $subject = sprintf('Default Job "%s" missing', $title);
-        $from = Config::inst()->get('Email', 'queued_job_admin_email');
+        $from = Config::inst()->get(Email::class, 'queued_job_admin_email');
         $to = array_key_exists('email', $jobConfig) &&  $jobConfig['email']
             ? $jobConfig['email']
             : $from;
