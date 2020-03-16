@@ -357,13 +357,13 @@ class QueuedJobDescriptor extends DataObject
     }
 
     /**
-     * @return FieldList
+     * List all possible job statuses, useful for forms and filters
+     *
+     * @return array
      */
-    public function getCMSFields()
+    public function getJobStatusValues(): array
     {
-        $fields = parent::getCMSFields();
-
-        $statuses = [
+        return [
             QueuedJob::STATUS_NEW,
             QueuedJob::STATUS_INIT,
             QueuedJob::STATUS_RUN,
@@ -373,7 +373,15 @@ class QueuedJobDescriptor extends DataObject
             QueuedJob::STATUS_CANCELLED,
             QueuedJob::STATUS_BROKEN,
         ];
+    }
 
+    /**
+     * @return FieldList
+     */
+    public function getCMSFields()
+    {
+        $fields = parent::getCMSFields();
+        $statuses = $this->getJobStatusValues();
         $runAs = $fields->fieldByName('Root.Main.RunAsID');
 
         $fields->removeByName([
