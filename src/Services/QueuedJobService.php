@@ -1074,10 +1074,10 @@ class QueuedJobService
 
     /**
      * @param QueuedJobDescriptor $jobDescriptor
-     * @param QueuedJob $job
+     * @param QueuedJob|null $job
      * @param Exception|\Throwable $e
      */
-    protected function handleBrokenJobException(QueuedJobDescriptor $jobDescriptor, QueuedJob $job, $e)
+    protected function handleBrokenJobException(QueuedJobDescriptor $jobDescriptor, $job, $e)
     {
         // okay, we'll just catch this exception for now
         $this->getLogger()->info(
@@ -1087,6 +1087,7 @@ class QueuedJobService
             ]
         );
         $jobDescriptor->JobStatus =  QueuedJob::STATUS_BROKEN;
+        // $job may be null if the exception was thrown by setup()
         $this->extend('updateJobDescriptorAndJobOnException', $jobDescriptor, $job, $e);
         $jobDescriptor->write();
     }
