@@ -1077,7 +1077,7 @@ class QueuedJobService
      * @param QueuedJob|null $job
      * @param Exception|\Throwable $e
      */
-    protected function handleBrokenJobException(QueuedJobDescriptor $jobDescriptor, $job, $e)
+    protected function handleBrokenJobException(QueuedJobDescriptor $jobDescriptor, ?QueuedJob $job, $e)
     {
         // okay, we'll just catch this exception for now
         $this->getLogger()->info(
