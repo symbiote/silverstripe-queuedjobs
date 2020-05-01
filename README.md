@@ -266,6 +266,9 @@ Symbiote\QueuedJobs\Services\QueuedJobService:
 Note that this maintenance lock state is stored in a file. This is intentionally not using DB as a storage as it may not be available during some maintenance operations.
 Please make sure that the `lock_file_path` is pointing to a folder on a shared drive in case you are running a server with multiple instances.
 
+One benefit of file locking is that in case of critical failure (e.g.: the site crashes and CMS is not available), you may still be able to get access to the filesystem and change the file lock manually.
+This gives you some additional disaster recovery options in case running jobs are causing the issue.
+
 ## Health Checking
 
 Jobs track their execution in steps - as the job runs it increments the "steps" that have been run. Periodically jobs
@@ -317,6 +320,19 @@ SilverStripe\Control\Email\Email:
 A long running job _may_ fool the system into thinking it has gone away (ie the job health check fails because
 `currentStep` hasn't been incremented). To avoid this scenario, you can set `$this->currentStep = -1` in your job's
 constructor, to prevent any health checks detecting the job.
+
+### Understanding job states
+
+It's really useful to understand how job state changes during the job lifespan as it makes troubleshooting easier.
+Following chart shows the whole job lifecycle:
+
+![JobStatus](docs/job_status.jpg)
+
+* every job starts in `New` state
+* every job should eventually reach either `Complete`, `Broken` or `Paused`
+* `Cancelled` state is not listed here as the queue runner will never transition job to that state as it is reserved for user triggered actions
+* progress indication is either state change or step increment
+* every job can be restarted however there is a limit on how many times (see `stall_threshold` config)
 
 ## Performance configuration
 
@@ -470,6 +486,338 @@ $this->assertNotEquals(QueuedJob::STATUS_BROKEN, $descriptor->JobStatus);
 ```
 
 For example, this code snippet runs the job and checks if the job ended up in a non-broken state.
+
+## Advanced job setup
+
+This section is recommended for developers who are already familiar with basic concepts and want to take full advantage of the features in this module.
+
+### Job creation
+
+First, let's quickly summarise the lifecycle of a queued job:
+
+1. job is created as an object in your code
+2. job is queued, the matching job descriptor is saved into the database
+3. job is picked and processed up by the queue runner.
+
+Important thing to note is that **step 3** will create an empty job instance and populate it with data from the matching job descriptor.
+Any defined params in the job constructor will not be populated in this step.
+If you want to define your own job constructor and not use the inherited one, you will need to take this into account when implementing your job.
+Incorrect implementation may result in the job processing losing some or all of the job data before processing starts.
+To avoid this issue consider using one of the options below to properly implement your job creation.
+
+Suppose we have a job which needs a `string`, an `integer` and an `array` as the input.
+
+#### Option 1: Job data is set directly
+
+It's possible to completely avoid defining constructor on your job and set the job data directly to the job object.
+This is a good approach for simple jobs, but more complex jobs with a lot of properties may end up using several lines of code.
+
+##### Job class constructor
+
+```php
+// no constructor
+```
+
+##### Job creation
+
+```php
+$job = new MyJob();
+// set job data
+$job->string = $string;
+$job->integer = $integer;
+$job->array = $array;
+```
+
+##### Advantages
+
+* No need to define constructor.
+* Nullable values don't need to be handled.
+
+##### Disadvantages
+
+* No strict parameter types.
+* Code may not be as DRY in case you create the job in many different places.
+
+#### Option 2: Job constructor with specific params
+
+Defining your own constructor is the most intuitive approach.
+We need to take into consideration that the job constructor will be called without any params by the queue runner.
+The implementation needs to provide default values for all parameters and handle this special case.
+
+##### Job class constructor
+
+```php
+public function __construct(?string $string = null, ?int $integer = null, ?array $array = null)
+{
+    if ($string === null || $integer === null || $array === null) {
+        // job constructor called by the queue runner - exit early
+        return;
+    }
+
+    // job constructor called in project code - populate job data
+    $this->string = $string;
+    $this->integer = $integer;
+    $this->array = $array;
+}
+```
+
+##### Job creation
+
+```php
+$job = new MyJob($string, $integer, $array);
+```
+
+##### Advantages
+
+* Typed parameters.
+
+##### Disadvantages
+
+* Nullable values need to be provided and code handling of the nullable values has to be present. That is necessary because the queue runner calls the constructor without parameters as data will come in later from job descriptor.
+* Strict type is not completely strict because nullable values can be passed when they shouldn't be (e.g.: at job creation in your code).
+
+This approach is especially problematic on PHP 7.3 or higher as the static syntax checker may have an issue with nullable values and force you to implement additional check like `is_countable` on the job properties.
+
+#### Option 3: Job constructor without specific params
+
+The inherited constructor has a generic parameter array as the only input and we can use it to pass arbitrary parameters to our job.
+This makes the job constructor match the parent constructor signature but there is no type checking.
+
+##### Job class constructor
+
+```php
+public function __construct(array $params = [])
+{
+    if (!array_key_exists('string', $params) || !array_key_exists('integer', $params) || !array_key_exists('array', $params)) {
+        // job constructor called by the queue runner - exit early
+        return;
+    }
+
+    // job constructor called in project code - populate job data
+    $this->string = $params['string'];
+    $this->integer = $params['integer'];
+    $this->array = $params['array'];
+}
+```
+
+##### Job creation
+
+```php
+$job = new MyJob(['string' => $string, 'integer' => $integer, 'array' => $array]);
+```
+
+##### Advantages
+
+* Nullable values don't need to be handled.
+
+##### Disadvantages
+
+* No strict parameter types.
+
+This approach is probably the simplest one but with the least parameter validation.
+
+#### Option 4: Separate hydrate method
+
+This approach is the strictest when it comes to validating parameters but requires the `hydrate` method to be called after each job creation.
+Don't forget to call the `hydrate` method in your unit test as well.
+This option is recommended for projects which have many job types with complex processing. Strict checking reduces the risk of input error.
+
+##### Job class constructor
+
+```php
+// no constructor
+
+public function hydrate(string $string, int $integer, array $array): void
+{
+    $this->string = $string;
+    $this->integer = $integer;
+    $this->array = $array;
+}
+```
+
+##### Job creation
+
+```php
+$job = new MyJob();
+$job->hydrate($string, $integer, $array);
+```
+
+##### Unit tests
+
+```php
+$job = new MyJob();
+$job->hydrate($string, $integer, $array);
+$job->setup();
+$job->process();
+
+$this->assertTrue($job->jobFinished());
+// other assertions can be placed here (job side effects, job data assertions...)
+```
+
+##### Advantages
+
+* Strict parameter type checking.
+* No nullable values.
+* No issues with PHP 7.3 or higher.
+
+##### Disadvantages
+
+* Separate method has to be implemented and called after job creation in your code.
+
+### Ideal job size
+
+How much work should be done by a single job? This is the question you should ask yourself when implementing a new job type.
+There is no precise answer. This really depends on your project setup but there are some good practices that should be considered:
+
+* similar size — it's easier to optimise the queue settings and stack size of your project when your jobs are about the same size
+* split the job work into steps — this prevents your job running for too long without an update to the job manager and it lowers the risk of the job getting labelled as crashed
+* avoid jobs that are too small — jobs that are too small produce a large amount of job management overhead and are thus inefficient
+* avoid jobs that are too large — jobs that are too large are difficult to execute as they may cause timeout issues during execution.
+
+As a general rule of thumb, one run of your job's `process()` method should not exceed 30 seconds.
+
+If your job is too large and takes way too long to execute, the job manager may label the job as crashed even though it's still executing.
+If this happens you can:
+
+* Add job steps which help the job manager to determine if job is still being processed.
+* If you're job is already divided in steps, try dividing the larger steps into smaller ones.
+* If your job performs actions that can be completed independently from the others, you can split the job into several smaller dependant jobs (e.g.: there is value even if only one part is completed).
+
+The dependant job approach also allows you to run these jobs concurrently on some project setups.
+Job steps, on the other hand, always run in sequence.
+
+### Job steps
+
+It is highly recommended to use the job steps feature in your jobs.
+Correct implementation of jobs steps makes your jobs more robust.
+
+The job step feature has two main purposes.
+
+* Communicating progress to the job manager so it knows if the job execution is still underway.
+* Providing a checkpoint in case job execution is interrupted for some reason. This allows the job to resume from the last completed step instead of restarting from the beginning.
+
+The currently executing job step can also be observed in the CMS via the _Jobs admin_ UI. This is useful mostly for debugging purposes when monitoring job execution.
+
+Job steps *should not* be used to determine if a job is completed or not. You should rely on the job data or the database state instead.
+
+For example, consider a job which accept a list of items to process and each item represents a separate step.
+
+```php
+<?php
+
+namespace App\Jobs;
+
+use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
+
+/**
+ * Class MyJob
+ *
+ * @property array $items
+ * @property array $remaining
+ */
+class MyJob extends AbstractQueuedJob
+{
+    public function hydrate(array $items): void
+    {
+        $this->items = $items;
+    }
+
+    /**
+     * @return string
+     */
+    public function getTitle(): string
+    {
+        return 'My awesome job';
+    }
+
+    public function setup(): void
+    {
+        $this->remaining = $this->items;
+        $this->totalSteps = count($this->items);
+    }
+
+    public function process(): void
+    {
+        $remaining = $this->remaining;
+
+        // check for trivial case
+        if (count($remaining) === 0) {
+            $this->isComplete = true;
+
+            return;
+        }
+
+        $item = array_shift($remaining);
+
+        // code that will process your item goes here
+
+        // update job progress
+        $this->remaining = $remaining;
+        $this->currentStep += 1;
+
+        // check for job completion
+        if (count($remaining) > 0) {
+            return;
+        }
+
+        $this->isComplete = true;
+    }
+}
+
+```
+
+This job setup has following features:
+
+* one item is processed in each step
+* each step will produce a checkpoint so job can be safely resumed
+* job manager will be notified about job progress and is unlikely to label the job as crashed by mistake
+* job uses data to determine job completion rather than the steps
+* original list of items is preserved in the job data so it can be used for other purposes (dependant jobs, debug).
+
+Don't forget that in your unit test you must call `process()` as many times as you have items in your test data as one `process()` call handles only one item.
+
+### Dependant jobs
+
+Sometimes it makes sense to split the work to be done between several jobs.
+For example, consider the following flow:
+
+* page gets published (generates URLs for static cache)
+* page gets statically cached (generates static HTML for provided URLs)
+* page flushes cache on CDN for provided URLs.
+
+One way to implement this flow using queued jobs is to split the work between several jobs.
+Note that these actions have to be done in sequence, so we may not be able to queue all needed jobs right away.
+
+This may be because of:
+
+* queue processing is run on multiple threads and we can't guarantee that jobs will be run in sequence
+* later actions have data dependencies on earlier actions.
+
+In this situation, it's recommended to use the _Dependant job_ approach.
+
+Use the `updateJobDescriptorAndJobOnCompletion` extension point in `QueuedJobService::runJob()` like this:
+
+```php
+public function updateJobDescriptorAndJobOnCompletion(
+    QueuedJobDescriptor $descriptor, 
+    QueuedJob $job
+): void
+{
+    // your code goes here
+}
+```
+
+This extension point is invoked each time a job completes successfully.
+This allows you to create a new job right after the current job completes.
+You have access to the job object and to the job descriptor in the extension point. If you need any data from the previous job, simply use these two variables to access the needed data.
+
+Going back to our example, we would use the extension point to look for the static cache job, i.e. if the completed job is not the static cache job, just exit early.
+Then we would extract the URLs we need form the `$job` variable and queue a new CDN flush job with those URLs.
+
+This approach has a downside though. The newly created job will be placed at the end of the queue.
+As a consequence, the work might end up being very fragmented and each chunk may be processed at a different time.
+
+Some projects do not mind this however, so this solution may still be quite suitable.
 
 ## Contributing
 
