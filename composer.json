@@ -18,7 +18,7 @@
         "php": "^7.1",
         "silverstripe/framework": "^4",
         "silverstripe/admin": "^1",
-        "asyncphp/doorman": "^3.0"
+        "silverstripe-terraformers/doorman-process-manager": "^3.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^5.7",
