@@ -38,11 +38,21 @@ class CheckJobHealthTask extends BuildTask
     public function run($request)
     {
         $queue = $request->requestVar('queue') ?: QueuedJob::QUEUED;
+        $jobHealth = $this->getService()->checkJobHealth($queue);
 
-        $stalledJobCount = $this->getService()->checkJobHealth($queue);
+        $unhealthyJobCount = 0;
 
-        echo $stalledJobCount === 0 ? 'All jobs are healthy' : 'Detected and attempted restart on ' . $stalledJobCount .
-            ' stalled jobs';
+        foreach ( $jobHealth as $type => $IDs ) {
+            $count = count($IDs);
+            echo 'Detected and attempted restart on ' . $count . ' ' . $type . ' jobs';
+            $unhealthyJobCount = $unhealthyJobCount + $count;
+        }
+
+        if( $unhealthyJobCount === 0 ) {
+            echo 'All jobs are healthy';
+        } else {
+            die(1);
+        }
     }
 
     protected function getService()
