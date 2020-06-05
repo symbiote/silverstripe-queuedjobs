@@ -1,0 +1,58 @@
+/* This file is manually maintained, it is not generated from SCSS sources */
+
+.task__selector {
+    display: inline-block;
+    height: 42px;
+    margin: 0;
+    opacity: 0.2;
+    transform: translateX(-203px);
+    width: 199px;
+}
+
+.task__selector:after {
+    background-color: #5c5c5c;
+    content: ' ';
+    display: inline-block;
+    height: 42px;
+    transition: all 0.2s;
+    width: 199px;
+}
+
+.task__selector:checked:after,
+.task__selector:hover:after {
+    background-color: #000000;
+}
+
+.task__label {
+    border-bottom: 1px solid #000000;
+    border-right: 1px solid #000000;
+    display: inline-block;
+    font-weight: bold;
+    margin-left: -208px;
+    padding: 10px 20px;
+    text-align: center;
+    transform: translateY(-15px);
+    width: 158px;
+}
+
+.task__label:first-child {
+    margin-left: 0;
+}
+
+.task__panel {
+    display: none;
+}
+
+.task__selector--immediate:checked ~ .task__panel--immediate,
+.task__selector--universal:checked ~ .task__panel--universal,
+.task__selector--queue-only:checked ~ .task__panel--queue-only {
+    display: block;
+}
+
+.task__button--notice:hover {
+    background-color: #ebffeb;
+}
+
+.task__button + .task__button {
+    margin-left: 25px;
+}
