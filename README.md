@@ -487,6 +487,119 @@ $this->assertNotEquals(QueuedJob::STATUS_BROKEN, $descriptor->JobStatus);
 
 For example, this code snippet runs the job and checks if the job ended up in a non-broken state.
 
+## Special job variables
+
+It's good to be aware of special variables which should be used in your job implementation.
+
+* `totalSteps` (integer) - defaults to `0`, maps to `TotalSteps` DB column
+* `currentStep` (integer) - defaults to `0`, maps to `StepsProcessed` DB column
+* `isComplete` (boolean) - defaults to `false`, related to `JobStatus` DB column
+
+See `copyJobToDescriptor` for more details on the mapping between `Job` and `JobDescriptor`.
+
+### Total steps
+
+* represents total number of steps needed to complete the job
+* this variable should be set to proper value in the `setup()` function of your job
+* the value should not be changed after that
+* this variable is not used by the Queue runner and is only meant to indicate how many steps are needed (information only)
+* it is recommended to avoid using this variable inside the `process()` function of your job
+* instead, determine if your job is complete based on the job data (if there are any more items left to process)
+
+### Current step
+
+* represents number of steps processed
+* your job should increment this variable each time a job step was successfully completed
+* Queue runner will read this variable to determine if your job is stalled or not
+* it is recommended to return out of the `process()` function each time you increment this variable
+* this allows the queue runner to create a checkpoint by saving your job progress into the job descriptor which is stored in the DB
+
+### Is complete
+
+* represents the job state (complete or not)
+* setting this variable to `true` will give a signal to the queue runner to mark the job as successfully completed
+* your job should set this variable to `true` only once
+
+### Summary
+
+* `totalSteps` - information only
+* `currentStep` - Queue runner uses this to determine if job is stalled or not
+* `isComplete` - Queue runner uses this to determine if job is completed or not
+
+### Example
+
+```php
+
+<?php
+
+namespace App\Jobs;
+
+use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
+
+/**
+ * Class MyJob
+ *
+ * @property array $items
+ * @property array $remaining
+ */
+class MyJob extends AbstractQueuedJob
+{
+    public function hydrate(array $items): void
+    {
+        $this->items = $items;
+    }
+
+    /**
+     * @return string
+     */
+    public function getTitle(): string
+    {
+        return 'My awesome job';
+    }
+
+    public function setup(): void
+    {
+        $this->remaining = $this->items;
+
+        // Set the total steps to the number of items we want to process
+        $this->totalSteps = count($this->items);
+    }
+
+    public function process(): void
+    {
+        $remaining = $this->remaining;
+
+        // check for trivial case
+        if (count($remaining) === 0) {
+            $this->isComplete = true;
+
+            return;
+        }
+
+        $item = array_shift($remaining);
+
+        // code that will process your item goes here
+        $this->doSomethingWithTheItem($item);
+
+        $this->remaining = $remaining;
+
+        // Updating current step tells the Queue runner that the job is progressing
+        $this->currentStep += 1;
+
+        // check for job completion
+        if (count($remaining) > 0) {
+            // Note that we do not process more than one item at a time
+            // this makes the Queue runner save the job progress into DB
+            // in case something goes wrong the job will be resumed from the last checkpoint
+            return;
+        }
+
+        // Queue runner will mark this job as finished
+        $this->isComplete = true;
+    }
+}
+```
+
 ## Advanced job setup
 
 This section is recommended for developers who are already familiar with basic concepts and want to take full advantage of the features in this module.
