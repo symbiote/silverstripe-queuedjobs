@@ -876,18 +876,6 @@ class QueuedJobService
                         try {
                             $job->process();
                         } catch (Exception $e) {
-                            // okay, we'll just catch this exception for now
-                            $job->addMessage(
-                                _t(
-                                    __CLASS__ . '.JOB_EXCEPT',
-                                    'Job caused exception {message} in {file} at line {line}',
-                                    [
-                                        'message' => $e->getMessage(),
-                                        'file' => $e->getFile(),
-                                        'line' => $e->getLine(),
-                                    ]
-                                )
-                            );
                             $logger->error(
                                 $e->getMessage(),
                                 [
