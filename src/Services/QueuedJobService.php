@@ -476,16 +476,7 @@ class QueuedJobService
         }
 
         $this->getLogger()->error(
-            print_r(
-                [
-                    'errno' => 0,
-                    'errstr' => 'Broken jobs were found in the job queue',
-                    'errfile' => __FILE__,
-                    'errline' => __LINE__,
-                    'errcontext' => [],
-                ],
-                true
-            ),
+            'Broken jobs were found in the job queue',
             [
                 'file' => __FILE__,
                 'line' => __LINE__,
@@ -842,17 +833,8 @@ class QueuedJobService
                     );
                     if (!$jobDescriptor || !$jobDescriptor->exists()) {
                         $broken = true;
-                        $this->getLogger()->error(
-                            print_r(
-                                [
-                                    'errno' => 0,
-                                    'errstr' => 'Job descriptor ' . $jobId . ' could not be found',
-                                    'errfile' => __FILE__,
-                                    'errline' => __LINE__,
-                                    'errcontext' => [],
-                                ],
-                                true
-                            ),
+                        $logger->error(
+                            'Job descriptor ' . $jobId . ' could not be found',
                             [
                                 'file' => __FILE__,
                                 'line' => __LINE__,
@@ -1001,17 +983,8 @@ class QueuedJobService
                         $this->copyJobToDescriptor($job, $jobDescriptor);
                         $jobDescriptor->write();
                     } else {
-                        $this->getLogger()->error(
-                            print_r(
-                                [
-                                    'errno' => 0,
-                                    'errstr' => 'Job descriptor has been set to null',
-                                    'errfile' => __FILE__,
-                                    'errline' => __LINE__,
-                                    'errcontext' => [],
-                                ],
-                                true
-                            ),
+                        $logger->error(
+                            'Job descriptor has been set to null',
                             [
                                 'file' => __FILE__,
                                 'line' => __LINE__,
