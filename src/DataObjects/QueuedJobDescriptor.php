@@ -356,6 +356,20 @@ class QueuedJobDescriptor extends DataObject
     }
 
     /**
+     * @return string
+     */
+    public function getTrimmedImplementation()
+    {
+        $segments = explode('\\', $this->Implementation);
+
+        while (count($segments) > 2) {
+            array_shift($segments);
+        }
+
+        return implode('\\', $segments);
+    }
+
+    /**
      * Return a map of numeric JobType values to localisable string representations.
      * @return array
      */

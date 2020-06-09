@@ -412,6 +412,17 @@ Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor:
 
 This will add Job data and Messages raw tabs to the job descriptor edit form. Displayed information is read only.
 
+## Enabling extended admin UI
+
+In case your project has many jobs to search through and the basic UI is not enough, you can use the advanced jobs admin UI option.
+This option requires the `silverstripe-terraformers/gridfield-rich-filter-header` module, though.
+To enable the advanced UI simply add this config to your project.
+
+```yaml
+Symbiote\QueuedJobs\Controllers\QueuedJobsAdmin:
+  advanced_admin_ui: true
+```
+
 ## Contributing
 
 ### Translations

@@ -37,6 +37,9 @@
     "replace": {
         "silverstripe/queuedjobs": "self.version"
     },
+    "suggest": {
+        "silverstripe-terraformers/gridfield-rich-filter-header": "Required for advanced admin UI"
+    },
     "autoload": {
         "psr-4": {
             "Symbiote\\QueuedJobs\\": "src/",
