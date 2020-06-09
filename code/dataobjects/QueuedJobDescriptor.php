@@ -180,7 +180,7 @@ class QueuedJobDescriptor extends DataObject {
 	protected function getJobDir() {
 		// make sure our temp dir is in place. This is what will be inotify watched
 		$jobDir = Config::inst()->get('QueuedJobService', 'cache_dir');
-		if ($jobDir{0} != '/') {
+		if ($jobDir[0] != '/') {
 			$jobDir = TEMP_FOLDER . '/' . $jobDir;
 		}
 

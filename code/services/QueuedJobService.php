@@ -426,7 +426,7 @@ class QueuedJobService {
 	protected function initialiseJob(QueuedJobDescriptor $jobDescriptor) {
 		// create the job class
 		$impl = $jobDescriptor->Implementation;
-		$job = Object::create($impl);
+		$job = SS_Object::create($impl);
 		/* @var $job QueuedJob */
 		if (!$job) {
 			throw new Exception("Implementation $impl no longer exists");
@@ -919,7 +919,7 @@ class JobErrorHandler {
 	/**
 	 * For logging and catching exceptions thrown during AbstractQueuedJob::process()
 	 * and similar.
-	 */ 
+	 */
 	public function handleException($exception) {
 		$errno = E_USER_ERROR;
 		$type = get_class($exception);
@@ -935,8 +935,10 @@ class JobErrorHandler {
 	/**
 	 * Works like the core Silverstripe error handler without exiting
 	 * on fatal messages.
-	 */ 
+	 */
 	public function handleError($errno, $errstr, $errfile, $errline) {
+		$trace = debug_backtrace();
+
 		if (error_reporting()) {
 			// Don't throw E_DEPRECATED in PHP 5.3+
 			/*if (defined('E_DEPRECATED')) {
@@ -951,14 +953,14 @@ class JobErrorHandler {
 				case E_DEPRECATED:
 				case E_USER_DEPRECATED:
 				case E_STRICT:
-					Debug::noticeHandler($errno, $errstr, $errfile, $errline, debug_backtrace());
+					Debug::noticeHandler($errno, $errstr, $errfile, $errline, $trace);
 				break;
 
 				case E_WARNING:
 				case E_CORE_WARNING:
 				case E_USER_WARNING:
 				case E_RECOVERABLE_ERROR:
-					Debug::warningHandler($errno, $errstr, $errfile, $errline, debug_backtrace());
+					Debug::warningHandler($errno, $errstr, $errfile, $errline, $trace);
 				break;
 
 				default:
