@@ -2,12 +2,12 @@
 
 namespace Symbiote\QueuedJobs\Tasks\Engines;
 
-use AsyncPHP\Doorman\Manager\ProcessManager;
 use SilverStripe\Core\Environment;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\FieldType\DBDatetime;
 use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
 use Symbiote\QueuedJobs\Jobs\DoormanQueuedJobTask;
+use Symbiote\QueuedJobs\Services\ProcessManager;
 use Symbiote\QueuedJobs\Services\QueuedJob;
 use Symbiote\QueuedJobs\Services\QueuedJobService;
 
