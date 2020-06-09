@@ -12,6 +12,7 @@ SilverStripe\Core\Injector\Injector:
       queueHandler: %$QueueHandler
       # Change to %$DoormanRunner for async processing (requires *nix)
       queueRunner: %$Symbiote\QueuedJobs\Tasks\Engines\QueueRunner
+      logger: %$Psr\Log\LoggerInterface
 
   DefaultRule:
     class: 'AsyncPHP\Doorman\Rule\InMemoryRule'

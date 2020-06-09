@@ -175,6 +175,11 @@ class QueuedJobService
     private static $lock_file_path = '';
 
     /**
+     * @var LoggerInterface
+     */
+    private $logger;
+
+    /**
      * @var DefaultQueueHandler
      */
     public $queueHandler;
@@ -750,6 +755,8 @@ class QueuedJobService
      */
     public function runJob($jobId)
     {
+        $logger = $this->getLogger();
+
         // first retrieve the descriptor
         /** @var QueuedJobDescriptor $jobDescriptor */
         $jobDescriptor = DataObject::get_by_id(
@@ -781,7 +788,7 @@ class QueuedJobService
 
         $broken = false;
 
-        $this->withNestedState(function () use ($jobDescriptor, $jobId, &$broken) {
+        $this->withNestedState(function () use ($jobDescriptor, $jobId, &$broken, $logger) {
             if (!$this->grabMutex($jobDescriptor)) {
                 return;
             }
@@ -853,52 +860,18 @@ class QueuedJobService
                     }
 
                     if (!$broken) {
-                        // Inject real-time log handler
-                        $logger = Injector::inst()->get(LoggerInterface::class);
-                        if ($logger instanceof Logger) {
-                            // Check if there is already a handler
-                            $exists = false;
-                            foreach ($logger->getHandlers() as $handler) {
-                                if ($handler instanceof QueuedJobHandler) {
-                                    $exists = true;
-                                    break;
-                                }
-                            }
+                        // Add job-specific logger handling. Modifies the job singleton by reference
+                        $this->addJobHandlersToLogger($logger, $job, $jobDescriptor);
 
-                            if (!$exists) {
-                                // Add the handler
-                                /** @var QueuedJobHandler $queuedJobHandler */
-                                $queuedJobHandler = QueuedJobHandler::create($job, $jobDescriptor);
-
-                                // We only write for every 100 file
-                                $bufferHandler = new BufferHandler(
-                                    $queuedJobHandler,
-                                    100,
-                                    Logger::DEBUG,
-                                    true,
-                                    true
-                                );
-
-                                $logger->pushHandler($bufferHandler);
-                            }
-                        } else {
-                            if ($logger instanceof LoggerInterface) {
-                                $logger->warning(
-                                    'Monolog not found, messages will not output while the job is running'
-                                );
-                            }
-                        }
-
-                        // Collect output as job messages as well as sending it to the screen after processing
-                        $obLogger = function ($buffer, $phase) use ($job, $jobDescriptor) {
+                        // Collect output where jobs aren't using the logger singleton
+                        ob_start(function ($buffer, $phase) use ($job, $jobDescriptor) {
                             $job->addMessage($buffer);
                             if ($jobDescriptor) {
                                 $this->copyJobToDescriptor($job, $jobDescriptor);
                                 $jobDescriptor->write();
                             }
                             return $buffer;
-                        };
-                        ob_start($obLogger, 256);
+                        }, 256);
 
                         try {
                             $job->process();
@@ -915,7 +888,7 @@ class QueuedJobService
                                     ]
                                 )
                             );
-                            $this->getLogger()->error(
+                            $logger->error(
                                 $e->getMessage(),
                                 [
                                     'exception' => $e,
@@ -1359,7 +1332,17 @@ class QueuedJobService
      */
     public function getLogger()
     {
-        return Injector::inst()->get(LoggerInterface::class);
+        return $this->logger;
+    }
+
+    /**
+     * @param LoggerInterface $logger
+     */
+    public function setLogger(LoggerInterface $logger)
+    {
+        $this->logger = $logger;
+
+        return $this;
     }
 
     public function enableMaintenanceLock()
@@ -1423,6 +1406,51 @@ class QueuedJobService
         $expiry = DBField::create_field('Datetime', $time->getTimestamp());
 
         return $expiry->Rfc2822();
+    }
+
+    /**
+     * Add job-specific logger functionality which has the ability to flush logs into
+     * the job descriptor database record. Based on the default logger set for this class,
+     * which means it'll also log to other channels (e.g. stdout/stderr).
+     *
+     * @param QueuedJob $job
+     * @param QueuedJobDescriptor $jobDescriptor
+     */
+    private function addJobHandlersToLogger(LoggerInterface $logger, QueuedJob $job, QueuedJobDescriptor $jobDescriptor)
+    {
+        if ($logger instanceof Logger) {
+            // Check if there is already a handler
+            $exists = false;
+            foreach ($logger->getHandlers() as $handler) {
+                if ($handler instanceof QueuedJobHandler) {
+                    $exists = true;
+                    break;
+                }
+            }
+
+            if (!$exists) {
+                // Add the handler
+                /** @var QueuedJobHandler $queuedJobHandler */
+                $queuedJobHandler = QueuedJobHandler::create($job, $jobDescriptor);
+
+                // Only write for every 100 messages to avoid excessive database activity
+                $bufferHandler = new BufferHandler(
+                    $queuedJobHandler,
+                    100,
+                    Logger::DEBUG,
+                    true,
+                    true
+                );
+
+                $logger->pushHandler($bufferHandler);
+            }
+        } else {
+            if ($logger instanceof LoggerInterface) {
+                $logger->warning(
+                    'Monolog not found, messages will not output while the job is running'
+                );
+            }
+        }
     }
 
     /**
