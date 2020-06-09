@@ -849,9 +849,13 @@ class QueuedJobService
                         );
                         break;
                     }
+
+                    // Add job-specific logger handling. Modifies the job singleton by reference
+                    $this->addJobHandlersToLogger($logger, $job, $jobDescriptor);
+
                     if ($jobDescriptor->JobStatus != QueuedJob::STATUS_RUN) {
                         // we've been paused by something, so we'll just exit
-                        $job->addMessage(_t(
+                        $logger->warning(_t(
                             __CLASS__ . '.JOB_PAUSED',
                             'Job paused at {time}',
                             ['time' => DBDatetime::now()->Rfc2822()]
@@ -860,9 +864,6 @@ class QueuedJobService
                     }
 
                     if (!$broken) {
-                        // Add job-specific logger handling. Modifies the job singleton by reference
-                        $this->addJobHandlersToLogger($logger, $job, $jobDescriptor);
-
                         // Collect output where jobs aren't using the logger singleton
                         ob_start(function ($buffer, $phase) use ($job, $jobDescriptor) {
                             $job->addMessage($buffer);
@@ -896,26 +897,22 @@ class QueuedJobService
 
                         if ($stallCount > static::config()->get('stall_threshold')) {
                             $broken = true;
-                            $job->addMessage(
-                                _t(
-                                    __CLASS__ . '.JOB_STALLED',
-                                    'Job stalled after {attempts} attempts - please check',
-                                    ['attempts' => $stallCount]
-                                )
-                            );
+                            $logger->error(_t(
+                                __CLASS__ . '.JOB_STALLED',
+                                'Job stalled after {attempts} attempts - please check',
+                                ['attempts' => $stallCount]
+                            ));
                             $jobDescriptor->JobStatus = QueuedJob::STATUS_BROKEN;
                         }
 
                         // now we'll be good and check our memory usage. If it is too high, we'll set the job to
                         // a 'Waiting' state, and let the next processing run pick up the job.
                         if ($this->isMemoryTooHigh()) {
-                            $job->addMessage(
-                                _t(
-                                    __CLASS__ . '.MEMORY_RELEASE',
-                                    'Job releasing memory and waiting ({used} used)',
-                                    ['used' => $this->humanReadable($this->getMemoryUsage())]
-                                )
-                            );
+                            $logger->warning(_t(
+                                __CLASS__ . '.MEMORY_RELEASE',
+                                'Job releasing memory and waiting ({used} used)',
+                                ['used' => $this->humanReadable($this->getMemoryUsage())]
+                            ));
                             if ($jobDescriptor->JobStatus != QueuedJob::STATUS_BROKEN) {
                                 $jobDescriptor->JobStatus = QueuedJob::STATUS_WAIT;
                             }
@@ -924,7 +921,7 @@ class QueuedJobService
 
                         // Also check if we are running too long
                         if ($this->hasPassedTimeLimit()) {
-                            $job->addMessage(_t(
+                            $logger->warning(_t(
                                 __CLASS__ . '.TIME_LIMIT',
                                 'Queue has passed time limit and will restart before continuing'
                             ));
@@ -1311,7 +1308,13 @@ class QueuedJobService
      */
     public function getLogger()
     {
-        return $this->logger;
+        // Enable dependency injection
+        if ($this->logger) {
+            return $this->logger;
+        }
+
+        // Fall back to implicitly created service
+        return Injector::inst()->get(LoggerInterface::class);
     }
 
     /**

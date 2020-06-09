@@ -48,7 +48,7 @@ class ProcessJobQueueTask extends BuildTask
         $service = $this->getService();
 
         // Ensure that log messages are visible when executing this task on CLI.
-        // TODO Replace with BuildTask logger: https://github.com/silverstripe/silverstripe-framework/issues/9183
+        // Could be replaced with BuildTask logger: https://github.com/silverstripe/silverstripe-framework/issues/9183
         if (Environment::isCli()) {
             $logger = $service->getLogger();
 
