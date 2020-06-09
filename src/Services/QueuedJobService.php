@@ -720,7 +720,7 @@ class QueuedJobService
             });
 
             return true;
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             // note that error here may not be an issue as failing to acquire a job lock is a valid state
             // which happens when other process claimed the job lock first
             $this->getLogger()->debug(
@@ -875,13 +875,8 @@ class QueuedJobService
 
                         try {
                             $job->process();
-                        } catch (Exception $e) {
-                            $logger->error(
-                                $e->getMessage(),
-                                [
-                                    'exception' => $e,
-                                ]
-                            );
+                        } catch (\Throwable $e) {
+                            $logger->error($e->getMessage(), ['exception' => $e]);
                             $jobDescriptor->JobStatus =  QueuedJob::STATUS_BROKEN;
                             $this->extend('updateJobDescriptorAndJobOnException', $jobDescriptor, $job, $e);
                         }
@@ -967,10 +962,6 @@ class QueuedJobService
 
                     $this->extend('updateJobDescriptorAndJobOnCompletion', $jobDescriptor, $job);
                 }
-            } catch (Exception $e) {
-                // PHP 5.6 exception handling
-                $this->handleBrokenJobException($jobDescriptor, $job, $e);
-                $broken = true;
             } catch (\Throwable $e) {
                 // PHP 7 Error handling)
                 $this->handleBrokenJobException($jobDescriptor, $job, $e);
