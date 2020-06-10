@@ -42,7 +42,7 @@ class QueuedJobsTest extends AbstractTest
         // Allow large memory limit in cases of integration tests
         Config::modify()->set(QueuedJobService::class, 'memory_limit', 2 * 1024 * 1024 * 1024);
 
-        Injector::inst()->registerService($this->createMock(LoggerInterface::class), LoggerInterface::class);
+        Injector::inst()->registerService(@$this->createMock(LoggerInterface::class), LoggerInterface::class);
 
         Config::modify()->set(QueuedJobService::class, 'use_shutdown_function', false);
 
