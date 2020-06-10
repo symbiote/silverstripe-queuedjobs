@@ -351,11 +351,16 @@ ALTER TABLE `QueuedJobDescriptor` ADD INDEX ( `JobStatus` , `JobType` )
 The logger can be attached to a helper which is executed within a job like below:
 
 ```php
-$job = new YourQueuedJob($someArguments);
-$logger = new Logger();
-$logger->setJob($job);
-$helper = Helper::create();
-$helper->setLogger($logger);
+// Within job class
+public function process(): void
+{
+    $logger = new Logger();
+    $logger->setJob($this);
+
+    Helper::create()
+        ->setLogger($logger)
+        ->run();
+}
 ```
 
 ## Unit tests
