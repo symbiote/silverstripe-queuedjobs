@@ -819,6 +819,17 @@ As a consequence, the work might end up being very fragmented and each chunk may
 
 Some projects do not mind this however, so this solution may still be quite suitable.
 
+## Show job data
+
+In case you need an easy access to additonal job data via CMS for debug purposes enable the `show_job_data` option by including the configuration below.
+
+```yaml
+Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor:
+  show_job_data: true
+```
+
+This will add Job data and Messages raw tabs to the job descriptor edit form. Displayed information is read only.
+
 ## Contributing
 
 ### Translations
