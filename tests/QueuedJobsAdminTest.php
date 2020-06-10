@@ -53,7 +53,7 @@ class QueuedJobsAdminTest extends FunctionalTest
         Injector::inst()->registerService($request, HTTPRequest::class);
         $this->admin->setRequest($request);
 
-        $mockQueue = $this->createMock(QueuedJobService::class);
+        $mockQueue = @$this->createMock(QueuedJobService::class);
         $this->admin->jobQueue = $mockQueue;
 
         $this->logInWithPermission('ADMIN');
