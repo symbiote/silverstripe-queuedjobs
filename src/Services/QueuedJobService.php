@@ -882,11 +882,6 @@ class QueuedJobService
                             $this->extend('updateJobDescriptorAndJobOnException', $jobDescriptor, $job, $e);
                         }
 
-                        // Write any remaining batched messages at the end
-                        if (isset($bufferHandler)) {
-                            $bufferHandler->flush();
-                        }
-
                         ob_end_flush();
 
                         // now check the job state
@@ -963,6 +958,24 @@ class QueuedJobService
                 // PHP 7 Error handling)
                 $this->handleBrokenJobException($jobDescriptor, $job, $e);
                 $broken = true;
+            }
+
+            // Write any remaining batched messages at the end.
+            if ($logger instanceof Logger) {
+                foreach ($logger->getHandlers() as $handler) {
+                    if ($handler instanceof BufferHandler) {
+                        $handler->flush();
+                    }
+                }
+            }
+
+            // If using a global singleton logger here,
+            // any messages added after this point will be auto-flushed on PHP shutdown through the handler.
+            // This causes a database write, and assumes the database and table will be available at this point.
+            if ($logger instanceof Logger) {
+                $logger->setHandlers(array_filter($logger->getHandlers(), function ($handler) {
+                    return !($handler instanceof BufferHandler);
+                }));
             }
         });
 
