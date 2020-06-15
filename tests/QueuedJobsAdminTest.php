@@ -12,6 +12,7 @@ use SilverStripe\ORM\FieldType\DBDatetime;
 use Symbiote\QueuedJobs\Controllers\QueuedJobsAdmin;
 use Symbiote\QueuedJobs\Jobs\PublishItemsJob;
 use Symbiote\QueuedJobs\Services\QueuedJobService;
+use Symbiote\QueuedJobs\Tests\Jobs\TestDummyJob;
 
 /**
  * Tests for the QueuedJobsAdmin ModelAdmin clas
@@ -81,12 +82,15 @@ class QueuedJobsAdminTest extends FunctionalTest
             ->expects($this->once())
             ->method('queueJob')
             ->with($this->callback(function ($job) {
-                return $job instanceof PublishItemsJob && $job->rootID === 'foo123';
+                $this->assertInstanceOf(TestDummyJob::class, $job);
+                $this->assertEquals(['foo', 'bar', 'baz', 'qux'], $job->constructParams);
+
+                return true;
             }));
 
         $form = $this->admin->getEditForm('foo', new FieldList());
-        $form->Fields()->fieldByName('JobParams')->setValue(implode(PHP_EOL, ['foo123', 'bar']));
-        $form->Fields()->fieldByName('JobType')->setValue(PublishItemsJob::class);
+        $form->Fields()->fieldByName('JobParams')->setValue("foo\nbar\rbaz\r\nqux");
+        $form->Fields()->fieldByName('JobType')->setValue(TestDummyJob::class);
 
         $this->admin->createjob($form->getData(), $form);
     }

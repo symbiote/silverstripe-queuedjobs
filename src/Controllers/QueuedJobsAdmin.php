@@ -189,7 +189,7 @@ class QueuedJobsAdmin extends ModelAdmin
     {
         if (QueuedJobDescriptor::singleton()->canCreate()) {
             $jobType = isset($data['JobType']) ? $data['JobType'] : '';
-            $params = isset($data['JobParams']) ? explode(PHP_EOL, $data['JobParams']) : array();
+            $params = isset($data['JobParams']) ? preg_split('/\R/', trim($data['JobParams'])) : [];
 
             if (isset($data['JobStart'])) {
                 $time = is_array($data['JobStart']) ? implode(' ', $data['JobStart']) : $data['JobStart'];
