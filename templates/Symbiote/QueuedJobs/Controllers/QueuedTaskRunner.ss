@@ -10,8 +10,10 @@ $Info.RAW
     <input type="radio" id="tab-queue-only-tasks" class="task__selector task__selector--queue-only" name="task__selector" />
 
     <div class="task__panel task__panel--universal">
-        <h2>Queueable tasks</h2>
-        <p>By default these jobs will be added the job queue, rather than run immediately.</p>
+        <div class="task__intro">
+            <h2>Queueable tasks</h2>
+            <p>By default these jobs will be added the job queue, rather than run immediately.</p>
+        </div>
         <% if $UniversalTasks.Count > 0 %>
             <div class="task__list">
                 <% loop $UniversalTasks %>
@@ -31,8 +33,10 @@ $Info.RAW
     </div>
 
     <div class="task__panel task__panel--immediate">
-        <h2>Non-queueable tasks</h2>
-        <p>These tasks shouldn't be added the queuejobs queue, but you can run them immediately.</p>
+        <div class="task__intro">
+            <h2>Non-queueable tasks</h2>
+            <p>These tasks shouldn't be added the queuejobs queue, but you can run them immediately.</p>
+        </div>
         <% if $ImmediateTasks.Count > 0 %>
             <div class="task__list">
                 <% loop $ImmediateTasks %>
@@ -51,8 +55,10 @@ $Info.RAW
     </div>
 
     <div class="task__panel task__panel--queue-only">
-        <h2>Queueable only tasks</h2>
-        <p>These tasks must be be added the queuejobs queue, running it immediately is not allowed.</p>
+        <div class="task__intro">
+            <h2>Queueable only tasks</h2>
+            <p>These tasks must be be added the queuejobs queue, running it immediately is not allowed.</p>
+        </div>
         <% if $QueueOnlyTasks.Count > 0 %>
             <div class="task__list">
                 <% loop $QueueOnlyTasks %>
