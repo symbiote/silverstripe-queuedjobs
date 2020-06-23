@@ -210,7 +210,7 @@ SilverStripe\Core\Injector\Injector:
           # Sets whether the job will be recreated or not OPTIONAL
           recreate: 1
           # Set the email address to send the alert to if not set site admin email is used OPTIONAL
-          email: 'admin@email.com'
+          email: 'admin@example.com'
         # Minimal implementation will send alerts but not recreate
         AnotherTitle:
           type: 'AJob'
