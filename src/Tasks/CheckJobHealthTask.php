@@ -2,6 +2,7 @@
 
 namespace Symbiote\QueuedJobs\Tasks;
 
+use Exception;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Dev\BuildTask;
 use Symbiote\QueuedJobs\Services\QueuedJob;
@@ -34,6 +35,8 @@ class CheckJobHealthTask extends BuildTask
      *
      * @param HTTPRequest $request
      * @return
+     *
+     * @throws Exception
      */
     public function run($request)
     {
@@ -48,11 +51,11 @@ class CheckJobHealthTask extends BuildTask
             $unhealthyJobCount = $unhealthyJobCount + $count;
         }
 
-        if ($unhealthyJobCount === 0) {
-            echo 'All jobs are healthy';
-        } else {
-            die(1);
+        if ($unhealthyJobCount > 0) {
+            throw new Exception("$unhealthyJobCount jobs are unhealthy");
         }
+
+        echo 'All jobs are healthy';
     }
 
     protected function getService()
