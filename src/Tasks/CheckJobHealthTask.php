@@ -42,13 +42,13 @@ class CheckJobHealthTask extends BuildTask
 
         $unhealthyJobCount = 0;
 
-        foreach ( $jobHealth as $type => $IDs ) {
+        foreach ($jobHealth as $type => $IDs) {
             $count = count($IDs);
             echo 'Detected and attempted restart on ' . $count . ' ' . $type . ' jobs';
             $unhealthyJobCount = $unhealthyJobCount + $count;
         }
 
-        if( $unhealthyJobCount === 0 ) {
+        if ($unhealthyJobCount === 0) {
             echo 'All jobs are healthy';
         } else {
             die(1);
