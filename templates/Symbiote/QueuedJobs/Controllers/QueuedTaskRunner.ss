@@ -2,29 +2,33 @@ $Header.RAW
 $Info.RAW
 
 <div class="task">
-    <label class="task__label" for="tab-universal-tasks">Queueable task</label>
     <input type="radio" id="tab-universal-tasks" class="task__selector task__selector--universal" name="task__selector" checked="checked" />
-    <label class="task__label" for="tab-immediate-tasks">Non-queueable tasks</label>
+    <label class="task__label task__label--universal" for="tab-universal-tasks">
+        <span class="task__label-inner">Queueable task</span>
+    </label>
+
     <input type="radio" id="tab-immediate-tasks" class="task__selector task__selector--immediate" name="task__selector" />
-    <label class="task__label" for="tab-queue-only-tasks">Queueable only tasks</label>
+    <label class="task__label task__label--immediate" for="tab-immediate-tasks">
+        <span class="task__label-inner">Non-queueable tasks</span>
+    </label>
+
     <input type="radio" id="tab-queue-only-tasks" class="task__selector task__selector--queue-only" name="task__selector" />
+    <label class="task__label task__label--queue-only" for="tab-queue-only-tasks">
+        <span class="task__label-inner">Queueable only tasks</span>
+    </label>
 
     <div class="task__panel task__panel--universal">
-        <div class="task__intro">
-            <h2>Queueable tasks</h2>
-            <p>By default these jobs will be added the job queue, rather than run immediately.</p>
-        </div>
         <% if $UniversalTasks.Count > 0 %>
             <div class="task__list">
                 <% loop $UniversalTasks %>
                     <div class="task__item">
                         <div>
-                            <h3>$Title</h3>
-                            <p class="description">$Description</p>
+                            <h3 class="task__title">$Title</h3>
+                            <p class="task__description">$Description</p>
                         </div>
                         <div>
-                            <a href="{$TaskLink.ATT}" class="task__button task__button--warning">Run immediately</a>
-                            <a href="{$QueueLink.ATT}" class="task__button task__button--notice">Add to queue</a>
+                            <a href="{$TaskLink.ATT}" class="task__button">Run task</a>
+                            <a href="{$QueueLink.ATT}" class="task__button">Queue job</a>
                         </div>
                     </div>
                 <% end_loop %>
@@ -33,10 +37,6 @@ $Info.RAW
     </div>
 
     <div class="task__panel task__panel--immediate">
-        <div class="task__intro">
-            <h2>Non-queueable tasks</h2>
-            <p>These tasks shouldn't be added the queuejobs queue, but you can run them immediately.</p>
-        </div>
         <% if $ImmediateTasks.Count > 0 %>
             <div class="task__list">
                 <% loop $ImmediateTasks %>
@@ -55,10 +55,6 @@ $Info.RAW
     </div>
 
     <div class="task__panel task__panel--queue-only">
-        <div class="task__intro">
-            <h2>Queueable only tasks</h2>
-            <p>These tasks must be be added the queuejobs queue, running it immediately is not allowed.</p>
-        </div>
         <% if $QueueOnlyTasks.Count > 0 %>
             <div class="task__list">
                 <% loop $QueueOnlyTasks %>
