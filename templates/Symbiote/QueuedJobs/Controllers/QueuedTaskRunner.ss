@@ -42,11 +42,11 @@ $Info.RAW
                 <% loop $ImmediateTasks %>
                     <div class="task__item">
                         <div>
-                            <h3>$Title</h3>
-                            <p class="description">$Description</p>
+                            <h3 class="task__title">$Title</h3>
+                            <div class="task__description">$Description</div>
                         </div>
                         <div>
-                            <a href="{$TaskLink.ATT}" class="task__button task__button--warning">Run immediately</a>
+                            <a href="{$TaskLink.ATT}" class="task__button">Run task</a>
                         </div>
                     </div>
                 <% end_loop %>
@@ -60,11 +60,11 @@ $Info.RAW
                 <% loop $QueueOnlyTasks %>
                     <div class="task__item">
                         <div>
-                            <h3>$Title</h3>
-                            <p class="description">$Description</p>
+                            <h3 class="task__title">$Title</h3>
+                            <div class="task__description">$Description</div>
                         </div>
                         <div>
-                            <a href="{$QueueLink.ATT}" class="task__button task__button--notice">Add to queue</a>
+                            <a href="{$QueueLink.ATT}" class="task__button">Queue job</a>
                         </div>
                     </div>
                 <% end_loop %>
