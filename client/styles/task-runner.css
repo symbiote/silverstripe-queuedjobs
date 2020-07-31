@@ -11,20 +11,8 @@
 .task__selector {
     display: inline-block;
     height: 42px;
-    margin: 0 0 0 15px;
+    margin: 0;
     visibility: hidden;
-}
-
-.task__selector--universal {
-  width: 105px;
-}
-
-.task__selector--immediate {
-  width: 144px;
-}
-
-.task__selector--queue-only {
-  width: 146px;
 }
 
 .task__selector:checked + .task__label .task__label-inner,
@@ -37,21 +25,6 @@
     transform: translateY(-15px);
 }
 
-.task__label--universal {
-  margin-left: -109px;
-  width: 105px;
-}
-
-.task__label--immediate {
-  margin-left: -147px;
-  width: 144px;
-}
-
-.task__label--queue-only {
-  margin-left: -150px;
-  width: 146px;
-}
-
 .task__label-inner {
   border-bottom: 2px solid transparent;
   padding-bottom: 15px;
@@ -62,12 +35,13 @@
     margin-left: 0;
 }
 
-.task__panel {
+.task__panel .task__item {
     display: none;
 }
 
-.task__selector--immediate:checked ~ .task__panel--immediate,
-.task__selector--universal:checked ~ .task__panel--universal,
-.task__selector--queue-only:checked ~ .task__panel--queue-only {
-    display: block;
+.task__selector--immediate:checked ~ .task__panel .task__item--immediate,
+.task__selector--universal:checked ~ .task__panel .task__item--universal,
+.task__selector--queue-only:checked ~ .task__panel .task__item--queue-only,
+.task__selector--all:checked ~ .task__panel .task__item {
+    display: inline-block;
 }

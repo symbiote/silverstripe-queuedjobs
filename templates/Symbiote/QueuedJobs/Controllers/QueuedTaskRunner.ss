@@ -2,7 +2,12 @@ $Header.RAW
 $Info.RAW
 
 <div class="task">
-    <input type="radio" id="tab-universal-tasks" class="task__selector task__selector--universal" name="task__selector" checked="checked" />
+    <input type="radio" id="tab-all-tasks" class="task__selector task__selector--all" name="task__selector" checked="checked" />
+    <label class="task__label task__label--all" for="tab-all-tasks">
+        <span class="task__label-inner">All tasks</span>
+    </label>
+
+    <input type="radio" id="tab-universal-tasks" class="task__selector task__selector--universal" name="task__selector" />
     <label class="task__label task__label--universal" for="tab-universal-tasks">
         <span class="task__label-inner">Queueable task</span>
     </label>
@@ -17,54 +22,23 @@ $Info.RAW
         <span class="task__label-inner">Queueable only tasks</span>
     </label>
 
-    <div class="task__panel task__panel--universal">
-        <% if $UniversalTasks.Count > 0 %>
+    <div class="task__panel">
+        <% if $Tasks.Count > 0 %>
             <div class="task__list">
-                <% loop $UniversalTasks %>
-                    <div class="task__item">
+                <% loop $Tasks %>
+                    <div class="task__item task__item--{$Type}">
                         <div>
                             <h3 class="task__title">$Title</h3>
                             <div class="task__description">$Description</div>
                         </div>
                         <div>
-                            <a href="{$TaskLink.ATT}" class="task__button">Run task</a>
-                            <a href="{$QueueLink.ATT}" class="task__button">Queue job</a>
-                        </div>
-                    </div>
-                <% end_loop %>
-            </div>
-        <% end_if %>
-    </div>
+                            <% if $TaskLink %>
+                                <a href="{$TaskLink.ATT}" class="task__button">Run task</a>
+                            <% end_if %>
 
-    <div class="task__panel task__panel--immediate">
-        <% if $ImmediateTasks.Count > 0 %>
-            <div class="task__list">
-                <% loop $ImmediateTasks %>
-                    <div class="task__item">
-                        <div>
-                            <h3 class="task__title">$Title</h3>
-                            <div class="task__description">$Description</div>
-                        </div>
-                        <div>
-                            <a href="{$TaskLink.ATT}" class="task__button">Run task</a>
-                        </div>
-                    </div>
-                <% end_loop %>
-            </div>
-        <% end_if %>
-    </div>
-
-    <div class="task__panel task__panel--queue-only">
-        <% if $QueueOnlyTasks.Count > 0 %>
-            <div class="task__list">
-                <% loop $QueueOnlyTasks %>
-                    <div class="task__item">
-                        <div>
-                            <h3 class="task__title">$Title</h3>
-                            <div class="task__description">$Description</div>
-                        </div>
-                        <div>
-                            <a href="{$QueueLink.ATT}" class="task__button">Queue job</a>
+                            <% if $QueueLink %>
+                                <a href="{$QueueLink.ATT}" class="task__button">Queue job</a>
+                            <% end_if %>
                         </div>
                     </div>
                 <% end_loop %>

@@ -7,7 +7,6 @@ use SilverStripe\Control\Director;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Core\Convert;
 use SilverStripe\Core\Injector\Injector;
-use SilverStripe\Core\Manifest\ModuleResourceLoader;
 use SilverStripe\Dev\BuildTask;
 use SilverStripe\Dev\DebugView;
 use SilverStripe\Dev\TaskRunner;
@@ -41,6 +40,13 @@ class QueuedTaskRunner extends TaskRunner
      */
     private static $allowed_actions = [
         'queueTask',
+    ];
+
+    /**
+     * @var array
+     */
+    private static $css = [
+        'symbiote/silverstripe-queuedjobs:client/styles/task-runner.css',
     ];
 
     /**
@@ -79,9 +85,9 @@ class QueuedTaskRunner extends TaskRunner
         $backlistedTasks = [];
         $queuedOnlyTasks = [];
 
-        // universal tasks
-        $universalTaskList = ArrayList::create();
+        $taskList = ArrayList::create();
 
+        // universal tasks
         foreach ($tasks as $task) {
             if (in_array($task['class'], $blacklist)) {
                 $backlistedTasks[] = $task;
@@ -95,22 +101,22 @@ class QueuedTaskRunner extends TaskRunner
                 continue;
             }
 
-            $universalTaskList->push(ArrayData::create([
+            $taskList->push(ArrayData::create([
                 'QueueLink' => $baseUrl . 'dev/tasks/queue/' . $task['segment'],
                 'TaskLink' => $baseUrl . 'dev/tasks/' . $task['segment'],
                 'Title' => $task['title'],
                 'Description' => $task['description'],
+                'Type' => 'universal',
             ]));
         }
 
         // Non-queueable tasks
-        $immediateTaskList = ArrayList::create();
-
         foreach ($backlistedTasks as $task) {
-            $immediateTaskList->push(ArrayData::create([
+            $taskList->push(ArrayData::create([
                 'TaskLink' => $baseUrl . 'dev/tasks/' . $task['segment'],
                 'Title' => $task['title'],
                 'Description' => $task['description'],
+                'Type' => 'immediate',
             ]));
         }
 
@@ -118,33 +124,20 @@ class QueuedTaskRunner extends TaskRunner
         $queueOnlyTaskList = ArrayList::create();
 
         foreach ($queuedOnlyTasks as $task) {
-            $queueOnlyTaskList->push(ArrayData::create([
+            $taskList->push(ArrayData::create([
                 'QueueLink' => $baseUrl . 'dev/tasks/queue/' . $task['segment'],
                 'Title' => $task['title'],
                 'Description' => $task['description'],
+                'Type' => 'queue-only',
             ]));
         }
 
         $renderer = DebugView::create();
         $header = $renderer->renderHeader();
-
-        $cssIncludes = [
-            'silverstripe/framework:client/styles/task-runner.css',
-            'symbiote/silverstripe-queuedjobs:client/styles/task-runner.css',
-        ];
-
-        foreach ($cssIncludes as $cssResource) {
-            $cssPath = ModuleResourceLoader::singleton()->resolveURL($cssResource);
-
-            // inject CSS into the heaader
-            $cssInclude = sprintf('<link rel="stylesheet" type="text/css" href="%s" />', $cssPath);
-            $header = str_replace('</head>', $cssInclude . '</head>', $header);
-        }
+        $header = $this->addCssToHeader($header);
 
         $data = [
-            'UniversalTasks' => $universalTaskList,
-            'ImmediateTasks' => $immediateTaskList,
-            'QueueOnlyTasks' => $queueOnlyTaskList,
+            'Tasks' => $taskList,
             'Header' => $header,
             'Footer' => $renderer->renderFooter(),
             'Info' => $renderer->renderInfo('SilverStripe Development Tools: Tasks (QueuedJobs version)', $baseUrl),
