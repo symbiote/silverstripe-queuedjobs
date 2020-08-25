@@ -16,7 +16,7 @@
     ],
     "require": {
         "php": "^7.1",
-        "silverstripe/framework": "^4",
+        "silverstripe/framework": "^4.7",
         "silverstripe/admin": "^1",
         "asyncphp/doorman": "^3.0"
     },
