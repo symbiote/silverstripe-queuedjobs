@@ -16,7 +16,7 @@
     ],
     "require": {
         "php": "^7.1",
-        "silverstripe/framework": "^4",
+        "silverstripe/framework": "^4.7",
         "silverstripe/admin": "^1",
         "asyncphp/doorman": "^3.0"
     },
@@ -29,7 +29,10 @@
     "extra": {
         "branch-alias": {
             "dev-master": "4.x-dev"
-        }
+        },
+        "expose": [
+            "client/styles"
+        ]
     },
     "replace": {
         "silverstripe/queuedjobs": "self.version"

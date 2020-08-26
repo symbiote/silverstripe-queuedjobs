@@ -1,0 +1,47 @@
+/* This file is manually maintained, it is not generated from SCSS sources */
+
+.task {
+  padding-top: 10px;
+}
+
+.task__panel {
+  padding: 10px 15px 15px 15px;
+}
+
+.task__selector {
+    display: inline-block;
+    height: 42px;
+    margin: 0;
+    visibility: hidden;
+}
+
+.task__selector:checked + .task__label .task__label-inner,
+.task__selector:hover + .task__label .task__label-inner {
+  border-bottom-color: #43536d;
+}
+
+.task__label {
+    display: inline-block;
+    transform: translateY(-15px);
+}
+
+.task__label-inner {
+  border-bottom: 2px solid transparent;
+  padding-bottom: 15px;
+  transition: border-bottom-color 0.2s;
+}
+
+.task__label:first-child {
+    margin-left: 0;
+}
+
+.task__panel .task__item {
+    display: none;
+}
+
+.task__selector--immediate:checked ~ .task__panel .task__item--immediate,
+.task__selector--universal:checked ~ .task__panel .task__item--universal,
+.task__selector--queue-only:checked ~ .task__panel .task__item--queue-only,
+.task__selector--all:checked ~ .task__panel .task__item {
+    display: inline-block;
+}

@@ -10,6 +10,9 @@ use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\BuildTask;
 use SilverStripe\Dev\DebugView;
 use SilverStripe\Dev\TaskRunner;
+use SilverStripe\ORM\ArrayList;
+use SilverStripe\View\ArrayData;
+use SilverStripe\View\ViewableData;
 use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
 use Symbiote\QueuedJobs\Jobs\RunBuildTaskJob;
 use Symbiote\QueuedJobs\Services\QueuedJobService;
@@ -40,6 +43,13 @@ class QueuedTaskRunner extends TaskRunner
     ];
 
     /**
+     * @var array
+     */
+    private static $css = [
+        'symbiote/silverstripe-queuedjobs:client/styles/task-runner.css',
+    ];
+
+    /**
      * Tasks on this list will be available to be run only via browser
      *
      * @config
@@ -62,6 +72,12 @@ class QueuedTaskRunner extends TaskRunner
 
     public function index()
     {
+        if (Director::is_cli()) {
+            // CLI mode - revert to default behaviour
+            return parent::index();
+        }
+
+        $baseUrl = Director::absoluteBaseURL();
         $tasks = $this->getTasks();
 
         $blacklist = (array) $this->config()->get('task_blacklist');
@@ -69,78 +85,65 @@ class QueuedTaskRunner extends TaskRunner
         $backlistedTasks = [];
         $queuedOnlyTasks = [];
 
-        // Web mode
-        if (!Director::is_cli()) {
-            $renderer = new DebugView();
-            echo $renderer->renderHeader();
-            echo $renderer->renderInfo(
-                "SilverStripe Development Tools: Tasks (QueuedJobs version)",
-                Director::absoluteBaseURL()
-            );
-            $base = Director::absoluteBaseURL();
+        $taskList = ArrayList::create();
 
-            echo "<div class=\"options\">";
-            echo "<h2>Queueable jobs</h2>\n";
-            echo "<p>By default these jobs will be added the job queue, rather than run immediately</p>\n";
-            echo "<ul>";
-            foreach ($tasks as $task) {
-                if (in_array($task['class'], $blacklist)) {
-                    $backlistedTasks[] = $task;
+        // universal tasks
+        foreach ($tasks as $task) {
+            if (in_array($task['class'], $blacklist)) {
+                $backlistedTasks[] = $task;
 
-                    continue;
-                }
-
-                if (in_array($task['class'], $queuedOnlyList)) {
-                    $queuedOnlyTasks[] = $task;
-
-                    continue;
-                }
-
-                $queueLink = $base . "dev/tasks/queue/" . $task['segment'];
-                $immediateLink = $base . "dev/tasks/" . $task['segment'];
-
-                echo "<li><p>";
-                echo "<a href=\"$queueLink\">" . $task['title'] . "</a> <a style=\"font-size: 80%; padding-left: 20px\""
-                    . " href=\"$immediateLink\">[run immediately]</a><br />";
-                echo "<span class=\"description\">" . $task['description'] . "</span>";
-                echo "</p></li>\n";
+                continue;
             }
-            echo "</ul></div>";
 
-            echo "<div class=\"options\">";
-            echo "<h2>Non-queueable tasks</h2>\n";
-            echo "<p>These tasks shouldn't be added the queuejobs queue, but you can run them immediately.</p>\n";
-            echo "<ul>";
-            foreach ($backlistedTasks as $task) {
-                $immediateLink = $base . "dev/tasks/" . $task['segment'];
+            if (in_array($task['class'], $queuedOnlyList)) {
+                $queuedOnlyTasks[] = $task;
 
-                echo "<li><p>";
-                echo "<a href=\"$immediateLink\">" . $task['title'] . "</a><br />";
-                echo "<span class=\"description\">" . $task['description'] . "</span>";
-                echo "</p></li>\n";
+                continue;
             }
-            echo "</ul></div>";
 
-            echo "<div class=\"options\">";
-            echo "<h2>Queueable only tasks</h2>\n";
-            echo "<p>These tasks must be be added the queuejobs queue, running it immediately is not allowed.</p>\n";
-            echo "<ul>";
-            foreach ($queuedOnlyTasks as $task) {
-                $queueLink = $base . "dev/tasks/queue/" . $task['segment'];
-
-                echo "<li><p>";
-                echo "<a href=\"$queueLink\">" . $task['title'] . "</a><br />";
-                echo "<span class=\"description\">" . $task['description'] . "</span>";
-                echo "</p></li>\n";
-            }
-            echo "</ul></div>";
-
-            echo $renderer->renderFooter();
-
-            // CLI mode - revert to default behaviour
-        } else {
-            return parent::index();
+            $taskList->push(ArrayData::create([
+                'QueueLink' => $baseUrl . 'dev/tasks/queue/' . $task['segment'],
+                'TaskLink' => $baseUrl . 'dev/tasks/' . $task['segment'],
+                'Title' => $task['title'],
+                'Description' => $task['description'],
+                'Type' => 'universal',
+            ]));
         }
+
+        // Non-queueable tasks
+        foreach ($backlistedTasks as $task) {
+            $taskList->push(ArrayData::create([
+                'TaskLink' => $baseUrl . 'dev/tasks/' . $task['segment'],
+                'Title' => $task['title'],
+                'Description' => $task['description'],
+                'Type' => 'immediate',
+            ]));
+        }
+
+        // Queue only tasks
+        $queueOnlyTaskList = ArrayList::create();
+
+        foreach ($queuedOnlyTasks as $task) {
+            $taskList->push(ArrayData::create([
+                'QueueLink' => $baseUrl . 'dev/tasks/queue/' . $task['segment'],
+                'Title' => $task['title'],
+                'Description' => $task['description'],
+                'Type' => 'queue-only',
+            ]));
+        }
+
+        $renderer = DebugView::create();
+        $header = $renderer->renderHeader();
+        $header = $this->addCssToHeader($header);
+
+        $data = [
+            'Tasks' => $taskList,
+            'Header' => $header,
+            'Footer' => $renderer->renderFooter(),
+            'Info' => $renderer->renderInfo('SilverStripe Development Tools: Tasks (QueuedJobs version)', $baseUrl),
+        ];
+
+        return ViewableData::create()->renderWith(static::class, $data);
     }
 
 
