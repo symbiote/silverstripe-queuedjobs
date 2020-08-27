@@ -92,6 +92,7 @@ In your YML set the below:
 
 
 ```yaml
+
 ---
 Name: localproject
 After: '#queuedjobsettings'
@@ -109,6 +110,7 @@ SilverStripe\Core\Injector\Injector:
 * Create a `_config/queuedjobs.yml` file in your project with the following declaration
 
 ```yaml
+
 ---
 Name: localproject
 After: '#queuedjobsettings'
@@ -288,6 +290,116 @@ detected:
 
 ```
 */5 * * * * /path/to/silverstripe/vendor/bin/sake dev/tasks/CheckJobHealthTask
+```
+## Special job variables
+
+It's good to be aware of special variables which should be used in your job implementation.
+
+* `totalSteps` (integer) - defaults to `0`, maps to `TotalSteps` DB column, information only
+* `currentStep` (integer) - defaults to `0`, maps to `StepsProcessed` DB column, Queue runner uses this to determine if job is stalled or not
+* `isComplete` (boolean) - defaults to `false`, related to `JobStatus` DB column, Queue runner uses this to determine if job is completed or not
+
+See `copyJobToDescriptor` for more details on the mapping between `Job` and `JobDescriptor`.
+
+### Total steps
+
+Represents total number of steps needed to complete the job.
+
+* this variable should be set to the number of steps you expect your job to go though during its execution
+* this needs to be done in the `setup()` function of your job, the value should not be changed after that
+* this variable is not used by the Queue runner and is only meant to indicate how many steps are needed (information only)
+* it is recommended to avoid using this variable inside the `process()` function of your job instead, determine if your job is complete based on the job data (if there are any more items left to process)
+
+### Current step
+
+Represents number of steps processed.
+
+* your job should increment this variable each time a job step was successfully completed
+* Queue runner will read this variable to determine if your job is stalled or not
+* it is recommended to return out of the `process()` function each time you increment this variable
+* this allows the queue runner to create a checkpoint by saving your job progress into the job descriptor which is stored in the DB
+
+### Is complete
+
+Represents the job state (complete or not).
+
+* setting this variable to `true` will give a signal to the queue runner to mark the job as successfully completed
+* your job should set this variable to `true` only once
+
+### Example
+
+This example illustrates how each special variable should be used in your job implementation.
+
+```php
+
+<?php
+
+namespace App\Jobs;
+
+use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
+
+/**
+ * Class MyJob
+ *
+ * @property array $items
+ * @property array $remaining
+ */
+class MyJob extends AbstractQueuedJob
+{
+    public function hydrate(array $items): void
+    {
+        $this->items = $items;
+    }
+
+    /**
+     * @return string
+     */
+    public function getTitle(): string
+    {
+        return 'My awesome job';
+    }
+
+    public function setup(): void
+    {
+        $this->remaining = $this->items;
+
+        // Set the total steps to the number of items we want to process
+        $this->totalSteps = count($this->items);
+    }
+
+    public function process(): void
+    {
+        $remaining = $this->remaining;
+
+        // check for trivial case
+        if (count($remaining) === 0) {
+            $this->isComplete = true;
+
+            return;
+        }
+
+        $item = array_shift($remaining);
+
+        // code that will process your item goes here
+        $this->doSomethingWithTheItem($item);
+
+        $this->remaining = $remaining;
+
+        // Updating current step tells the Queue runner that the job is progressing
+        $this->currentStep += 1;
+
+        // check for job completion
+        if (count($remaining) > 0) {
+            // Note that we do not process more than one item at a time
+            // this makes the Queue runner save the job progress into DB
+            // in case something goes wrong the job will be resumed from the last checkpoint
+            return;
+        }
+
+        // Queue runner will mark this job as finished
+        $this->isComplete = true;
+    }
+}
 ```
 
 ## Troubleshooting
