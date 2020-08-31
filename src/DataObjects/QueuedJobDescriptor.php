@@ -417,15 +417,15 @@ class QueuedJobDescriptor extends DataObject
         );
 
         $startAfter->setDescription(
-            'Fill this out if you want to prevent the job from starting earlier than the specified time.'
+            'Used to prevent the job from starting earlier than the specified time.'
             . ' Note that this does not guarantee that the job will start'
-            . ' exactly at the specified time (it can start later).'
+            . ' exactly at the specified time (it will start the next time the cron job runs).'
         );
 
         $runAs
             ->setTitle('Run With User')
             ->setDescription(
-                'Select a user you want to be used to run this job.'
+                'Select a user to be used to run this job.'
                 . ' This should be used in case the changes done by this job'
                 . ' have to look like the specified user made them.'
             );
@@ -491,7 +491,7 @@ class QueuedJobDescriptor extends DataObject
 
         $resumeCount->setDescription(
             sprintf(
-                'Number of times this job stalled and was resumed (limit %d).',
+                'Number of times this job stalled and was resumed (limit of %d time(s)).',
                 QueuedJobService::singleton()->config()->get('stall_threshold')
             )
         );
