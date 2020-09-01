@@ -2,13 +2,21 @@
 
 namespace Symbiote\QueuedJobs\DataObjects;
 
+use DateInterval;
+use DateTime;
 use SilverStripe\Assets\Filesystem;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Convert;
+use SilverStripe\Forms\CheckboxField;
+use SilverStripe\Forms\DatetimeField;
 use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\FieldList;
+use SilverStripe\Forms\HeaderField;
 use SilverStripe\Forms\LiteralField;
+use SilverStripe\Forms\NumericField;
+use SilverStripe\Forms\TextField;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\ORM\FieldType\DBDatetime;
 use SilverStripe\ORM\FieldType\DBField;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\Permission;
@@ -330,10 +338,7 @@ class QueuedJobDescriptor extends DataObject
     public function getCMSFields()
     {
         $fields = parent::getCMSFields();
-        $fields->replaceField(
-            'JobType',
-            new DropdownField('JobType', $this->fieldLabel('JobType'), $this->getJobTypeValues())
-        );
+
         $statuses = [
             QueuedJob::STATUS_NEW,
             QueuedJob::STATUS_INIT,
@@ -344,13 +349,159 @@ class QueuedJobDescriptor extends DataObject
             QueuedJob::STATUS_CANCELLED,
             QueuedJob::STATUS_BROKEN,
         ];
-        $fields->replaceField(
+
+        $runAs = $fields->fieldByName('Root.Main.RunAsID');
+
+        $fields->removeByName([
+            'Expiry',
+            'Implementation',
+            'JobTitle',
+            'JobFinished',
+            'JobRestarted',
+            'JobType',
+            'JobStarted',
             'JobStatus',
-            DropdownField::create('JobStatus', $this->fieldLabel('JobStatus'), array_combine($statuses, $statuses))
+            'LastProcessedCount',
+            'NotifiedBroken',
+            'ResumeCounts',
+            'RunAs',
+            'RunAsID',
+            'SavedJobData',
+            'SavedJobMessages',
+            'Signature',
+            'StepsProcessed',
+            'StartAfter',
+            'TotalSteps',
+            'Worker',
+            'WorkerCount',
+        ]);
+
+        // Main
+        $fields->addFieldsToTab('Root.Main', [
+            LiteralField::create(
+                'JobProgressReportIntro',
+                sprintf(
+                    '<p>%3$0.2f%% completed</p><p><progress value="%1$d" max="%2$d">%3$0.2f%%</progress></p>',
+                    $this->StepsProcessed,
+                    $this->TotalSteps,
+                    $this->TotalSteps > 0 ? ($this->StepsProcessed / $this->TotalSteps) * 100 : 0
+                )
+            ),
+            $jobTitle = TextField::create('JobTitle', 'Title'),
+            $status = DropdownField::create('JobStatus', 'Status', array_combine($statuses, $statuses)),
+            $jobType = DropdownField::create('JobType', 'Queue type', $this->getJobTypeValues()),
+            $runAs,
+            $startAfter = DatetimeField::create('StartAfter', 'Scheduled Start Time'),
+            HeaderField::create('JobTimelineTitle', 'Timeline'),
+            LiteralField::create(
+                'JobTimelineIntro',
+                sprintf(
+                    '<p>%s</p>',
+                    'It is recommended to avoid editing these fields'
+                    . ' as they are managed by the Queue Runner / Service.'
+                )
+            ),
+            $jobStarted = DatetimeField::create('JobStarted', 'Started (initial)'),
+            $jobRestarted = DatetimeField::create('JobRestarted', 'Started (recent)'),
+            $jobFinished = DatetimeField::create('JobFinished', 'Completed'),
+        ]);
+
+        $jobFinished->setDescription('Job completion time.');
+        $jobRestarted->setDescription('Most recent attempt to run the job.');
+        $jobStarted->setDescription('First attempt to run the job.');
+        $jobType->setDescription('Type of Queue which the jobs belongs to.');
+        $status->setDescription('Represents current state within the job lifecycle.');
+
+        $jobTitle->setDescription(
+            'This field can be used to hold user comments about specific jobs (no functional impact).'
         );
 
-        $fields->removeByName('SavedJobData');
-        $fields->removeByName('SavedJobMessages');
+        $startAfter->setDescription(
+            'Used to prevent the job from starting earlier than the specified time.'
+            . ' Note that this does not guarantee that the job will start'
+            . ' exactly at the specified time (it will start the next time the cron job runs).'
+        );
+
+        $runAs
+            ->setTitle('Run With User')
+            ->setDescription(
+                'Select a user to be used to run this job.'
+                . ' This should be used in case the changes done by this job'
+                . ' have to look like the specified user made them.'
+            );
+
+        // Advanced
+        $fields->addFieldsToTab('Root.Advanced', [
+            HeaderField::create('AdvancedTabTitle', 'Advanced fields', 1),
+            LiteralField::create(
+                'AdvancedTabIntro',
+                sprintf(
+                    '<p>%s</p>',
+                    'It is recommended to avoid editing these fields'
+                    . ' as they are managed by the Queue Runner / Service.'
+                )
+            ),
+            $implementation = TextField::create('Implementation', 'Job Class'),
+            $signature = TextField::create('Signature', 'Job Signature'),
+            $notifiedBroken = CheckboxField::create('NotifiedBroken', 'Broken job notification sent'),
+            HeaderField::create('AdvancedTabProgressTitle', 'Progression metadata'),
+            LiteralField::create(
+                'AdvancedTabProgressIntro',
+                sprintf(
+                    '<p>%s</p>',
+                    'Job progression mechanism related fields which are used to'
+                    . ' ensure that stalled jobs are paused / resumed.'
+                )
+            ),
+            $totalSteps = NumericField::create('TotalSteps', 'Steps Total'),
+            $stepsProcessed = NumericField::create('StepsProcessed', 'Steps Processed'),
+            $lastProcessCount = NumericField::create('LastProcessedCount', 'Steps Processed (previous)'),
+            $resumeCount = NumericField::create('ResumeCounts', 'Resume Count'),
+            HeaderField::create('AdvancedTabLockTitle', 'Lock metadata'),
+            LiteralField::create(
+                'AdvancedTabLockTitleIntro',
+                sprintf(
+                    '<p>%s</p>',
+                    'Job locking mechanism related fields which are used to'
+                    . ' ensure that every job gets executed only once at any given time.'
+                )
+            ),
+            $worker = TextField::create('Worker', 'Worker Signature'),
+            $workerCount = NumericField::create('WorkerCount', 'Worker Count'),
+            $expiry = DatetimeField::create('Expiry', 'Lock Expiry'),
+        ]);
+
+        $implementation->setDescription('Class name which is used to execute this job.');
+        $notifiedBroken->setDescription('Indicates if a broken job notification was sent (this happens only once).');
+        $totalSteps->setDescription('Number of steps which is needed to complete this job.');
+        $stepsProcessed->setDescription('Number of steps processed so far.');
+        $workerCount->setDescription('Number of workers (processes) used to execute this job overall.');
+        $worker->setDescription(
+            'Used by a worker (process) to claim this job which prevents any other process from claiming it.'
+        );
+
+        $lastProcessCount->setDescription(
+            'Steps Processed value from previous execution of this job'
+            . ', used to compare against current state of the steps to determine the difference (progress).'
+        );
+
+        $signature->setDescription(
+            'Usualy derived from the job data, prevents redundant jobs from being created to some degree.'
+        );
+
+        $resumeCount->setDescription(
+            sprintf(
+                'Number of times this job stalled and was resumed (limit of %d time(s)).',
+                QueuedJobService::singleton()->config()->get('stall_threshold')
+            )
+        );
+
+        $expiry->setDescription(
+            sprintf(
+                'Specifies when the lock is released (lock expires %d seconds after the job is claimed).',
+                $this->getWorkerExpiry()
+            )
+        );
 
         if (strlen($this->SavedJobMessages)) {
             $fields->addFieldToTab('Root.Messages', LiteralField::create('Messages', $this->getMessages()));
@@ -362,5 +513,18 @@ class QueuedJobDescriptor extends DataObject
 
         // Readonly CMS view is a lot more useful for debugging than no view at all
         return $fields->makeReadonly();
+    }
+
+    private function getWorkerExpiry()
+    {
+        $now = DBDatetime::now();
+        $time = new DateTime($now->Rfc2822());
+        $timeToLive = QueuedJobService::singleton()->config()->get('worker_ttl');
+
+        if ($timeToLive) {
+            $time->add(new DateInterval($timeToLive));
+        }
+
+        return $time->getTimestamp() - $now->getTimestamp();
     }
 }
