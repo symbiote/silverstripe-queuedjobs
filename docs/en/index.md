@@ -78,9 +78,11 @@ a runner might already be preconfigured for you - in this case Doorman.
 
 ## Cleaning up job entries {#cleanup}
 
-Depending 
-
-By default the CleanupJob is disabled. To enable it, set the following in your YML:
+Every job is a database record, and this table can fill up fast!
+While it's great to have a record of when and how each job has run,
+this can lead to delays in reading and writing from the `QueuedJobDescriptor` table.
+The module has an optional `CleanupJob` for this purpose. You can enable
+it through your config:
 
 ```yaml
 Symbiote\QueuedJobs\Jobs\CleanupJob:
