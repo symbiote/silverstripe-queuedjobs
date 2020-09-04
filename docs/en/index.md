@@ -1,6 +1,16 @@
 # Overview
 
-## Installation
+ * [Installation](#installation)
+ * [Triggering jobs](#triggering-jobs)
+ * [Defining Jobs](#defining-jobs)
+ * [Choosing a Runner](#choosing-a-runner)
+ * [Long-running Jobs](#long-running-jobs)
+ * [Immediate Jobs](#immediate-jobs)
+ * [Logging and Error Reporting](#logging-and-reporting)
+ * [Default Jobs](#default-jobs)
+ * [Job States](#job-states)
+
+## Installation {#installation}
 
 Install the cronjob needed to manage all the jobs within the system. It is best to have this execute as the
 same user as your webserver - this prevents any problems with file permissions.
@@ -27,7 +37,7 @@ vendor/bin/sake dev/tasks/ProcessJobQueueTask
 
 The job should now be marked with `Status=Completed`.
 
-## Triggering jobs
+## Triggering jobs {#triggering-jobs}
 
 ```php
 $publish = new PublishItemsJob(21);
@@ -42,7 +52,13 @@ $publish = new PublishItemsJob(21);
 singleton('QueuedJobService')->queueJob($publish, date('Y-m-d H:i:s', time() + 86400));
 ```
 
-## Choosing a runner
+## Defining jobs {#defining-jobs}
+
+Jobs are just PHP classes. They are stored as database records,
+and can have different states, as well as multiple steps.
+See [Defining Jobs](defining-jobs.md) for more information.
+
+## Choosing a runner {#choosing-a-runner}
 
 The default runner (`Symbiote\QueuedJobs\Tasks\Engines\QueueRunner`)
 for queued (rather than immediate) jobs
@@ -94,7 +110,7 @@ Symbiote\QueuedJobs\Jobs\CleanupJob:
     - Complete
 ```
 
-## Long-Running Jobs
+## Long-Running Jobs {#long-running-jobs}
 
 If your code is to make use of the 'long' jobs, ie that could take days to process, also install another task
 that processes this queue. Its time of execution can be left a little longer.
@@ -124,7 +140,7 @@ QueuedJobService::singleton()
     ->queueJob($publish, DBDatetime::create()->setValue(DBDatetime::now()->getTimestamp() + 86400)->Rfc2822());
 ```
 
-## Immediate Jobs
+## Immediate Jobs {#immediate-jobs}
 
 Queued jobs can be executed immediately (instead of being limited by cron's 1 minute interval) by using
 a file based notification system. This relies on something like inotifywait to monitor a folder (by
@@ -164,12 +180,12 @@ Some jobs should always be either running or queued to run, things like data ref
 See [Default Jobs](default-jobs.md) for information on how to
 disable or pause these jobs.
 
-### Understanding job states
+## Job states {#job-states}
 
 It's really useful to understand how job state changes during the job lifespan as it makes troubleshooting easier.
 Following chart shows the whole job lifecycle:
 
-![JobStatus](docs/job_status.jpg)
+![JobStatus](../job_status.jpg)
 
 * every job starts in `New` state
 * every job should eventually reach either `Complete`, `Broken` or `Paused`
