@@ -8,6 +8,39 @@ same user as your webserver - this prevents any problems with file permissions.
 ```
 
 * If your code is to make use of the 'long' jobs, ie that could take days to process, also install another task
+## Cleaning up job entries
+
+Depending 
+
+By default the CleanupJob is disabled. To enable it, set the following in your YML:
+
+```yaml
+Symbiote\QueuedJobs\Jobs\CleanupJob:
+  is_enabled: true
+```
+
+You will need to trigger the first run manually in the UI. After that the CleanupJob is run once a day.
+
+You can configure this job to clean up based on the number of jobs, or the age of the jobs. This is
+configured with the `cleanup_method` setting - current valid values are "age" (default)  and "number".
+Each of these methods will have a value associated with it - this is an integer, set with `cleanup_value`.
+For "age", this will be converted into days; for "number", it is the minimum number of records to keep, sorted by LastEdited.
+The default value is 30, as we are expecting days.
+
+You can determine which JobStatuses are allowed to be cleaned up. The default setting is to clean up "Broken" and "Complete" jobs. All other statuses can be configured with `cleanup_statuses`. You can also define `query_limit` to limit the number of rows queried/deleted by the cleanup job (defaults to 100k).
+
+The default configuration looks like this:
+
+```yaml
+Symbiote\QueuedJobs\Jobs\CleanupJob:
+  is_enabled: false
+  query_limit: 100000
+  cleanup_method: "age"
+  cleanup_value: 30
+  cleanup_statuses:
+    - Broken
+    - Complete
+```
 that processes this queue. Its time of execution can be left a little longer.
 
 ```
@@ -172,38 +205,6 @@ SilverStripe\Core\Injector\Injector:
           type: 'AJob'
           filter:
             JobTitle: 'A job'
-```
-
-## Configuring the CleanupJob
-
-By default the CleanupJob is disabled. To enable it, set the following in your YML:
-
-```yaml
-Symbiote\QueuedJobs\Jobs\CleanupJob:
-  is_enabled: true
-```
-
-You will need to trigger the first run manually in the UI. After that the CleanupJob is run once a day.
-
-You can configure this job to clean up based on the number of jobs, or the age of the jobs. This is
-configured with the `cleanup_method` setting - current valid values are "age" (default)  and "number".
-Each of these methods will have a value associated with it - this is an integer, set with `cleanup_value`.
-For "age", this will be converted into days; for "number", it is the minimum number of records to keep, sorted by LastEdited.
-The default value is 30, as we are expecting days.
-
-You can determine which JobStatuses are allowed to be cleaned up. The default setting is to clean up "Broken" and "Complete" jobs. All other statuses can be configured with `cleanup_statuses`. You can also define `query_limit` to limit the number of rows queried/deleted by the cleanup job (defaults to 100k).
-
-The default configuration looks like this:
-
-```yaml
-Symbiote\QueuedJobs\Jobs\CleanupJob:
-  is_enabled: false
-  query_limit: 100000
-  cleanup_method: "age"
-  cleanup_value: 30
-  cleanup_statuses:
-    - Broken
-    - Complete
 ```
 
 ## Jobs queue pause setting
