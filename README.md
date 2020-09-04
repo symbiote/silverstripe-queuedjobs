@@ -38,7 +38,7 @@ Now setup a cron job:
  * [Performance](docs/en/performance.md): Advice on job performance in large or highly concurrent setups
  * [Troubleshooing](docs/en/troubleshooting.md)
  * [Dependant Jobs](docs/en/dependant-jobs.md) 
- * [Immediate jobs through lsyncd](docs/en/immediate-run-through-lsyncd.md) 
+ * [Immediate jobs](docs/en/immediate-run.md) 
  * [Unit Testing](docs/en/unit-testing.md) 
 
 ## Contributing

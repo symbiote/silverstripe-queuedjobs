@@ -6,6 +6,9 @@ The default runner (`Symbiote\QueuedJobs\Tasks\Engines\QueueRunner`)
 isn't great for any serious queue throughput,
 and causes delays before a job gets picked up. Here's some alternatives.
 
+You might also be interested in ways to run [immediate jobs](immediate-jobs.md)
+through watchers such as `inotifyd`.
+
 ## Using Doorman for running jobs
 
 Doorman is included by default, and allows for asynchronous task processing.

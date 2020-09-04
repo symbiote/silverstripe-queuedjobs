@@ -70,7 +70,6 @@ The modules comes with more advanced approaches to speed up queues:
 
  * [Doorman](configure-runners.md): Spawns child PHP processes. Does not have any system dependencies.
  * [Gearman](configure-runners.md): Triggered through a `gearmand` system process
- * [lsyncd](immediate-run-through-lsyncd.md): Works based on watching files.
 
 Note: If you're running a hosting-specific recipe such as
 [cwp/cwp-core](https://github.com/silverstripe/cwp-core),
@@ -144,15 +143,22 @@ QueuedJobService::singleton()
 
 ## Immediate Jobs {#immediate-jobs}
 
-Queued jobs can be executed immediately (instead of being limited by cron's 1 minute interval) by using
-a file based notification system. This relies on something like inotifywait to monitor a folder (by
-default this is SILVERSTRIPE_CACHE_DIR/queuedjobs) and triggering the ProcessJobQueueTask as above
-but passing job=$filename as the argument. An example script is in queuedjobs/scripts that will run
-inotifywait and then call the ProcessJobQueueTask when a new job is ready to run.
+Jobs can be declare to run "immediately", rather than being queued.
+What that means in practice depends on your configuration.
 
-Note - if you do NOT have this running, make sure to set `QueuedJobService::$use_shutdown_function = true;`
-so that immediate mode jobs don't stall. By setting this to true, immediate jobs will be executed after
-the request finishes as the php script ends.
+By default, these jobs are run on PHP shutdown,
+in the same process which queued the job
+(see `QueuedJobService::$use_shutdown_function`).
+Code run after shutdown does not affect the response to the requesting client,
+but does continue to consume resources on the server.
+In a worker-based environment such as Apache or Nginx,
+this can have side effects on request processing.
+
+So while this is the easiest setup (zero config or system dependencies),
+there are more robust alternatives:
+
+ * [inotifywait](immediate-jobs.md): Works based on watching files. Useful for immediate jobs.
+ * [lsyncd](immediate-run-through-lsyncd.md): Alternative based on watching files.
 
 ## Logging and Error Reporting {#logging-and-reporting}
 
