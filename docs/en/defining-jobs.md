@@ -2,13 +2,13 @@
 
 The best way to learn about defining your own jobs is by checking the examples
 
-* PublishItemsJob - A job used to publish all the children of a particular node. To create this job, run the PublishItemsTask passing in the parent as a request var (eg ?parent=1)
-* GenerateGoogleSitemapJob - A job used to create a google sitemap. If the googlesitemaps module is installed it will include priority settings as defined there, otherwise just produces a generic structure. To create an initial instance of this job, call dev/tasks/CreateDummyJob?name=GenerateGoogleSitemapJob. This will create the initial job and queue it; once the job has been run once, it will automatically schedule itself to be run again 24 hours later. 
-* CreateDummyJob - A very simple skeleton job. 
+* `PublishItemsJob` - A job used to publish all the children of a particular node. To create this job, run the PublishItemsTask passing in the parent as a request var (eg ?parent=1)
+* `GenerateGoogleSitemapJob` - A job used to create a google sitemap. If the googlesitemaps module is installed it will include priority settings as defined there, otherwise just produces a generic structure. To create an initial instance of this job, call dev/tasks/CreateDummyJob?name=GenerateGoogleSitemapJob. This will create the initial job and queue it; once the job has been run once, it will automatically schedule itself to be run again 24 hours later. 
+* `CreateDummyJob` - A very simple skeleton job. 
 
 ## API Overview
 
-The module comes with an AbstractQueuedJob class that defines many of the boilerplate functionality for the
+The module comes with an `AbstractQueuedJob` class that defines many of the boilerplate functionality for the
 job to execute within the framework. An example job can be found in queuedjobs/code/jobs/PublishItemsJob.php.
 
 The key points to be aware of are
@@ -101,6 +101,96 @@ to wait for a potentially long running job.
 Note that in future this may/will be adapted to work with the messagequeue module to provide a more distributed
 approach to solving a very similar problem. The messagequeue module is a lot more generalised than this approach,
 and while this module solves a specific problem, it may in fact be better working in with the messagequeue module
+
+## Multiple Steps {#multiple-steps}
+
+It is highly recommended to use the job steps feature in your jobs.
+Correct implementation of jobs steps makes your jobs more robust.
+
+The job step feature has two main purposes.
+
+* Communicating progress to the job manager so it knows if the job execution is still underway.
+* Providing a checkpoint in case job execution is interrupted for some reason. This allows the job to resume from the last completed step instead of restarting from the beginning.
+
+The currently executing job step can also be observed in the CMS via the _Jobs admin_ UI. This is useful mostly for debugging purposes when monitoring job execution.
+
+Job steps *should not* be used to determine if a job is completed or not. You should rely on the job data or the database state instead.
+
+For example, consider a job which accept a list of items to process and each item represents a separate step.
+
+```php
+<?php
+
+namespace App\Jobs;
+
+use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
+
+/**
+ * Class MyJob
+ *
+ * @property array $items
+ * @property array $remaining
+ */
+class MyJob extends AbstractQueuedJob
+{
+    public function hydrate(array $items): void
+    {
+        $this->items = $items;
+    }
+
+    /**
+     * @return string
+     */
+    public function getTitle(): string
+    {
+        return 'My awesome job';
+    }
+
+    public function setup(): void
+    {
+        $this->remaining = $this->items;
+        $this->totalSteps = count($this->items);
+    }
+
+    public function process(): void
+    {
+        $remaining = $this->remaining;
+
+        // check for trivial case
+        if (count($remaining) === 0) {
+            $this->isComplete = true;
+
+            return;
+        }
+
+        $item = array_shift($remaining);
+
+        // code that will process your item goes here
+
+        // update job progress
+        $this->remaining = $remaining;
+        $this->currentStep += 1;
+
+        // check for job completion
+        if (count($remaining) > 0) {
+            return;
+        }
+
+        $this->isComplete = true;
+    }
+}
+
+```
+
+This job setup has following features:
+
+* one item is processed in each step
+* each step will produce a checkpoint so job can be safely resumed
+* job manager will be notified about job progress and is unlikely to label the job as crashed by mistake
+* job uses data to determine job completion rather than the steps
+* original list of items is preserved in the job data so it can be used for other purposes (dependant jobs, debug).
+
+Don't forget that in your unit test you must call `process()` as many times as you have items in your test data as one `process()` call handles only one item.
 
 ## Advanced Job Setup
 
