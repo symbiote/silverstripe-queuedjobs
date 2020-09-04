@@ -1,13 +1,47 @@
-## Quick Usage Overview
+# Overview
 
-* Install the cronjob needed to manage all the jobs within the system. It is best to have this execute as the
+## Installation
+
+Install the cronjob needed to manage all the jobs within the system. It is best to have this execute as the
 same user as your webserver - this prevents any problems with file permissions.
 
 ```
 */1 * * * * /path/to/silverstripe/vendor/bin/sake dev/tasks/ProcessJobQueueTask
 ```
 
-* If your code is to make use of the 'long' jobs, ie that could take days to process, also install another task
+To test things are working, run the following command to create a dummy task
+
+```
+vendor/bin/sake dev/tasks/CreateQueuedJobTask 
+```
+
+Every job is tracked as a database record, through `QueuedJobDescriptor` objects.
+This means jobs can also be managed via the CMS.
+Open up `/admin/queuedjobs` in a browser.
+You should see the new job with `Status=New`.
+Now either wait for your cron to execute, or trigger execution manually.
+
+```
+vendor/bin/sake dev/tasks/ProcessJobQueueTask 
+```
+
+The job should now be marked with `Status=Completed`.
+
+## Triggering jobs
+
+```php
+$publish = new PublishItemsJob(21);
+singleton('QueuedJobService')->queueJob($publish);
+```
+
+To schedule a job to be executed at some point in the future, pass a date through with the call to queueJob
+
+```php
+// Runs a day from now
+$publish = new PublishItemsJob(21);
+singleton('QueuedJobService')->queueJob($publish, date('Y-m-d H:i:s', time() + 86400));
+```
+
 ## Cleaning up job entries
 
 Depending 
@@ -41,13 +75,17 @@ Symbiote\QueuedJobs\Jobs\CleanupJob:
     - Broken
     - Complete
 ```
+
+## Long-Running Jobs
+
+If your code is to make use of the 'long' jobs, ie that could take days to process, also install another task
 that processes this queue. Its time of execution can be left a little longer.
 
 ```
 */15 * * * * /path/to/silverstripe/vendor/bin/sake dev/tasks/ProcessJobQueueTask queue=large
 ```
 
-* From your code, add a new job for execution.
+From your code, add a new job for execution.
 
 ```php
 use Symbiote\QueuedJobs\Services\QueuedJobService;
@@ -56,7 +94,7 @@ $publish = new PublishItemsJob(21);
 QueuedJobService::singleton()->queueJob($publish);
 ```
 
-* To schedule a job to be executed at some point in the future, pass a date through with the call to queueJob
+To schedule a job to be executed at some point in the future, pass a date through with the call to queueJob
 The following will run the publish job in 1 day's time from now.
 
 ```php
@@ -76,8 +114,6 @@ This requires that you are running an a unix based system, or within some kind o
 emulator such as cygwin.
 
 In order to enable this, configure the ProcessJobQueueTask to use this backend.
-
-In your YML set the below:
 
 
 ```yaml
