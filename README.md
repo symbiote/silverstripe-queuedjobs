@@ -31,7 +31,15 @@ Now setup a cron job:
 */1 * * * * /path/to/silverstripe/vendor/bin/sake dev/tasks/ProcessJobQueueTask
 ```
 
-See [Installation](docs/en/installation.md) for further instructions.
+## Documentation
+
+ * [Overview](docs/en/index.md): Running and triggering jobs. Different queue types and job lifecycles.
+ * [Defining Jobs](docs/en/defining-jobs.md): Jobs are just PHP classes. Learn how to write your own.
+ * [Performance](docs/en/performance.md): Advice on job performance in large or highly concurrent setups
+ * [Troubleshooing](docs/en/troubleshooting.md)
+ * [Dependant Jobs](docs/en/dependant-jobs.md) 
+ * [Immediate jobs through lsyncd](docs/en/immediate-run-through-lsyncd.md) 
+ * [Unit Testing](docs/en/unit-testing.md) 
 
 ## Version info
 
@@ -40,10 +48,6 @@ The master branch of this module is currently aiming for SilverStripe 4.x compat
 * [SilverStripe 3.1+ compatible version](https://github.com/symbiote/silverstripe-queuedjobs/tree/2.9)
 * [SilverStripe 3.0 compatible version](https://github.com/symbiote/silverstripe-queuedjobs/tree/1.0)
 * [SilverStripe 2.4 compatible version](https://github.com/symbiote/silverstripe-queuedjobs/tree/ss24)
-
-## Documentation
-
-
 
 ## Contributing
 
