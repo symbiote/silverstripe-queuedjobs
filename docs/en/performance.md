@@ -1,5 +1,22 @@
 # Performance
 
+## Increase concurrent execution through runners
+
+The default runner only executes one job per minute
+if it's set up via `cron`. That's not great.
+See [alternative runners](configure-runners.md)
+to speed this up, as well as
+[Multi Process Execution in Doorman](#multi-doorman).
+
+## Clean up jobs database
+
+Every job is recorded in the database via the `QueuedJobDescriptor` table.
+If you're running a lot of them, this table can quickly grow!
+This can affect job execution due to slow lookups.
+The easiest way around this is to 
+[clear out old job entries](index.md#cleanup)
+regularly.
+
 ## Time and Memory Limits
 
 By default task swill run until either 256mb or the limit specified by php\_ini('memory\_limit') is reached.
@@ -29,9 +46,9 @@ Symbiote\QueuedJobs\Services\QueuedJobService\QueuedJobsService:
 ALTER TABLE `QueuedJobDescriptor` ADD INDEX ( `JobStatus` , `JobType` )
 ```
 
-## Multi Process Execution
+## Multi Process Execution in Doorman {#multi-doorman}
 
-The default runner (`Symbiote\QueuedJobs\Tasks\Engines\DoormanRunner`)
+The Doorman runner (`Symbiote\QueuedJobs\Tasks\Engines\DoormanRunner`)
 supports multi process execution through the
 [asyncphp/doorman](https://github.com/asyncphp/doorman/) library.
 It works by spawning child processes within the main PHP execution
@@ -103,5 +120,4 @@ If this happens you can:
 The dependant job approach also allows you to run these jobs concurrently on some project setups.
 Job steps, on the other hand, always run in sequence.
 
-Read [Defining Jobs](defining-jobs.md) for different ways to create jobs
-and 
+Read [Defining Jobs](defining-jobs.md) for different ways to create jobs.

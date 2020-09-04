@@ -42,7 +42,25 @@ $publish = new PublishItemsJob(21);
 singleton('QueuedJobService')->queueJob($publish, date('Y-m-d H:i:s', time() + 86400));
 ```
 
-## Cleaning up job entries
+## Choosing a runner
+
+The default runner (`Symbiote\QueuedJobs\Tasks\Engines\QueueRunner`)
+for queued (rather than immediate) jobs
+will pick up one job every time it executes. Since that usually happens through
+a cron task, and crons can only run once per minute,
+this is quite limiting.
+
+The modules comes with more advanced approaches to speed up queues:
+
+ * [Doorman](configure-runners.md): Spawns child PHP processes. Does not have any system dependencies.
+ * [Gearman](configure-runners.md): Triggered through a `gearmand` system process
+ * [lsyncd](immediate-run-through-lsyncd.md): Works based on watching files.
+
+Note: If you're running a hosting-specific recipe such as
+[cwp/cwp-core](https://github.com/silverstripe/cwp-core),
+a runner might already be preconfigured for you - in this case Doorman. 
+
+## Cleaning up job entries {#cleanup}
 
 Depending 
 
@@ -106,49 +124,7 @@ QueuedJobService::singleton()
     ->queueJob($publish, DBDatetime::create()->setValue(DBDatetime::now()->getTimestamp() + 86400)->Rfc2822());
 ```
 
-## Using Doorman for running jobs
-
-Doorman is included by default, and allows for asynchronous task processing.
-
-This requires that you are running an a unix based system, or within some kind of environment
-emulator such as cygwin.
-
-In order to enable this, configure the ProcessJobQueueTask to use this backend.
-
-
-```yaml
----
-Name: localproject
-After: '#queuedjobsettings'
----
-SilverStripe\Core\Injector\Injector:
-  Symbiote\QueuedJobs\Services\QueuedJobService:
-    properties:
-      queueRunner: %$DoormanRunner
-```
-
-## Using Gearman for running jobs
-
-* Make sure gearmand is installed
-* Get the gearman module from https://github.com/nyeholt/silverstripe-gearman
-* Create a `_config/queuedjobs.yml` file in your project with the following declaration
-
-```yaml
----
-Name: localproject
-After: '#queuedjobsettings'
----
-SilverStripe\Core\Injector\Injector:
-  QueueHandler:
-    class: Symbiote\QueuedJobs\Services\GearmanQueueHandler
-```
-
-* Run the gearman worker using `php gearman/gearman_runner.php` in your SS root dir
-
-This will cause all queuedjobs to trigger immediate via a gearman worker (`src/workers/JobWorker.php`)
-EXCEPT those with a StartAfter date set, for which you will STILL need the cron settings from above
-
-## Using `QueuedJob::IMMEDIATE` jobs
+## Immediate Jobs
 
 Queued jobs can be executed immediately (instead of being limited by cron's 1 minute interval) by using
 a file based notification system. This relies on something like inotifywait to monitor a folder (by
