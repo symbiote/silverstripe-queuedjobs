@@ -23,13 +23,62 @@ Symbiote\QueuedJobs\Services\QueuedJobService\QueuedJobsService:
   time_limit: 600
 ```
 
-
 ## Indexes
 
 ```sql
 ALTER TABLE `QueuedJobDescriptor` ADD INDEX ( `JobStatus` , `JobType` )
 ```
 
+## Multi Process Execution
+
+The default runner (`Symbiote\QueuedJobs\Tasks\Engines\DoormanRunner`)
+supports multi process execution through the
+[asyncphp/doorman](https://github.com/asyncphp/doorman/) library.
+It works by spawning child processes within the main PHP execution
+triggered through a cron job.
+
+The default configuration is limited to a single process.
+If you want to allocate more server capacity to running queues,
+you can increase the number of processes allowed by changing the default rule:
+
+```yaml
+---
+Name: myqueuedjobsconfig
+---
+SilverStripe\Core\Injector\Injector:
+  LowUsageRule:
+    class: 'AsyncPHP\Doorman\Rule\InMemoryRule'
+    properties:
+      Processes: 2
+      MinimumProcessorUsage: 0
+      MaximumProcessorUsage: 50
+      MinimumMemoryUsage: 0
+      MaximumMemoryUsage: 50
+  MediumUsageRule:
+    class: 'AsyncPHP\Doorman\Rule\InMemoryRule'
+    properties:
+      Processes: 1
+      MinimumProcessorUsage: 50
+      MaximumProcessorUsage: 75
+      MinimumMemoryUsage: 50
+      MaximumMemoryUsage: 75
+  HighUsageRule:
+    class: 'AsyncPHP\Doorman\Rule\InMemoryRule'
+    properties:
+      Processes: 0
+      MinimumProcessorUsage: 75
+      MaximumProcessorUsage: 100
+      MinimumMemoryUsage: 75
+      MaximumMemoryUsage: 100
+  DoormanRunner:
+    properties:
+      DefaultRules:
+        - '%LowUsageRule'
+        - '%MediumUsageRule'
+        - '%HighUsageRule'
+```
+
+As with all parallel processing architectures, you should be aware of the race conditions that can occur. You cannot depend on a predictable order of execution, or that every process has a predictable state. Use this with caution!
 
 
 ## Ideal job size
