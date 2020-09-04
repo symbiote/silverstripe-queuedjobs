@@ -41,14 +41,6 @@ Now setup a cron job:
  * [Immediate jobs through lsyncd](docs/en/immediate-run-through-lsyncd.md) 
  * [Unit Testing](docs/en/unit-testing.md) 
 
-## Version info
-
-The master branch of this module is currently aiming for SilverStripe 4.x compatibility
-
-* [SilverStripe 3.1+ compatible version](https://github.com/symbiote/silverstripe-queuedjobs/tree/2.9)
-* [SilverStripe 3.0 compatible version](https://github.com/symbiote/silverstripe-queuedjobs/tree/1.0)
-* [SilverStripe 2.4 compatible version](https://github.com/symbiote/silverstripe-queuedjobs/tree/ss24)
-
 ## Contributing
 
 ### Translations
