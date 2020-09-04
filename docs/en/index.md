@@ -136,16 +136,28 @@ Note - if you do NOT have this running, make sure to set `QueuedJobService::$use
 so that immediate mode jobs don't stall. By setting this to true, immediate jobs will be executed after
 the request finishes as the php script ends.
 
+## Logging and Error Reporting {#logging-and-reporting}
 
-## Jobs queue pause setting
+Just like any other code in Silverstripe, jobs can create log entries and errors.
+You should use the global `LoggerInterface` singleton
+as outlined in the [framework docs on error handling](https://docs.silverstripe.org/en/4/developer_guides/debugging/error_handling/).
 
-It's possible to enable a setting which allows the pausing of the queued jobs processing. To enable it, add following code to your config YAML file:
+Any log handlers which are configured within your application
+(e.g. services like Sentry or Raygun) will also pick up logging
+within your jobs, to the reporting level you've specified for them.
 
-```yaml
-Symbiote\QueuedJobs\Services\QueuedJobService:
-  lock_file_enabled: true
-  lock_file_path: '/shared-folder-path'
-```
+Additionally, messages handled through `LoggerInterface`
+as well as an exceptions thrown in a job will be logged
+to the database record for the job in the `QueuedJobDescriptor.SavedJobMessages`
+column. This makes it easier to associate messages to specific job runs,
+particularly when running multiple jobs concurrently.
+
+Immediate jobs run through `ProcessJobQueueTask` will also
+log to stderr and stdout when run through the command-line (incl. cron execution).  
+Queued jobs run this way may not log consistently to stdout and stderr,
+see [troubleshooting](troubleshooting.md#cant-see-errors)
+ 
+
 ## Default Jobs {#default-jobs}
 
 Some jobs should always be either running or queued to run, things like data refreshes or periodic clean up jobs, we call these Default Jobs.

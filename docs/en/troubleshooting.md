@@ -25,6 +25,15 @@ SilverStripe\Control\Email\Email:
   queued_job_admin_email: support@mycompany.com
 ```
 
+## Jobs are broken but I can't see errors {#cant-see-errors}
+
+Make sure that you've got the right loggers configured.
+
+Check for messages on the job database record (`SavedJobMessages`).
+
+When using the Doorman runner, messages are only recorded on the job,
+and not visible on the command line (see [bug report](https://github.com/asyncphp/doorman/issues/23)). 
+
 ## Jobs are executed more than once
 
 A long running job _may_ fool the system into thinking it has gone away (ie the job health check fails because
