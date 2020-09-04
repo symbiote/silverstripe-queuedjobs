@@ -226,58 +226,6 @@ Please make sure that the `lock_file_path` is pointing to a folder on a shared d
 One benefit of file locking is that in case of critical failure (e.g.: the site crashes and CMS is not available), you may still be able to get access to the filesystem and change the file lock manually.
 This gives you some additional disaster recovery options in case running jobs are causing the issue.
 
-## Health Checking
-
-Jobs track their execution in steps - as the job runs it increments the "steps" that have been run. Periodically jobs
-are checked to ensure they are healthy. This asserts the count of steps on a job is always increasing between health
-checks. By default health checks are performed when a worker picks starts running a queue.
-
-In a multi-worker environment this can cause issues when health checks are performed too frequently. You can disable the
-automatic health check with the following configuration:
-
-```yaml
-Symbiote\QueuedJobs\Services\QueuedJobService:
-  disable_health_check: true
-```
-
-In addition to the config setting there is a task that can be used with a cron to ensure that unhealthy jobs are
-detected:
-
-```
-*/5 * * * * /path/to/silverstripe/vendor/bin/sake dev/tasks/CheckJobHealthTask
-```
-
-## Troubleshooting
-
-To make sure your job works, you can first try to execute the job directly outside the framework of the
-queues - this can be done by manually calling the *setup()* and *process()* methods. If it works fine
-under these circumstances, try having *getJobType()* return *QueuedJob::IMMEDIATE* to have execution
-work immediately, without being persisted or executed via cron. If this works, next make sure your
-cronjob is configured and executing correctly.
-
-If defining your own job classes, be aware that when the job is started on the queue, the job class
-is constructed _without_ parameters being passed; this means if you accept constructor args, you
-_must_ detect whether they're present or not before using them. See [this issue](https://github.com/symbiote/silverstripe-queuedjobs/issues/35)
-and [this wiki page](https://github.com/symbiote/silverstripe-queuedjobs/wiki/Defining-queued-jobs) for
-more information.
-
-If defining your own jobs, please ensure you follow PSR conventions, i.e. use "YourVendor" rather than "SilverStripe".
-
-Ensure that notifications are configured so that you can get updates or stalled or broken jobs. You can
-set the notification email address in your config as below:
-
-
-```yaml
-SilverStripe\Control\Email\Email:
-  queued_job_admin_email: support@mycompany.com
-```
-
-**Long running jobs are running multiple times!**
-
-A long running job _may_ fool the system into thinking it has gone away (ie the job health check fails because
-`currentStep` hasn't been incremented). To avoid this scenario, you can set `$this->currentStep = -1` in your job's
-constructor, to prevent any health checks detecting the job.
-
 ### Understanding job states
 
 It's really useful to understand how job state changes during the job lifespan as it makes troubleshooting easier.
