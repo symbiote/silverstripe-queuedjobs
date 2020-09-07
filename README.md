@@ -368,6 +368,23 @@ Symbiote\QueuedJobs\Services\QueuedJobService\QueuedJobsService:
 ALTER TABLE `QueuedJobDescriptor` ADD INDEX ( `JobStatus` , `JobType` )
 ```
 
+## Job error logging
+
+The logger can be attached to a helper which is executed within a job like below:
+
+```php
+// Within job class
+public function process(): void
+{
+    $logger = new Logger();
+    $logger->setJob($this);
+
+    Helper::create()
+        ->setLogger($logger)
+        ->run();
+}
+```
+
 ## Unit tests
 
 Writing units tests for queued jobs can be tricky as it's quite a complex system. Still, it can be done.
