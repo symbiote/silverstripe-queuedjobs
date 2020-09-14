@@ -14,6 +14,7 @@ use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\HeaderField;
 use SilverStripe\Forms\LiteralField;
 use SilverStripe\Forms\NumericField;
+use SilverStripe\Forms\TextareaField;
 use SilverStripe\Forms\TextField;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBDatetime;
@@ -131,6 +132,14 @@ class QueuedJobDescriptor extends DataObject
      * @var string
      */
     private static $default_sort = 'Created DESC';
+
+    /**
+     * Show job data and raw messages in the edit form
+     *
+     * @config
+     * @var bool
+     */
+    private static $show_job_data = false;
 
     public function requireDefaultRecords()
     {
@@ -318,6 +327,21 @@ class QueuedJobDescriptor extends DataObject
         return isset($map[$this->JobType]) ? $map[$this->JobType] : '(Unknown)';
     }
 
+    /**
+     * @return string|null
+     */
+    public function getSavedJobDataPreview()
+    {
+        return $this->SavedJobData;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getMessagesRaw()
+    {
+        return $this->SavedJobMessages;
+    }
 
     /**
      * Return a map of numeric JobType values to localisable string representations.
@@ -505,6 +529,20 @@ class QueuedJobDescriptor extends DataObject
 
         if (strlen($this->SavedJobMessages)) {
             $fields->addFieldToTab('Root.Messages', LiteralField::create('Messages', $this->getMessages()));
+        }
+
+        if ($this->config()->get('show_job_data')) {
+            $fields->addFieldsToTab('Root.JobData', [
+                $jobDataPreview = TextareaField::create('SavedJobDataPreview', 'Job Data'),
+            ]);
+
+            $jobDataPreview->setReadonly(true);
+
+            $fields->addFieldsToTab('Root.MessagesRaw', [
+                $messagesRaw = TextareaField::create('MessagesRaw', 'Messages Raw'),
+            ]);
+
+            $messagesRaw->setReadonly(true);
         }
 
         if (Permission::check('ADMIN')) {
