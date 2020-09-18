@@ -3,6 +3,7 @@
 namespace Symbiote\QueuedJobs\Services;
 
 use AsyncPHP\Doorman\Manager\ProcessManager as BaseProcessManager;
+use SilverStripe\Core\Config\Configurable;
 
 /**
  * Class ProcessManager
@@ -15,6 +16,24 @@ use AsyncPHP\Doorman\Manager\ProcessManager as BaseProcessManager;
  */
 class ProcessManager extends BaseProcessManager
 {
+    use Configurable;
+
+    /**
+     * Enable / disable persistent child process
+     * If this is enabled the child processes can outlive the parent (manager process)
+     * This is what is needed for most cases as the manager process only starts new child processes
+     * Child processes on the other hand, actually execute queued jobs so they may take longer to execute
+     * Disabling this may cause the child processes to terminate prematurely which may result it multiple job
+     * execution retries / resumes
+     * Disable this option only if you are debugging a situation when a child process
+     * keeps hanging around for way too long (hours)
+     * Adding execution timeout to individual queued jobs is recommended to avoid such situation
+     *
+     * @config
+     * @var bool
+     */
+    private static $persistent_child_process = true;
+
     /**
      * @param string $binary
      * @param string $worker
@@ -37,7 +56,12 @@ class ProcessManager extends BaseProcessManager
 
     public function __destruct()
     {
-        // Prevent background tasks from being killed when this script finishes
-        // this is an override for the default behaviour of killing background tasks
+        if ($this->config()->get('persistent_child_process')) {
+            // Prevent background tasks from being killed when this script finishes
+            // this is an override for the default behaviour of killing background tasks
+            return;
+        }
+
+        parent::__destruct();
     }
 }
