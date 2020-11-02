@@ -493,6 +493,36 @@ class QueuedJobsTest extends AbstractTest
         );
     }
 
+    public function testJobHealthCheckForStuckInitJobs()
+    {
+        $svc = $this->getService();
+        $logger = $svc->getLogger();
+        $job = new TestQueuedJob(QueuedJob::IMMEDIATE);
+        $id = $svc->queueJob($job);
+
+        /** @var QueuedJobDescriptor $descriptor */
+        $descriptor = QueuedJobDescriptor::get()->byID($id);
+
+        // Kick off job processing - this is before job has a worker allocated
+        DBDatetime::set_mock_now('2017-01-01 16:00:00');
+        $descriptor->JobStatus = QueuedJob::STATUS_INIT;
+        $descriptor->write();
+
+        // Check that valid jobs are left untouched
+        DBDatetime::set_mock_now('2017-01-01 16:00:10');
+        $svc->checkJobHealth(QueuedJob::IMMEDIATE);
+
+        $descriptor = QueuedJobDescriptor::get()->byID($id);
+        $this->assertEquals(QueuedJob::STATUS_INIT, $descriptor->JobStatus);
+
+        // Check that init jobs which are considered stuck are handled
+        DBDatetime::set_mock_now('2017-01-01 17:00:00');
+        $svc->checkJobHealth(QueuedJob::IMMEDIATE);
+
+        $descriptor = QueuedJobDescriptor::get()->byID($id);
+        $this->assertEquals(QueuedJob::STATUS_WAIT, $descriptor->JobStatus);
+    }
+
     public function testExceptionWithMemoryExhaustion()
     {
         $svc = $this->getService();
