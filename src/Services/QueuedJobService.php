@@ -984,7 +984,7 @@ class QueuedJobService
                 }
             } catch (\Throwable $e) {
                 // PHP 7 Error handling)
-                $this->handleBrokenJobException($jobDescriptor, $job, $e);
+                $this->handleBrokenJobException($jobDescriptor, $e, $job);
                 $broken = true;
             }
 
@@ -1037,10 +1037,10 @@ class QueuedJobService
 
     /**
      * @param QueuedJobDescriptor $jobDescriptor
-     * @param QueuedJob $job
      * @param Exception|\Throwable $e
+     * @param QueuedJob|null $job
      */
-    protected function handleBrokenJobException(QueuedJobDescriptor $jobDescriptor, QueuedJob $job, $e)
+    protected function handleBrokenJobException(QueuedJobDescriptor $jobDescriptor, $e, $job = null)
     {
         // okay, we'll just catch this exception for now
         $this->getLogger()->info(
