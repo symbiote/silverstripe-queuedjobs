@@ -10,9 +10,16 @@ use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
 use Symbiote\QueuedJobs\Services\QueuedJob;
 
 /**
- * A job used to delete a data object. Typically used for deletes that need to happen on
- * a schedule, or where the delete may have some onflow affect that takes a while to
- * finish the deletion.
+ * A convenience wrapper for running BuildTask implementations.
+ * These are usually executed via synchronous web request
+ * or synchronous CLI execution (under dev/tasks/*).
+ *
+ * Caution: This job can't increment steps. This is a signal
+ * for job health checks that a job should be considered stale
+ * after a (short) timeout. If you expect a build task to run
+ * for more than a few minutes, create it as a job with steps,
+ * increase timeouts, or disable health checks.
+ * See "Defining Jobs" in the docs for details.
  *
  * @author marcus@symbiote.com.au
  * @license BSD License http://silverstripe.org/bsd-license/

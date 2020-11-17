@@ -105,7 +105,8 @@ and while this module solves a specific problem, it may in fact be better workin
 ## Multiple Steps {#multiple-steps}
 
 It is highly recommended to use the job steps feature in your jobs.
-Correct implementation of jobs steps makes your jobs more robust.
+Job steps are required to avoid long-running jobs from being falsely detected as stale
+(see [Troubleshooting: Jobs are marked as broken when they aren't](troubleshooting#broken)).
 
 The job step feature has two main purposes.
 

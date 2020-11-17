@@ -40,7 +40,7 @@ A long running job _may_ fool the system into thinking it has gone away (ie the 
 `currentStep` hasn't been incremented). To avoid this scenario, you can set `$this->currentStep = -1` in your job's
 constructor, to prevent any health checks detecting the job.****
 
-## Jobs are marked as broken when they aren't
+## Jobs are marked as broken when they aren't {#broken}
 
 Jobs track their execution in steps - as the job runs it increments the "steps" that have been run. Periodically jobs
 are checked to ensure they are healthy. This asserts the count of steps on a job is always increasing between health
@@ -54,12 +54,18 @@ Symbiote\QueuedJobs\Services\QueuedJobService:
   disable_health_check: true
 ```
 
-In addition to the config setting there is a task that can be used with a cron to ensure that unhealthy jobs are
-detected:
+Job health is checked automatically in queue processing.
+You might also need to disable the `CheckJobHealthTask` if it's set up as a cron job.
+
+Alternatively, you can increase the TTL before jobs are considered stalled:
 
 ```
-*/5 * * * * /path/to/silverstripe/vendor/bin/sake dev/tasks/CheckJobHealthTask
+Symbiote\QueuedJobs\Services\QueuedJobService:
+  worker_ttl: 'PT120M'
 ```
+
+The `RunBuildTaskJob` is excluded from these health checks because it can't use steps,
+so you'll need to find other ways to ensure this type of job stays healthy when using it.
 
 ## HTTP_HOST not set errors
 
