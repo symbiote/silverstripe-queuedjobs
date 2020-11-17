@@ -28,6 +28,7 @@ use SilverStripe\Security\Security;
 use SilverStripe\Subsites\Model\Subsite;
 use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
 use Symbiote\QueuedJobs\Interfaces\UserContextInterface;
+use Symbiote\QueuedJobs\Jobs\RunBuildTaskJob;
 use Symbiote\QueuedJobs\QJUtils;
 use Symbiote\QueuedJobs\Tasks\Engines\TaskRunnerEngine;
 
@@ -445,7 +446,17 @@ class QueuedJobService
             ])
             ->where('"StepsProcessed" = "LastProcessedCount"');
 
+        /** @var QueuedJobDescriptor $stalledJob */
         foreach ($stalledJobs as $stalledJob) {
+            $jobClass = $stalledJob->Implementation;
+            $jobSingleton = singleton($jobClass);
+
+            if ($jobSingleton instanceof RunBuildTaskJob) {
+                // Exclude Tasks which are running via Job wrapper as they never have steps
+                // so they could be incorrectly recognized as stalled
+                continue;
+            }
+
             $this->restartStalledJob($stalledJob);
         }
 

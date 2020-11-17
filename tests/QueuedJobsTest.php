@@ -2,6 +2,7 @@
 
 namespace Symbiote\QueuedJobs\Tests;
 
+use Exception;
 use Psr\Log\LoggerInterface;
 use ReflectionClass;
 use SilverStripe\Core\Config\Config;
@@ -11,6 +12,7 @@ use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBDatetime;
 use SilverStripe\ORM\ValidationException;
 use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
+use Symbiote\QueuedJobs\Jobs\RunBuildTaskJob;
 use Symbiote\QueuedJobs\Services\QueuedJob;
 use Symbiote\QueuedJobs\Services\QueuedJobService;
 use Symbiote\QueuedJobs\Tests\QueuedJobsTest\TestExceptingJob;
@@ -380,7 +382,7 @@ class QueuedJobsTest extends AbstractTest
         $svc->checkJobHealth(QueuedJob::IMMEDIATE);
         $nextJob = $svc->getNextPendingJob(QueuedJob::IMMEDIATE);
 
-        // This job is resumed and exeuction is attempted this round
+        // This job is resumed and execution is attempted this round
         $descriptor = QueuedJobDescriptor::get()->byID($id);
         $this->assertEquals($nextJob->ID, $descriptor->ID);
         $this->assertEquals(QueuedJob::STATUS_WAIT, $descriptor->JobStatus);
@@ -675,6 +677,37 @@ class QueuedJobsTest extends AbstractTest
         $this->assertCount(0, QueuedJobDescriptor::get()->filter(['NotifiedBroken' => 0]));
     }
 
+    /**
+     * @param string $jobClass
+     * @param int $expected
+     * @throws ValidationException
+     * @throws Exception
+     * @dataProvider healthCheckProvider
+     */
+    public function testExcludeTasksFromHealthCheck(string $jobClass, int $expected): void
+    {
+        $service = $this->getService();
+        $now = '2019-01-01 16:00:00';
+        DBDatetime::set_mock_now($now);
+
+        // Emulate stalled job
+        $descriptor = QueuedJobDescriptor::create();
+        $descriptor->Implementation = $jobClass;
+        $descriptor->JobType = QueuedJob::IMMEDIATE;
+        $descriptor->JobStatus = QueuedJob::STATUS_RUN;
+        $descriptor->Expiry = $now;
+        $descriptor->LastProcessedCount = 0;
+        $descriptor->StepsProcessed = 0;
+        $descriptor->write();
+
+        $service->checkJobHealth(QueuedJob::IMMEDIATE);
+
+        $this->assertCount(
+            $expected,
+            QueuedJobDescriptor::get()->filter(['JobStatus' => QueuedJob::STATUS_WAIT])
+        );
+    }
+
     public function jobsProvider(): array
     {
         return [
@@ -694,6 +727,14 @@ class QueuedJobsTest extends AbstractTest
                 [false, false, false, false, false],
                 5,
             ],
+        ];
+    }
+
+    public function healthCheckProvider(): array
+    {
+        return [
+            [TestExceptingJob::class, 1],
+            [RunBuildTaskJob::class, 0],
         ];
     }
 }
