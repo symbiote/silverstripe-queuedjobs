@@ -2,6 +2,7 @@
 
 namespace Symbiote\QueuedJobs\Services;
 
+use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\AbstractProcessingHandler;
 use SilverStripe\Core\Injector\Injectable;
 use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
@@ -56,11 +57,21 @@ class QueuedJobHandler extends AbstractProcessingHandler
 
     public function handleBatch(array $records)
     {
-        foreach ($records as $record) {
-            $this->job->addMessage($record['message'], $record['level_name'], $record['datetime']);
+        foreach ($records as $i => $record) {
+            $records[$i] = $this->processRecord($records[$i]);
+            $records[$i]['formatted'] = $this->getFormatter()->format($records[$i]);
+            $this->job->addMessage($records[$i]['formatted'], $records[$i]['level_name'], $records[$i]['datetime']);
         };
         $this->jobDescriptor->SavedJobMessages = serialize($this->job->getJobData()->messages);
 
         $this->jobDescriptor->write();
+    }
+
+    /**
+     * Ensure that exception context is retained. Similar logic to SyslogHandler.
+     */
+    protected function getDefaultFormatter()
+    {
+        return new LineFormatter('%message% %context% %extra%');
     }
 }

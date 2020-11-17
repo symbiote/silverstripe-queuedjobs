@@ -175,6 +175,11 @@ class QueuedJobService
     private static $lock_file_path = '';
 
     /**
+     * @var LoggerInterface
+     */
+    private $logger;
+
+    /**
      * @var DefaultQueueHandler
      */
     public $queueHandler;
@@ -476,16 +481,7 @@ class QueuedJobService
         }
 
         $this->getLogger()->error(
-            print_r(
-                [
-                    'errno' => 0,
-                    'errstr' => 'Broken jobs were found in the job queue',
-                    'errfile' => __FILE__,
-                    'errline' => __LINE__,
-                    'errcontext' => [],
-                ],
-                true
-            ),
+            'Broken jobs were found in the job queue',
             [
                 'file' => __FILE__,
                 'line' => __LINE__,
@@ -724,7 +720,7 @@ class QueuedJobService
             });
 
             return true;
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             // note that error here may not be an issue as failing to acquire a job lock is a valid state
             // which happens when other process claimed the job lock first
             $this->getLogger()->debug(
@@ -759,6 +755,8 @@ class QueuedJobService
      */
     public function runJob($jobId)
     {
+        $logger = $this->getLogger();
+
         // first retrieve the descriptor
         /** @var QueuedJobDescriptor $jobDescriptor */
         $jobDescriptor = DataObject::get_by_id(
@@ -790,7 +788,7 @@ class QueuedJobService
 
         $broken = false;
 
-        $this->withNestedState(function () use ($jobDescriptor, $jobId, &$broken) {
+        $this->withNestedState(function () use ($jobDescriptor, $jobId, &$broken, $logger) {
             if (!$this->grabMutex($jobDescriptor)) {
                 return;
             }
@@ -842,17 +840,8 @@ class QueuedJobService
                     );
                     if (!$jobDescriptor || !$jobDescriptor->exists()) {
                         $broken = true;
-                        $this->getLogger()->error(
-                            print_r(
-                                [
-                                    'errno' => 0,
-                                    'errstr' => 'Job descriptor ' . $jobId . ' could not be found',
-                                    'errfile' => __FILE__,
-                                    'errline' => __LINE__,
-                                    'errcontext' => [],
-                                ],
-                                true
-                            ),
+                        $logger->error(
+                            'Job descriptor ' . $jobId . ' could not be found',
                             [
                                 'file' => __FILE__,
                                 'line' => __LINE__,
@@ -860,9 +849,13 @@ class QueuedJobService
                         );
                         break;
                     }
+
+                    // Add job-specific logger handling. Modifies the job singleton by reference
+                    $this->addJobHandlersToLogger($logger, $job, $jobDescriptor);
+
                     if ($jobDescriptor->JobStatus != QueuedJob::STATUS_RUN) {
                         // we've been paused by something, so we'll just exit
-                        $job->addMessage(_t(
+                        $logger->warning(_t(
                             __CLASS__ . '.JOB_PAUSED',
                             'Job paused at {time}',
                             ['time' => DBDatetime::now()->Rfc2822()]
@@ -871,81 +864,22 @@ class QueuedJobService
                     }
 
                     if (!$broken) {
-                        // Inject real-time log handler
-                        $logger = Injector::inst()->get(LoggerInterface::class);
-                        if ($logger instanceof Logger) {
-                            // Check if there is already a handler
-                            $exists = false;
-                            foreach ($logger->getHandlers() as $handler) {
-                                if ($handler instanceof QueuedJobHandler) {
-                                    $exists = true;
-                                    break;
-                                }
-                            }
-
-                            if (!$exists) {
-                                // Add the handler
-                                /** @var QueuedJobHandler $queuedJobHandler */
-                                $queuedJobHandler = QueuedJobHandler::create($job, $jobDescriptor);
-
-                                // We only write for every 100 file
-                                $bufferHandler = new BufferHandler(
-                                    $queuedJobHandler,
-                                    100,
-                                    Logger::DEBUG,
-                                    true,
-                                    true
-                                );
-
-                                $logger->pushHandler($bufferHandler);
-                            }
-                        } else {
-                            if ($logger instanceof LoggerInterface) {
-                                $logger->warning(
-                                    'Monolog not found, messages will not output while the job is running'
-                                );
-                            }
-                        }
-
-                        // Collect output as job messages as well as sending it to the screen after processing
-                        $obLogger = function ($buffer, $phase) use ($job, $jobDescriptor) {
+                        // Collect output where jobs aren't using the logger singleton
+                        ob_start(function ($buffer, $phase) use ($job, $jobDescriptor) {
                             $job->addMessage($buffer);
                             if ($jobDescriptor) {
                                 $this->copyJobToDescriptor($job, $jobDescriptor);
                                 $jobDescriptor->write();
                             }
                             return $buffer;
-                        };
-                        ob_start($obLogger, 256);
+                        }, 256);
 
                         try {
                             $job->process();
-                        } catch (Exception $e) {
-                            // okay, we'll just catch this exception for now
-                            $job->addMessage(
-                                _t(
-                                    __CLASS__ . '.JOB_EXCEPT',
-                                    'Job caused exception {message} in {file} at line {line}',
-                                    [
-                                        'message' => $e->getMessage(),
-                                        'file' => $e->getFile(),
-                                        'line' => $e->getLine(),
-                                    ]
-                                )
-                            );
-                            $this->getLogger()->error(
-                                $e->getMessage(),
-                                [
-                                    'exception' => $e,
-                                ]
-                            );
+                        } catch (\Throwable $e) {
+                            $logger->error($e->getMessage(), ['exception' => $e]);
                             $jobDescriptor->JobStatus =  QueuedJob::STATUS_BROKEN;
                             $this->extend('updateJobDescriptorAndJobOnException', $jobDescriptor, $job, $e);
-                        }
-
-                        // Write any remaining batched messages at the end
-                        if (isset($bufferHandler)) {
-                            $bufferHandler->flush();
                         }
 
                         ob_end_flush();
@@ -958,26 +892,22 @@ class QueuedJobService
 
                         if ($stallCount > static::config()->get('stall_threshold')) {
                             $broken = true;
-                            $job->addMessage(
-                                _t(
-                                    __CLASS__ . '.JOB_STALLED',
-                                    'Job stalled after {attempts} attempts - please check',
-                                    ['attempts' => $stallCount]
-                                )
-                            );
+                            $logger->error(_t(
+                                __CLASS__ . '.JOB_STALLED',
+                                'Job stalled after {attempts} attempts - please check',
+                                ['attempts' => $stallCount]
+                            ));
                             $jobDescriptor->JobStatus = QueuedJob::STATUS_BROKEN;
                         }
 
                         // now we'll be good and check our memory usage. If it is too high, we'll set the job to
                         // a 'Waiting' state, and let the next processing run pick up the job.
                         if ($this->isMemoryTooHigh()) {
-                            $job->addMessage(
-                                _t(
-                                    __CLASS__ . '.MEMORY_RELEASE',
-                                    'Job releasing memory and waiting ({used} used)',
-                                    ['used' => $this->humanReadable($this->getMemoryUsage())]
-                                )
-                            );
+                            $logger->warning(_t(
+                                __CLASS__ . '.MEMORY_RELEASE',
+                                'Job releasing memory and waiting ({used} used)',
+                                ['used' => $this->humanReadable($this->getMemoryUsage())]
+                            ));
                             if ($jobDescriptor->JobStatus != QueuedJob::STATUS_BROKEN) {
                                 $jobDescriptor->JobStatus = QueuedJob::STATUS_WAIT;
                             }
@@ -986,7 +916,7 @@ class QueuedJobService
 
                         // Also check if we are running too long
                         if ($this->hasPassedTimeLimit()) {
-                            $job->addMessage(_t(
+                            $logger->warning(_t(
                                 __CLASS__ . '.TIME_LIMIT',
                                 'Queue has passed time limit and will restart before continuing'
                             ));
@@ -1001,17 +931,8 @@ class QueuedJobService
                         $this->copyJobToDescriptor($job, $jobDescriptor);
                         $jobDescriptor->write();
                     } else {
-                        $this->getLogger()->error(
-                            print_r(
-                                [
-                                    'errno' => 0,
-                                    'errstr' => 'Job descriptor has been set to null',
-                                    'errfile' => __FILE__,
-                                    'errline' => __LINE__,
-                                    'errcontext' => [],
-                                ],
-                                true
-                            ),
+                        $logger->error(
+                            'Job descriptor has been set to null',
                             [
                                 'file' => __FILE__,
                                 'line' => __LINE__,
@@ -1033,14 +954,28 @@ class QueuedJobService
 
                     $this->extend('updateJobDescriptorAndJobOnCompletion', $jobDescriptor, $job);
                 }
-            } catch (Exception $e) {
-                // PHP 5.6 exception handling
-                $this->handleBrokenJobException($jobDescriptor, $job, $e);
-                $broken = true;
             } catch (\Throwable $e) {
                 // PHP 7 Error handling)
                 $this->handleBrokenJobException($jobDescriptor, $job, $e);
                 $broken = true;
+            }
+
+            // Write any remaining batched messages at the end.
+            if ($logger instanceof Logger) {
+                foreach ($logger->getHandlers() as $handler) {
+                    if ($handler instanceof BufferHandler) {
+                        $handler->flush();
+                    }
+                }
+            }
+
+            // If using a global singleton logger here,
+            // any messages added after this point will be auto-flushed on PHP shutdown through the handler.
+            // This causes a database write, and assumes the database and table will be available at this point.
+            if ($logger instanceof Logger) {
+                $logger->setHandlers(array_filter($logger->getHandlers(), function ($handler) {
+                    return !($handler instanceof BufferHandler);
+                }));
             }
         });
 
@@ -1386,7 +1321,23 @@ class QueuedJobService
      */
     public function getLogger()
     {
+        // Enable dependency injection
+        if ($this->logger) {
+            return $this->logger;
+        }
+
+        // Fall back to implicitly created service
         return Injector::inst()->get(LoggerInterface::class);
+    }
+
+    /**
+     * @param LoggerInterface $logger
+     */
+    public function setLogger(LoggerInterface $logger)
+    {
+        $this->logger = $logger;
+
+        return $this;
     }
 
     public function enableMaintenanceLock()
@@ -1450,6 +1401,51 @@ class QueuedJobService
         $expiry = DBField::create_field('Datetime', $time->getTimestamp());
 
         return $expiry->Rfc2822();
+    }
+
+    /**
+     * Add job-specific logger functionality which has the ability to flush logs into
+     * the job descriptor database record. Based on the default logger set for this class,
+     * which means it'll also log to other channels (e.g. stdout/stderr).
+     *
+     * @param QueuedJob $job
+     * @param QueuedJobDescriptor $jobDescriptor
+     */
+    private function addJobHandlersToLogger(LoggerInterface $logger, QueuedJob $job, QueuedJobDescriptor $jobDescriptor)
+    {
+        if ($logger instanceof Logger) {
+            // Check if there is already a handler
+            $exists = false;
+            foreach ($logger->getHandlers() as $handler) {
+                if ($handler instanceof QueuedJobHandler) {
+                    $exists = true;
+                    break;
+                }
+            }
+
+            if (!$exists) {
+                // Add the handler
+                /** @var QueuedJobHandler $queuedJobHandler */
+                $queuedJobHandler = QueuedJobHandler::create($job, $jobDescriptor);
+
+                // Only write for every 100 messages to avoid excessive database activity
+                $bufferHandler = new BufferHandler(
+                    $queuedJobHandler,
+                    100,
+                    Logger::DEBUG,
+                    true,
+                    true
+                );
+
+                $logger->pushHandler($bufferHandler);
+            }
+        } else {
+            if ($logger instanceof LoggerInterface) {
+                $logger->warning(
+                    'Monolog not found, messages will not output while the job is running'
+                );
+            }
+        }
     }
 
     /**

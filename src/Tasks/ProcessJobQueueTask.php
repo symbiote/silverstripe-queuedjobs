@@ -2,7 +2,11 @@
 
 namespace Symbiote\QueuedJobs\Tasks;
 
+use Monolog\Handler\FilterHandler;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
 use SilverStripe\Control\HTTPRequest;
+use SilverStripe\Core\Environment;
 use SilverStripe\Dev\BuildTask;
 use Symbiote\QueuedJobs\Services\QueuedJob;
 use Symbiote\QueuedJobs\Services\QueuedJobService;
@@ -42,6 +46,26 @@ class ProcessJobQueueTask extends BuildTask
         }
 
         $service = $this->getService();
+
+        // Ensure that log messages are visible when executing this task on CLI.
+        // Could be replaced with BuildTask logger: https://github.com/silverstripe/silverstripe-framework/issues/9183
+        if (Environment::isCli()) {
+            $logger = $service->getLogger();
+
+            // Assumes that general purpose logger usually doesn't already contain a stream handler.
+            $errorHandler = new StreamHandler('php://stderr', Logger::ERROR);
+            $standardHandler = new StreamHandler('php://stdout');
+
+            // Avoid double logging of errors
+            $standardFilterHandler = new FilterHandler(
+                $standardHandler,
+                Logger::DEBUG,
+                Logger::WARNING
+            );
+
+            $logger->pushHandler($standardFilterHandler);
+            $logger->pushHandler($errorHandler);
+        }
 
         if ($request->getVar('list')) {
             // List helper
