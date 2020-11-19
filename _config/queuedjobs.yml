@@ -9,10 +9,10 @@ SilverStripe\Core\Injector\Injector:
 
   Symbiote\QueuedJobs\Services\QueuedJobService:
     properties:
-      queueHandler: %$QueueHandler
+      queueHandler: '%$QueueHandler'
       # Change to %$DoormanRunner for async processing (requires *nix)
-      queueRunner: %$Symbiote\QueuedJobs\Tasks\Engines\QueueRunner
-      logger: %$Psr\Log\LoggerInterface
+      queueRunner: '%$Symbiote\QueuedJobs\Tasks\Engines\QueueRunner'
+      logger: '%$Psr\Log\LoggerInterface'
 
   DefaultRule:
     class: 'AsyncPHP\Doorman\Rule\InMemoryRule'
@@ -38,11 +38,11 @@ Only:
 SilverStripe\Core\Injector\Injector:
   Symbiote\QueuedJobs\Services\GearmanQueueHandler:
     properties:
-      gearmanService: %$GearmanService
+      gearmanService: '%$GearmanService'
 
   Symbiote\QueuedJobs\Workers\JobWorker:
     properties:
-      queuedJobService: %$Symbiote\QueuedJobs\Services\QueuedJobService
+      queuedJobService: '%$Symbiote\QueuedJobs\Services\QueuedJobService'
 
   QueueHandler:
     class: GearmanQueueHandler
