@@ -506,17 +506,19 @@ class QueuedJobsTest extends AbstractTest
         // Kick off job processing - this is before job has a worker allocated
         DBDatetime::set_mock_now('2017-01-01 16:00:00');
         $descriptor->JobStatus = QueuedJob::STATUS_INIT;
+        $descriptor->LastProcessedCount = 0;
+        $descriptor->StepsProcessed = 0;
         $descriptor->write();
 
         // Check that valid jobs are left untouched
-        DBDatetime::set_mock_now('2017-01-01 16:00:10');
+        DBDatetime::set_mock_now('2017-01-01 16:01:59');
         $svc->checkJobHealth(QueuedJob::IMMEDIATE);
 
         $descriptor = QueuedJobDescriptor::get()->byID($id);
         $this->assertEquals(QueuedJob::STATUS_INIT, $descriptor->JobStatus);
 
         // Check that init jobs which are considered stuck are handled
-        DBDatetime::set_mock_now('2017-01-01 17:00:00');
+        DBDatetime::set_mock_now('2017-01-01 16:02:00');
         $svc->checkJobHealth(QueuedJob::IMMEDIATE);
 
         $descriptor = QueuedJobDescriptor::get()->byID($id);
