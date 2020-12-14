@@ -5,4 +5,4 @@ import:
 
 env:
   global:
-    - REQUIRE_RECIPE="4.7.x-dev"
+    - REQUIRE_RECIPE="4.7.x-dev || "
