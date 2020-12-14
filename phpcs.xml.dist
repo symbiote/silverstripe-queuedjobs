@@ -2,6 +2,9 @@
 <ruleset name="SilverStripe">
     <description>CodeSniffer ruleset for SilverStripe coding conventions.</description>
 
+    <file>src</file>
+    <file>tests</file>
+
     <!-- base rules are PSR-12 -->
     <rule ref="PSR12">
         <!-- Current exclusions -->
