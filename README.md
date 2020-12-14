@@ -59,3 +59,5 @@ This will add Job data and Messages raw tabs to the job descriptor edit form. Di
 Translations of the natural language strings are managed through a third party translation interface, transifex.com. Newly added strings will be periodically uploaded there for translation, and any new translations will be merged back to the project source code.
 
 Please use [https://www.transifex.com/projects/p/silverstripe-queuedjobs](https://www.transifex.com/projects/p/silverstripe-queuedjobs) to contribute translations, rather than sending pull requests with YAML files.
+
+I think unit tests are busted on `4`.
