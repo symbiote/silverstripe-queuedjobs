@@ -707,7 +707,7 @@ class QueuedJobService
 
                 $row = DB::query(sprintf($query, Convert::raw2sql($descriptorId)))->first();
 
-                if (!array_key_exists('ID', $row) || !$row['ID']) {
+                if (!is_array($row) || !array_key_exists('ID', $row) || !$row['ID']) {
                     throw new Exception('Failed to read job lock');
                 }
 
