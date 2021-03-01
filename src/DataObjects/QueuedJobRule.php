@@ -48,7 +48,7 @@ class QueuedJobRule extends DataObject implements Rule
      */
     public function getProcesses()
     {
-        if ($this->getField('Processes')) {
+        if ($this->getField('Processes') !== null) {
             return $this->getField('Processes');
         }
 
@@ -74,7 +74,7 @@ class QueuedJobRule extends DataObject implements Rule
      */
     public function getMinimumProcessorUsage()
     {
-        if ($this->getField('MinimumProcessorUsage')) {
+        if ($this->getField('MinimumProcessorUsage') !== null) {
             return $this->getField('MinimumProcessorUsage');
         }
 
@@ -88,7 +88,7 @@ class QueuedJobRule extends DataObject implements Rule
      */
     public function getMaximumProcessorUsage()
     {
-        if ($this->getField('MaximumProcessorUsage')) {
+        if ($this->getField('MaximumProcessorUsage') !== null) {
             return $this->getField('MaximumProcessorUsage');
         }
 
@@ -102,7 +102,7 @@ class QueuedJobRule extends DataObject implements Rule
      */
     public function getMinimumMemoryUsage()
     {
-        if ($this->getField('MinimumMemoryUsage')) {
+        if ($this->getField('MinimumMemoryUsage') !== null) {
             return $this->getField('MinimumMemoryUsage');
         }
 
@@ -114,7 +114,7 @@ class QueuedJobRule extends DataObject implements Rule
      */
     public function getMaximumMemoryUsage()
     {
-        if ($this->getField('MaximumMemoryUsage')) {
+        if ($this->getField('MaximumMemoryUsage') !== null) {
             return $this->getField('MaximumMemoryUsage');
         }
 
@@ -128,7 +128,7 @@ class QueuedJobRule extends DataObject implements Rule
      */
     public function getMinimumSiblingProcessorUsage()
     {
-        if ($this->getField('MinimumSiblingProcessorUsage')) {
+        if ($this->getField('MinimumSiblingProcessorUsage') !== null) {
             return $this->getField('MinimumSiblingProcessorUsage');
         }
 
@@ -142,7 +142,7 @@ class QueuedJobRule extends DataObject implements Rule
      */
     public function getMaximumSiblingProcessorUsage()
     {
-        if ($this->getField('MaximumSiblingProcessorUsage')) {
+        if ($this->getField('MaximumSiblingProcessorUsage') !== null) {
             return $this->getField('MaximumSiblingProcessorUsage');
         }
 
@@ -156,7 +156,7 @@ class QueuedJobRule extends DataObject implements Rule
      */
     public function getMinimumSiblingMemoryUsage()
     {
-        if ($this->getField('MinimumSiblingMemoryUsage')) {
+        if ($this->getField('MinimumSiblingMemoryUsage') !== null) {
             return $this->getField('MinimumSiblingMemoryUsage');
         }
 
@@ -170,7 +170,7 @@ class QueuedJobRule extends DataObject implements Rule
      */
     public function getMaximumSiblingMemoryUsage()
     {
-        if ($this->getField('MaximumSiblingMemoryUsage')) {
+        if ($this->getField('MaximumSiblingMemoryUsage') !== null) {
             return $this->getField('MaximumSiblingMemoryUsage');
         }
 
