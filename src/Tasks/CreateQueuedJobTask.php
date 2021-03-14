@@ -56,7 +56,7 @@ class CreateQueuedJobTask extends BuildTask
             $now = DBDatetime::now()->getTimestamp();
             if ($start >= $now) {
                 $friendlyStart = DBDatetime::create()->setValue($start)->Rfc2822();
-                echo "Job " . $request['name'] . " queued to start at: <b>" . $friendlyStart . "</b>";
+                echo 'Job queued to start at: <b>' . $friendlyStart . '</b>';
                 QueuedJobService::singleton()->queueJob($job, $start);
             } else {
                 echo "'start' parameter must be a date/time in the future, parseable with strtotime";
