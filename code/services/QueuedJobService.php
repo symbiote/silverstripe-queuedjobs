@@ -560,7 +560,7 @@ class QueuedJobService {
 				// have we stalled at all?
 				$stallCount = 0;
 
-				if ($job->SubsiteID && class_exists('Subsite')) {
+				if (class_exists('Subsite') && $job->SubsiteID) {
 					Subsite::changeSubsite($job->SubsiteID);
 
 					// lets set the base URL as far as Director is concerned so that our URLs are correct
