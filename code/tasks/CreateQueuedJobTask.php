@@ -38,7 +38,7 @@ class CreateQueuedJobTask extends BuildTask {
 			$now = time();
 			if ($start >= $now) {
 				$friendlyStart = date('Y-m-d H:i:s', $start);
-				echo "Job ".$request['name']. " queued to start at: <b>".$friendlyStart."</b>";
+				echo 'Job queued to start at: <b>' . $friendlyStart . '</b>';
 				singleton('QueuedJobService')->queueJob($job, $start);
 			} else {
 				echo "'start' parameter must be a date/time in the future, parseable with strtotime";
