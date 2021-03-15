@@ -6,185 +6,207 @@ use AsyncPHP\Doorman\Process;
 use AsyncPHP\Doorman\Task;
 
 class DoormanQueuedJobTask implements Task, Expires, Process, Cancellable {
-	/**
-	 * @var int
-	 */
-	protected $id;
+    /**
+     * @var int
+     */
+    protected $id;
 
-	/**
-	 * @var QueuedJobDescriptor
-	 */
-	protected $descriptor;
+    /**
+     * @var QueuedJobDescriptor
+     */
+    protected $descriptor;
 
-	/**
-	 * Reload descriptor from DB
-	 */
-	protected function refreshDescriptor() {
-		if($this->descriptor) {
-			$this->descriptor = QueuedJobDescriptor::get()->byID($this->descriptor->ID);
-		}
-	}
+    /**
+     * Reload descriptor from DB
+     */
+    protected function refreshDescriptor() {
+        if ($this->descriptor) {
+            $this->descriptor = QueuedJobDescriptor::get()->byID($this->descriptor->ID);
+        }
+    }
 
-	/**
-	 * @inheritdoc
-	 *
-	 * @return null|int
-	 */
-	public function getId() {
-		return $this->id;
-	}
+    /**
+     * @inheritdoc
+     *
+     * @return null|int
+     */
+    public function getId() {
+        return $this->id;
+    }
 
-	/**
-	 * @inheritdoc
-	 *
-	 * @param int $id
-	 *
-	 * @return $this
-	 */
-	public function setId($id) {
-		$this->id = $id;
+    /**
+     * @inheritdoc
+     *
+     * @param int $id
+     *
+     * @return $this
+     */
+    public function setId($id) {
+        $this->id = $id;
 
-		return $this;
-	}
+        return $this;
+    }
 
-	/**
-	 * @return QueuedJobDescriptor
-	 */
-	public function getDescriptor() {
-		return $this->descriptor;
-	}
+    /**
+     * @return QueuedJobDescriptor
+     */
+    public function getDescriptor() {
+        return $this->descriptor;
+    }
 
-	/**
-	 * @param QueuedJobDescriptor $descriptor
-	 */
-	public function __construct(QueuedJobDescriptor $descriptor) {
-		$this->descriptor = $descriptor;
-	}
+    /**
+     * @param QueuedJobDescriptor $descriptor
+     */
+    public function __construct(QueuedJobDescriptor $descriptor) {
+        $this->descriptor = $descriptor;
+    }
 
-	/**
-	 * @inheritdoc
-	 *
-	 * @return string
-	 */
-	public function serialize() {
-		return serialize(array(
-			'descriptor' => $this->descriptor->ID,
-		));
-	}
+    /**
+     * @inheritdoc
+     *
+     * @return string
+     */
+    public function serialize() {
+        return serialize([
+            'descriptor' => $this->descriptor->ID,
+        ]);
+    }
 
-	/**
-	 * @inheritdoc
-	 *
-	 * @throws InvalidArgumentException
-	 * @param string
-	 */
-	public function unserialize($serialized) {
-		$data = unserialize($serialized);
+    /**
+     * @inheritdoc
+     *
+     * @throws InvalidArgumentException
+     * @param string
+     */
+    public function unserialize($serialized) {
+        $data = unserialize($serialized);
 
-		if(!isset($data['descriptor'])) {
-			throw new InvalidArgumentException('Malformed data');
-		}
+        if(!isset($data['descriptor'])) {
+            throw new InvalidArgumentException('Malformed data');
+        }
 
-		$descriptor = QueuedJobDescriptor::get()
-			->filter('ID', $data['descriptor'])
-			->first();
+        $descriptor = QueuedJobDescriptor::get()
+            ->filter('ID', $data['descriptor'])
+            ->first();
 
-		if(!$descriptor) {
-			throw new InvalidArgumentException('Descriptor not found');
-		}
+        if (!$descriptor) {
+            throw new InvalidArgumentException('Descriptor not found');
+        }
 
-		$this->descriptor = $descriptor;
-	}
+        $this->descriptor = $descriptor;
+    }
 
-	/**
-	 * @return string
-	 */
-	public function getHandler() {
-		return 'DoormanQueuedJobHandler';
-	}
+    /**
+     * @return string
+     */
+    public function getHandler() {
+        return 'DoormanQueuedJobHandler';
+    }
 
-	/**
-	 * @return array
-	 */
-	public function getData() {
-		return array(
-			'descriptor' => $this->descriptor,
-		);
-	}
+    /**
+     * @return array
+     */
+    public function getData() {
+        return [
+            'descriptor' => $this->descriptor,
+        ];
+    }
 
-	/**
-	 * @return bool
-	 */
-	public function ignoresRules() {
-		if ($this->descriptor->hasMethod('ignoreRules')) {
-			return $this->descriptor->ignoreRules();
-		}
+    /**
+     * @return bool
+     */
+    public function ignoresRules() {
+        $descriptor = $this->getDescriptor();
 
-		return false;
-	}
+        if ($descriptor && $descriptor->hasMethod('ignoreRules')) {
+            return $descriptor->ignoreRules();
+        }
 
-	/**
-	 * @return bool
-	 */
-	public function stopsSiblings() {
-		if ($this->descriptor->hasMethod('stopsSiblings')) {
-			return $this->descriptor->stopsSiblings();
-		}
+        return false;
+    }
 
-		return false;
-	}
+    /**
+     * @return bool
+     */
+    public function stopsSiblings() {
+        $descriptor = $this->getDescriptor();
 
-	/**
-	 * @inheritdoc
-	 *
-	 * @return int
-	 */
-	public function getExpiresIn() {
-		if ($this->descriptor->hasMethod('getExpiresIn')) {
-			return $this->descriptor->getExpiresIn();
-		}
+        if ($descriptor && $descriptor->hasMethod('stopsSiblings')) {
+            return $descriptor->stopsSiblings();
+        }
 
-		return -1;
-	}
+        return false;
+    }
 
-	/**
-	 * @inheritdoc
-	 *
-	 * @param int $startedAt
-	 * @return bool
-	 */
-	public function shouldExpire($startedAt) {
-		if ($this->descriptor->hasMethod('shouldExpire')) {
-			return $this->descriptor->shouldExpire($startedAt);
-		}
+    /**
+     * @inheritdoc
+     *
+     * @return int
+     */
+    public function getExpiresIn() {
+        $descriptor = $this->getDescriptor();
 
-		return true;
-	}
+        if ($descriptor && $descriptor->hasMethod('getExpiresIn')) {
+            return $descriptor->getExpiresIn();
+        }
 
-	/**
-	 * @inheritdoc
-	 *
-	 * @return bool
-	 */
-	public function canRunTask() {
-		$this->refreshDescriptor();
-		return in_array(
-			$this->descriptor->JobStatus,
-			array(
-				QueuedJob::STATUS_NEW,
-				QueuedJob::STATUS_INIT,
-				QueuedJob::STATUS_WAIT
-			)
-		);
-	}
+        return -1;
+    }
 
-	/**
-	 * @inheritdoc
-	 *
-	 * @return bool
-	 */
-	public function isCancelled() {
-		$this->refreshDescriptor();
-		return $this->descriptor->JobStatus === QueuedJob::STATUS_CANCELLED;
-	}
+    /**
+     * @inheritdoc
+     *
+     * @param int $startedAt
+     * @return bool
+     */
+    public function shouldExpire($startedAt) {
+        $descriptor = $this->getDescriptor();
+
+        if ($descriptor && $descriptor->hasMethod('shouldExpire')) {
+            return $descriptor->shouldExpire($startedAt);
+        }
+
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     *
+     * @return bool
+     */
+    public function canRunTask() {
+        $this->refreshDescriptor();
+
+        $descriptor = $this->getDescriptor();
+
+        if ($descriptor) {
+            return in_array(
+                $descriptor->JobStatus,
+                [
+                    QueuedJob::STATUS_NEW,
+                    QueuedJob::STATUS_INIT,
+                    QueuedJob::STATUS_WAIT
+                ]
+            );
+        }
+
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     *
+     * @return bool
+     */
+    public function isCancelled() {
+        $this->refreshDescriptor();
+
+        $descriptor = $this->getDescriptor();
+
+        if ($descriptor) {
+            return $this->descriptor->JobStatus === QueuedJob::STATUS_CANCELLED;
+        }
+
+        return false;
+    }
 }
