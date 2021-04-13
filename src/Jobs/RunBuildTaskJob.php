@@ -72,7 +72,7 @@ class RunBuildTaskJob extends AbstractQueuedJob
 
     public function process()
     {
-        if (!is_subclass_of($this->TaskClass, BuildTask::class)) {
+        if (!is_a(trim($this->TaskClass), BuildTask::class, true)) {
             throw new \LogicException($this->TaskClass . ' is not a build task');
         }
 
