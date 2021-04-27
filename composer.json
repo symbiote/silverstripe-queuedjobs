@@ -20,6 +20,33 @@
         "silverstripe/admin": "^1",
         "asyncphp/doorman": "^3.0"
     },
+    "repositories": [
+        {
+          "type": "package",
+          "package": {
+            "name": "asyncphp/doorman",
+            "version": "3.99.99",
+            "require": {
+              "php": ">=5.5.9",
+              "opis/closure": "^3.6"
+            },
+            "dist": {
+              "url": "https://github.com/silverstripe/doorman/archive/d8f60d29a12f07d3c8aad979bb03e4b643e738dd.zip",
+              "type": "zip"
+            },
+            "autoload": {
+              "psr-4": {
+                "AsyncPHP\\Doorman\\": "src"
+              }
+            },
+            "autoload-dev": {
+              "psr-4": {
+                "AsyncPHP\\Doorman\\Tests\\": "tests"
+              }
+            }
+          }
+        }
+    ],
     "require-dev": {
         "sminnee/phpunit": "^5.7",
         "squizlabs/php_codesniffer": "^3"
