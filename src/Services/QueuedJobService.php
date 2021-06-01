@@ -984,6 +984,10 @@ class QueuedJobService
                 }
             } catch (\Throwable $e) {
                 // PHP 7 Error handling)
+                if ($job === null) {
+                    // In case job hasn't loaded yet, pass in a dummy (as the error handler expects a QueuedJob)
+                    $job = QueuedJob::singleton();
+                }
                 $this->handleBrokenJobException($jobDescriptor, $job, $e);
                 $broken = true;
             }
