@@ -291,6 +291,54 @@ class QueuedJobsTest extends AbstractTest
     }
 
     /**
+     * @throws ValidationException
+     */
+    public function testNextResumedJob()
+    {
+        $svc = $this->getService();
+        $list = $svc->getJobList();
+
+        foreach ($list as $job) {
+            $job->delete();
+        }
+
+        $list = $svc->getJobList();
+        $this->assertCount(0, $list);
+
+        $job = new TestQueuedJob();
+        $id1 = $svc->queueJob($job);
+
+        // okay, lets get the first one and initialise it, then make sure that a subsequent init attempt fails
+        $job = $svc->getNextPendingJob();
+
+        $this->assertEquals($id1, $job->ID);
+        $svc->testInit($job);
+
+        // assign job locking properties
+        $job->Worker = 'test worker';
+        $job->WorkerCount = (int) $job->WorkerCount + 1;
+        $job->Expiry = '2016-01-01 16:00:01';
+        $job->write();
+
+        $next = $svc->getNextPendingJob();
+
+        $this->assertNull($next);
+
+        // okay now pause the job and resume it - it _should_ be the next one
+        $job->pause(true);
+
+        $next = $svc->getNextPendingJob();
+        $this->assertNull($next);
+
+        $job->resume(true);
+
+        $next = $svc->getNextPendingJob();
+        $this->assertNotNull($next);
+
+        $this->assertEquals($job->ID, $next->ID);
+    }
+
+    /**
      * Verify that broken jobs are correctly verified for health and restarted as necessary
      *
      * Order of checkJobHealth() and getNextPendingJob() is important
