@@ -252,6 +252,18 @@ class QueuedJobDescriptor extends DataObject
         }
     }
 
+    public function onBeforeWrite()
+    {
+        // if a job is marked as 'waiting' for a restart, we need to reset the
+        // worker it was assigned to, otherwise it'll never pick up and go again if
+        // it was paused from the UI, or a worker stopping to release memory / other reason!
+        if ($this->JobStatus == QueuedJob::STATUS_WAIT) {
+            $this->Worker = null;
+        }
+
+        parent::onBeforeWrite();
+    }
+
     public function onBeforeDelete()
     {
         parent::onBeforeDelete();
