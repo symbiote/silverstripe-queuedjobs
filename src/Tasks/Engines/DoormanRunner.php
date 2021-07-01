@@ -63,7 +63,7 @@ class DoormanRunner extends BaseRunner implements TaskRunnerEngine
             BASE_PATH . "/vendor/silverstripe/framework/cli-script.php dev/tasks/ProcessJobQueueChildTask"
         );
         $logPath = Environment::getEnv('SS_DOORMAN_LOGPATH');
-        if ($logPath && is_dir($logPath)) {
+        if ($logPath && is_dir($logPath) && is_writable($logPath)) {
             $manager->setLogPath($logPath);
         }
 
