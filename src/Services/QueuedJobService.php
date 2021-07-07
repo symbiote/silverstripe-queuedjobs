@@ -470,6 +470,13 @@ class QueuedJobService
         /** @var QueuedJobDescriptor $stalledJob */
         foreach ($stalledJobs as $stalledJob) {
             $jobClass = $stalledJob->Implementation;
+            
+            if (!class_exists($jobClass)) {
+                $stalledJob->delete();
+
+                continue;
+            }
+            
             $jobSingleton = singleton($jobClass);
 
             if ($jobSingleton instanceof RunBuildTaskJob) {
