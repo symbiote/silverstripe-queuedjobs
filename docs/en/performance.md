@@ -24,7 +24,7 @@ For some jobs you might need to increase this value:
 
 
 ```yaml
-Symbiote\QueuedJobs\Services\QueuedJobService\QueuedJobsService:
+Symbiote\QueuedJobs\Services\QueuedJobService:
   # Accepts b, k, m, or b suffixes
   memory_limit: 512m
 ```
@@ -36,7 +36,7 @@ resources. By default this is disabled, so you must specify this in your project
 
 ```yml
 # Force limit to 10 minutes
-Symbiote\QueuedJobs\Services\QueuedJobService\QueuedJobsService:
+Symbiote\QueuedJobs\Services\QueuedJobService:
   time_limit: 600
 ```
 
