@@ -911,7 +911,7 @@ class QueuedJobService
                             $job->process();
                         } catch (\Throwable $e) {
                             $logger->error($e->getMessage(), ['exception' => $e]);
-                            $jobDescriptor->JobStatus =  QueuedJob::STATUS_BROKEN;
+                            $this->markJobAsBroken($jobDescriptor);
                             $this->extend('updateJobDescriptorAndJobOnException', $jobDescriptor, $job, $e);
                         }
 
@@ -930,7 +930,7 @@ class QueuedJobService
                                 'Job stalled after {attempts} attempts - please check',
                                 ['attempts' => $stallCount]
                             ));
-                            $jobDescriptor->JobStatus = QueuedJob::STATUS_BROKEN;
+                            $this->markJobAsBroken($jobDescriptor);
                         }
 
                         // now we'll be good and check our memory usage. If it is too high, we'll set the job to
@@ -1056,7 +1056,7 @@ class QueuedJobService
                 'exception' => $e,
             ]
         );
-        $jobDescriptor->JobStatus =  QueuedJob::STATUS_BROKEN;
+        $this->markJobAsBroken($jobDescriptor);
         $this->extend('updateJobDescriptorAndJobOnException', $jobDescriptor, $job, $e);
         $jobDescriptor->write();
     }
@@ -1514,6 +1514,17 @@ class QueuedJobService
     protected function releaseJobLock(QueuedJobDescriptor $descriptor): void
     {
         $descriptor->Worker = null;
+    }
+
+    /**
+     * Mark a Job as Broken and release the lock so it can be resumed
+     *
+     * @param QueuedJobDescriptor $descriptor
+     */
+    protected function markJobAsBroken(QueuedJobDescriptor $descriptor): void
+    {
+        $descriptor->JobStatus = QueuedJob::STATUS_BROKEN;
+        $this->releaseJobLock($descriptor);
     }
 
     /**
