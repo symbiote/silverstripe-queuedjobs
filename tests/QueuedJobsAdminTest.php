@@ -2,17 +2,19 @@
 
 namespace Symbiote\QueuedJobs\Tests;
 
-use SilverStripe\Core\Config\Config;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\FunctionalTest;
 use SilverStripe\Forms\FieldList;
+use SilverStripe\Forms\GridField\GridField;
+use SilverStripe\Forms\GridField\GridFieldFilterHeader;
 use SilverStripe\Forms\TextareaField;
 use SilverStripe\ORM\FieldType\DBDatetime;
 use Symbiote\QueuedJobs\Controllers\QueuedJobsAdmin;
 use Symbiote\QueuedJobs\Jobs\PublishItemsJob;
 use Symbiote\QueuedJobs\Services\QueuedJobService;
 use Symbiote\QueuedJobs\Tests\Jobs\TestDummyJob;
+use Terraformers\RichFilterHeader\Form\GridField\RichFilterHeader;
 
 /**
  * Tests for the QueuedJobsAdmin ModelAdmin clas
@@ -119,5 +121,71 @@ class QueuedJobsAdminTest extends FunctionalTest
         $form->Fields()->fieldByName('JobStart')->setValue($startTimeAfter);
 
         $this->admin->createjob($form->getData(), $form);
+    }
+
+    /**
+     * @param bool $enabled
+     * @dataProvider advancedUIProvider
+     */
+    public function testAdvancedUI(bool $enabled): void
+    {
+        // enable / disable the advanced UI
+        QueuedJobsAdmin::config()->set('advanced_admin_ui', $enabled);
+
+        $fields = $this->admin->getEditForm('foo', new FieldList())->Fields();
+
+        /** @var GridField $field */
+        $field = $fields->fieldByName('QueuedJobDescriptor');
+        $this->assertInstanceOf(GridField::class, $field);
+        $this->assertCount(1, $field->getConfig()->getComponentsByType(GridFieldFilterHeader::class));
+
+        $expected = $enabled ? 1 : 0;
+        $this->assertCount($expected, $field->getConfig()->getComponentsByType(RichFilterHeader::class));
+
+        if (!$enabled) {
+            // If the advanced UI is not enabled we can bail out here
+            return;
+        }
+
+        /** @var RichFilterHeader $filterHeader */
+        $filterHeader = $field->getConfig()->getComponentByType(RichFilterHeader::class);
+        $html = $filterHeader->getHTMLFragments($field);
+
+        $this->assertArrayHasKey('header', $html);
+        $header = (string) $html['header'];
+
+        // Make sure that the advanced UI is properly rendered - we want to see dropdown fields and other inputs
+        $this->assertContains(
+            '<input type="text" name="filter[QueuedJobDescriptor][Implementation]" class="text',
+            $header
+        );
+        $this->assertContains(
+            '<select name="filter[QueuedJobDescriptor][JobType]" class="dropdown',
+            $header
+        );
+        $this->assertContains(
+            '<select name="filter[QueuedJobDescriptor][JobStatus]" class="dropdown',
+            $header
+        );
+        $this->assertContains(
+            '<input type="text" name="filter[QueuedJobDescriptor][JobTitle]" class="text',
+            $header
+        );
+        $this->assertContains(
+            '<select name="filter[QueuedJobDescriptor][Added]" class="dropdown',
+            $header
+        );
+        $this->assertContains(
+            '<select name="filter[QueuedJobDescriptor][Scheduled]" class="dropdown',
+            $header
+        );
+    }
+
+    public function advancedUIProvider(): array
+    {
+        return [
+            'Advanced UI disabled' => [false],
+            'Advanced UI enabled' => [true],
+        ];
     }
 }
