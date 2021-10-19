@@ -2,6 +2,7 @@
 
 namespace Symbiote\QueuedJobs\Tasks;
 
+use Exception;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Dev\BuildTask;
 use Symbiote\QueuedJobs\Services\QueuedJob;
@@ -34,15 +35,27 @@ class CheckJobHealthTask extends BuildTask
      *
      * @param HTTPRequest $request
      * @return
+     *
+     * @throws Exception
      */
     public function run($request)
     {
         $queue = $request->requestVar('queue') ?: QueuedJob::QUEUED;
+        $jobHealth = $this->getService()->checkJobHealth($queue);
 
-        $stalledJobCount = $this->getService()->checkJobHealth($queue);
+        $unhealthyJobCount = 0;
 
-        echo $stalledJobCount === 0 ? 'All jobs are healthy' : 'Detected and attempted restart on ' . $stalledJobCount .
-            ' stalled jobs';
+        foreach ($jobHealth as $type => $IDs) {
+            $count = count($IDs);
+            echo 'Detected and attempted restart on ' . $count . ' ' . $type . ' jobs';
+            $unhealthyJobCount = $unhealthyJobCount + $count;
+        }
+
+        if ($unhealthyJobCount > 0) {
+            throw new Exception("$unhealthyJobCount jobs are unhealthy");
+        }
+
+        echo 'All jobs are healthy';
     }
 
     protected function getService()

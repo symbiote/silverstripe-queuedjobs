@@ -14,32 +14,32 @@ interface QueuedJob
      * Always run immediate jobs as soon as possible
      * @var string
      */
-    const IMMEDIATE = '1';
+    public const IMMEDIATE = '1';
 
     /**
      * Queued jobs may have some processing to do, but should be pretty quick
      * @var string
      */
-    const QUEUED = '2';
+    public const QUEUED = '2';
 
     /**
      * Large jobs will take minutes, not seconds to run
      * @var string
      */
-    const LARGE = '3';
+    public const LARGE = '3';
 
     /**
      * Statuses
      * @var string
      */
-    const STATUS_NEW = 'New';
-    const STATUS_INIT = 'Initialising';
-    const STATUS_RUN = 'Running';
-    const STATUS_WAIT = 'Waiting';
-    const STATUS_COMPLETE = 'Complete';
-    const STATUS_PAUSED = 'Paused';
-    const STATUS_CANCELLED = 'Cancelled';
-    const STATUS_BROKEN = 'Broken';
+    public const STATUS_NEW = 'New';
+    public const STATUS_INIT = 'Initialising';
+    public const STATUS_RUN = 'Running';
+    public const STATUS_WAIT = 'Waiting';
+    public const STATUS_COMPLETE = 'Complete';
+    public const STATUS_PAUSED = 'Paused';
+    public const STATUS_CANCELLED = 'Cancelled';
+    public const STATUS_BROKEN = 'Broken';
 
     /**
      * Gets a title for the job that can be used in listings
