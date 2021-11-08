@@ -21,7 +21,7 @@ class CleanupJobTest extends AbstractTest
     /**
      * {@inheritDoc}
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         // Have to set a fake time here to work with
         // the LastEdited dates in the fixture
@@ -33,7 +33,7 @@ class CleanupJobTest extends AbstractTest
     /**
      * {@inheritDoc}
      */
-    protected function tearDown()
+    protected function tearDown(): void
     {
         parent::tearDown();
         DBDatetime::clear_mock_now();
@@ -52,7 +52,7 @@ class CleanupJobTest extends AbstractTest
         );
         $job->process();
         $data = $job->getJobData();
-        $this->assertContains("2 jobs cleaned up.", $data->messages[0]);
+        $this->assertStringContainsString("2 jobs cleaned up.", $data->messages[0]);
     }
 
     public function testByNumber()
@@ -68,7 +68,7 @@ class CleanupJobTest extends AbstractTest
         );
         $job->process();
         $data = $job->getJobData();
-        $this->assertContains("2 jobs cleaned up.", $data->messages[0]);
+        $this->assertStringContainsString("2 jobs cleaned up.", $data->messages[0]);
     }
 
     public function testByStatus()
@@ -84,7 +84,7 @@ class CleanupJobTest extends AbstractTest
         );
         $job->process();
         $data = $job->getJobData();
-        $this->assertContains("3 jobs cleaned up.", $data->messages[0]);
+        $this->assertStringContainsString("3 jobs cleaned up.", $data->messages[0]);
     }
 
     public function testNoCleanup()
@@ -100,6 +100,6 @@ class CleanupJobTest extends AbstractTest
         );
         $job->process();
         $data = $job->getJobData();
-        $this->assertContains("No jobs to clean up.", $data->messages[0]);
+        $this->assertStringContainsString("No jobs to clean up.", $data->messages[0]);
     }
 }
