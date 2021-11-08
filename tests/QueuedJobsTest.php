@@ -34,7 +34,7 @@ class QueuedJobsTest extends AbstractTest
     /**
      * {@inheritDoc}
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -51,7 +51,7 @@ class QueuedJobsTest extends AbstractTest
         DBDatetime::set_mock_now('2016-01-01 16:00:00');
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         parent::tearDown();
 
