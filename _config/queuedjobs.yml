@@ -24,7 +24,7 @@ SilverStripe\Core\Injector\Injector:
   Symbiote\QueuedJobs\Tasks\Engines\DoormanRunner:
     properties:
       DefaultRules:
-        - '%$DefaultRule'
+        DefaultRule: '%$DefaultRule'
 
 SilverStripe\SiteConfig\SiteConfig:
   extensions:

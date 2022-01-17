@@ -2,12 +2,13 @@
 
 namespace Symbiote\QueuedJobs\Tasks\Engines;
 
-use AsyncPHP\Doorman\Manager\ProcessManager;
+use SilverStripe\Core\ClassInfo;
+use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Environment;
 use SilverStripe\Core\Injector\Injector;
-use SilverStripe\ORM\FieldType\DBDatetime;
 use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
 use Symbiote\QueuedJobs\Jobs\DoormanQueuedJobTask;
+use Symbiote\QueuedJobs\Services\ProcessManager;
 use Symbiote\QueuedJobs\Services\QueuedJob;
 use Symbiote\QueuedJobs\Services\QueuedJobService;
 
@@ -16,6 +17,33 @@ use Symbiote\QueuedJobs\Services\QueuedJobService;
  */
 class DoormanRunner extends BaseRunner implements TaskRunnerEngine
 {
+    use Configurable;
+
+    /**
+     * How many ticks are executed per one @see runQueue method call
+     * set 0 for unlimited ticks
+     *
+     * @config
+     * @var int
+     */
+    private static $max_ticks = 0;
+
+    /**
+     * How many seconds between ticks
+     *
+     * @config
+     * @var int
+     */
+    private static $tick_interval = 1;
+
+    /**
+     * Name of the dev task used to run the child process
+     *
+     * @config
+     * @var string
+     */
+    private static $child_runner = 'ProcessJobQueueChildTask';
+
     /**
      * @var string[]
      */
@@ -48,10 +76,13 @@ class DoormanRunner extends BaseRunner implements TaskRunnerEngine
      */
     public function runQueue($queue)
     {
-        // check if queue can be processed
         $service = QueuedJobService::singleton();
+        $logger = $service->getLogger();
+
+        // check if queue can be processed
         if ($service->isAtMaxJobs()) {
-            $service->getLogger()->info('Not processing queue as jobs are at max initialisation limit.');
+            $logger->info('Not processing queue as jobs are at max initialisation limit.');
+
             return;
         }
 
@@ -60,8 +91,13 @@ class DoormanRunner extends BaseRunner implements TaskRunnerEngine
         /** @var ProcessManager $manager */
         $manager = Injector::inst()->create(ProcessManager::class);
         $manager->setWorker(
-            BASE_PATH . "/vendor/silverstripe/framework/cli-script.php dev/tasks/ProcessJobQueueChildTask"
+            sprintf(
+                '%s/vendor/silverstripe/framework/cli-script.php dev/tasks/%s',
+                BASE_PATH,
+                $this->getChildRunner()
+            )
         );
+
         $logPath = Environment::getEnv('SS_DOORMAN_LOGPATH');
         if ($logPath && is_dir($logPath) && is_writable($logPath)) {
             $manager->setLogPath($logPath);
@@ -69,59 +105,98 @@ class DoormanRunner extends BaseRunner implements TaskRunnerEngine
 
         // Assign default rules
         $defaultRules = $this->getDefaultRules();
+
         if ($defaultRules) {
             foreach ($defaultRules as $rule) {
+                if (!$rule) {
+                    continue;
+                }
+
                 $manager->addRule($rule);
             }
         }
 
-        $descriptor = $this->getNextJobDescriptorWithoutMutex($queue);
+        $tickCount = 0;
+        $maxTicks = $this->getMaxTicks();
+        $descriptor = $service->getNextPendingJob($queue);
 
         while ($manager->tick() || $descriptor) {
-            if (QueuedJobService::singleton()->isMaintenanceLockActive()) {
-                $service->getLogger()->info('Skipped queued job descriptor since maintenance log is active.');
+            if ($service->isMaintenanceLockActive()) {
+                $logger->info('Skipped queued job descriptor since maintenance lock is active.');
+
                 return;
             }
 
-            $this->logDescriptorStatus($descriptor, $queue);
+            if ($maxTicks > 0 && $tickCount >= $maxTicks) {
+                $logger->info(sprintf('Tick count has hit max ticks (%d)', $maxTicks));
 
-            if ($descriptor instanceof QueuedJobDescriptor) {
-                $descriptor->JobStatus = QueuedJob::STATUS_INIT;
-                $descriptor->write();
-
-                $manager->addTask(new DoormanQueuedJobTask($descriptor));
+                return;
             }
 
-            sleep(1);
+            if ($service->isAtMaxJobs()) {
+                $logger->info(
+                    sprintf(
+                        'Not processing queue as all job are at max limit. %s',
+                        ClassInfo::shortName($service)
+                    )
+                );
+            } elseif ($descriptor) {
+                $logger->info(sprintf('Next pending job is: %d', $descriptor->ID));
+                $this->logDescriptorStatus($descriptor, $queue);
 
-            $descriptor = $this->getNextJobDescriptorWithoutMutex($queue);
+                if ($descriptor instanceof QueuedJobDescriptor) {
+                    $descriptor->JobStatus = QueuedJob::STATUS_INIT;
+                    $descriptor->write();
+
+                    $manager->addTask(new DoormanQueuedJobTask($descriptor));
+                }
+            } else {
+                $logger->info('Next pending job could NOT be found or lock could NOT be obtained.');
+            }
+
+            $tickCount += 1;
+            sleep($this->getTickInterval());
+            $descriptor = $service->getNextPendingJob($queue);
         }
     }
 
     /**
+     * Override this method if you need a dynamic value for the configuration, for example CMS setting
+     *
+     * @return int
+     */
+    protected function getMaxTicks(): int
+    {
+        return (int) $this->config()->get('max_ticks');
+    }
+
+    /**
+     * Override this method if you need a dynamic value for the configuration, for example CMS setting
+     *
+     * @return int
+     */
+    protected function getTickInterval(): int
+    {
+        return (int) $this->config()->get('tick_interval');
+    }
+
+    /**
+     * Override this method if you need a dynamic value for the configuration, for example CMS setting
+     *
+     * @return string
+     */
+    protected function getChildRunner(): string
+    {
+        return (string) $this->config()->get('child_runner');
+    }
+
+    /**
      * @param string $queue
-     * @return null|QueuedJobDescriptor
+     * @return QueuedJobDescriptor|null
+     * @deprecated 5.0
      */
     protected function getNextJobDescriptorWithoutMutex($queue)
     {
-        $list = QueuedJobDescriptor::get()
-            ->filter('JobType', $queue)
-            ->sort('ID', 'ASC');
-
-        $descriptor = $list
-            ->filter('JobStatus', QueuedJob::STATUS_WAIT)
-            ->first();
-
-        if ($descriptor) {
-            return $descriptor;
-        }
-
-        return $list
-            ->filter('JobStatus', QueuedJob::STATUS_NEW)
-            ->where(sprintf(
-                '"StartAfter" < \'%s\' OR "StartAfter" IS NULL',
-                DBDatetime::now()->getValue()
-            ))
-            ->first();
+        return $this->getService()->getNextPendingJob($queue);
     }
 }

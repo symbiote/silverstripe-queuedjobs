@@ -34,7 +34,7 @@ class QueuedJobsTest extends AbstractTest
     /**
      * {@inheritDoc}
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -51,7 +51,7 @@ class QueuedJobsTest extends AbstractTest
         DBDatetime::set_mock_now('2016-01-01 16:00:00');
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         parent::tearDown();
 
@@ -291,6 +291,54 @@ class QueuedJobsTest extends AbstractTest
     }
 
     /**
+     * @throws ValidationException
+     */
+    public function testNextResumedJob()
+    {
+        $svc = $this->getService();
+        $list = $svc->getJobList();
+
+        foreach ($list as $job) {
+            $job->delete();
+        }
+
+        $list = $svc->getJobList();
+        $this->assertCount(0, $list);
+
+        $job = new TestQueuedJob();
+        $id1 = $svc->queueJob($job);
+
+        // okay, lets get the first one and initialise it, then make sure that a subsequent init attempt fails
+        $job = $svc->getNextPendingJob();
+
+        $this->assertEquals($id1, $job->ID);
+        $svc->testInit($job);
+
+        // assign job locking properties
+        $job->Worker = 'test worker';
+        $job->WorkerCount = (int) $job->WorkerCount + 1;
+        $job->Expiry = '2016-01-01 16:00:01';
+        $job->write();
+
+        $next = $svc->getNextPendingJob();
+
+        $this->assertNull($next);
+
+        // okay now pause the job and resume it - it _should_ be the next one
+        $job->pause(true);
+
+        $next = $svc->getNextPendingJob();
+        $this->assertNull($next);
+
+        $job->resume(true);
+
+        $next = $svc->getNextPendingJob();
+        $this->assertNotNull($next);
+
+        $this->assertEquals($job->ID, $next->ID);
+    }
+
+    /**
      * Verify that broken jobs are correctly verified for health and restarted as necessary
      *
      * Order of checkJobHealth() and getNextPendingJob() is important
@@ -491,6 +539,38 @@ class QueuedJobsTest extends AbstractTest
             'A job named A Test job appears to have stalled. It has been paused, please login to check it',
             $logger->getMessages()
         );
+    }
+
+    public function testJobHealthCheckForStuckInitJobs()
+    {
+        $svc = $this->getService();
+        $logger = $svc->getLogger();
+        $job = new TestQueuedJob(QueuedJob::IMMEDIATE);
+        $id = $svc->queueJob($job);
+
+        /** @var QueuedJobDescriptor $descriptor */
+        $descriptor = QueuedJobDescriptor::get()->byID($id);
+
+        // Kick off job processing - this is before job has a worker allocated
+        DBDatetime::set_mock_now('2017-01-01 16:00:00');
+        $descriptor->JobStatus = QueuedJob::STATUS_INIT;
+        $descriptor->LastProcessedCount = 0;
+        $descriptor->StepsProcessed = 0;
+        $descriptor->write();
+
+        // Check that valid jobs are left untouched
+        DBDatetime::set_mock_now('2017-01-01 16:01:59');
+        $svc->checkJobHealth(QueuedJob::IMMEDIATE);
+
+        $descriptor = QueuedJobDescriptor::get()->byID($id);
+        $this->assertEquals(QueuedJob::STATUS_INIT, $descriptor->JobStatus);
+
+        // Check that init jobs which are considered stuck are handled
+        DBDatetime::set_mock_now('2017-01-01 16:02:00');
+        $svc->checkJobHealth(QueuedJob::IMMEDIATE);
+
+        $descriptor = QueuedJobDescriptor::get()->byID($id);
+        $this->assertEquals(QueuedJob::STATUS_WAIT, $descriptor->JobStatus);
     }
 
     public function testExceptionWithMemoryExhaustion()

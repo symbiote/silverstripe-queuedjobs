@@ -7,7 +7,7 @@ use Symbiote\QueuedJobs\Services\QueuedJobService;
 
 abstract class AbstractTest extends SapphireTest
 {
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

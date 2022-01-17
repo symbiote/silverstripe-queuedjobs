@@ -18,7 +18,7 @@ class DoormanQueuedJobTask implements Task, Expires, Process, Cancellable
     protected $id;
 
     /**
-     * @var QueuedJobDescriptor
+     * @var QueuedJobDescriptor|null
      */
     protected $descriptor;
 
@@ -132,7 +132,7 @@ class DoormanQueuedJobTask implements Task, Expires, Process, Cancellable
      */
     public function ignoresRules()
     {
-        if ($this->descriptor->hasMethod('ignoreRules')) {
+        if ($this->descriptor && $this->descriptor->hasMethod('ignoreRules')) {
             return $this->descriptor->ignoreRules();
         }
 
@@ -144,7 +144,7 @@ class DoormanQueuedJobTask implements Task, Expires, Process, Cancellable
      */
     public function stopsSiblings()
     {
-        if ($this->descriptor->hasMethod('stopsSiblings')) {
+        if ($this->descriptor && $this->descriptor->hasMethod('stopsSiblings')) {
             return $this->descriptor->stopsSiblings();
         }
 
@@ -158,7 +158,7 @@ class DoormanQueuedJobTask implements Task, Expires, Process, Cancellable
      */
     public function getExpiresIn()
     {
-        if ($this->descriptor->hasMethod('getExpiresIn')) {
+        if ($this->descriptor && $this->descriptor->hasMethod('getExpiresIn')) {
             return $this->descriptor->getExpiresIn();
         }
 
@@ -173,7 +173,7 @@ class DoormanQueuedJobTask implements Task, Expires, Process, Cancellable
      */
     public function shouldExpire($startedAt)
     {
-        if ($this->descriptor->hasMethod('shouldExpire')) {
+        if ($this->descriptor && $this->descriptor->hasMethod('shouldExpire')) {
             return $this->descriptor->shouldExpire($startedAt);
         }
 
@@ -188,14 +188,19 @@ class DoormanQueuedJobTask implements Task, Expires, Process, Cancellable
     public function canRunTask()
     {
         $this->refreshDescriptor();
-        return in_array(
-            $this->descriptor->JobStatus,
-            array(
-                QueuedJob::STATUS_NEW,
-                QueuedJob::STATUS_INIT,
-                QueuedJob::STATUS_WAIT
-            )
-        );
+
+        if ($this->descriptor) {
+            return in_array(
+                $this->descriptor->JobStatus,
+                array(
+                    QueuedJob::STATUS_NEW,
+                    QueuedJob::STATUS_INIT,
+                    QueuedJob::STATUS_WAIT
+                )
+            );
+        }
+
+        return false;
     }
 
     /**
@@ -213,6 +218,10 @@ class DoormanQueuedJobTask implements Task, Expires, Process, Cancellable
             QueuedJob::STATUS_COMPLETE,
         ];
 
-        return in_array($this->descriptor->JobStatus, $cancelledStates, true);
+        if ($this->descriptor) {
+            return in_array($this->descriptor->JobStatus, $cancelledStates, true);
+        }
+
+        return true;
     }
 }

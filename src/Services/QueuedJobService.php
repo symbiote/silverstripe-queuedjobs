@@ -125,6 +125,15 @@ class QueuedJobService
     private static $worker_ttl = 'PT5M';
 
     /**
+     * Duration for TTL of initialising state based on ISO 8601 duration specification.
+     * if a job is stuck in this state longer than this value it's considered stalled
+     *
+     * @var string
+     * @config
+     */
+    private static $initialising_state_ttl = 'PT2M';
+
+    /**
      * Timestamp (in seconds) when the queue was started
      *
      * @var int
@@ -378,7 +387,7 @@ class QueuedJobService
      *
      * @param string $type Job type
      *
-     * @return QueuedJobDescriptor|false
+     * @return QueuedJobDescriptor|null
      */
     public function getNextPendingJob($type = null)
     {
@@ -425,6 +434,7 @@ class QueuedJobService
      *
      * @param int $queue The queue to check against
      * @return array stalled job and broken job IDs
+     * @throws Exception
      */
     public function checkJobHealth($queue = null)
     {
@@ -443,17 +453,30 @@ class QueuedJobService
         // If no steps have been processed since the last run, consider it a broken job
         // Only check jobs that have been viewed before. LastProcessedCount defaults to -1 on new jobs.
         // Only check jobs that are past expiry to ensure another process isn't currently executing the job
-        $now = DBDatetime::now()->Rfc2822();
         $stalledJobs = $runningJobs
             ->filter([
                 'LastProcessedCount:GreaterThanOrEqual' => 0,
-                'Expiry:LessThanOrEqual' => $now,
             ])
-            ->where('"StepsProcessed" = "LastProcessedCount"');
+            ->where('"StepsProcessed" = "LastProcessedCount"')
+            ->whereAny([
+                // either job lock is expired
+                '"Expiry" <= ?' => DBDatetime::now()->Rfc2822(),
+                // or job lock was never assigned (maybe there were not enough server resources to kick off the process)
+                // fall back to LastEdited time and only restart those jobs that were left untouched for a small while
+                // this covers the situation where a process is still going to pick up the job
+                '"Expiry" IS NULL AND "LastEdited" <= ?' => $this->getInitStateExpiry()
+            ]);
 
         /** @var QueuedJobDescriptor $stalledJob */
         foreach ($stalledJobs as $stalledJob) {
             $jobClass = $stalledJob->Implementation;
+
+            if (!class_exists($jobClass)) {
+                $stalledJob->delete();
+
+                continue;
+            }
+
             $jobSingleton = singleton($jobClass);
 
             if ($jobSingleton instanceof RunBuildTaskJob) {
@@ -596,8 +619,7 @@ class QueuedJobService
      */
     protected function restartStalledJob($stalledJob)
     {
-        // release job lock on the descriptor so it can run again
-        $stalledJob->Worker = null;
+        $this->releaseJobLock($stalledJob);
 
         if ($stalledJob->ResumeCounts < static::config()->get('stall_threshold')) {
             $stalledJob->restart();
@@ -703,7 +725,7 @@ class QueuedJobService
 
                 $row = DB::query(sprintf($query, Convert::raw2sql($descriptorId)))->first();
 
-                if (!array_key_exists('ID', $row) || !$row['ID']) {
+                if (!is_array($row) || !array_key_exists('ID', $row) || !$row['ID']) {
                     throw new Exception('Failed to read job lock');
                 }
 
@@ -877,7 +899,9 @@ class QueuedJobService
                     if (!$broken) {
                         // Collect output where jobs aren't using the logger singleton
                         ob_start(function ($buffer, $phase) use ($job, $jobDescriptor) {
-                            $job->addMessage($buffer);
+                            if (!empty($buffer)) {
+                                $job->addMessage($buffer);
+                            }
                             if ($jobDescriptor) {
                                 $this->copyJobToDescriptor($job, $jobDescriptor);
                                 $jobDescriptor->write();
@@ -889,7 +913,7 @@ class QueuedJobService
                             $job->process();
                         } catch (\Throwable $e) {
                             $logger->error($e->getMessage(), ['exception' => $e]);
-                            $jobDescriptor->JobStatus =  QueuedJob::STATUS_BROKEN;
+                            $this->markJobAsBroken($jobDescriptor);
                             $this->extend('updateJobDescriptorAndJobOnException', $jobDescriptor, $job, $e);
                         }
 
@@ -908,7 +932,7 @@ class QueuedJobService
                                 'Job stalled after {attempts} attempts - please check',
                                 ['attempts' => $stallCount]
                             ));
-                            $jobDescriptor->JobStatus = QueuedJob::STATUS_BROKEN;
+                            $this->markJobAsBroken($jobDescriptor);
                         }
 
                         // now we'll be good and check our memory usage. If it is too high, we'll set the job to
@@ -921,6 +945,7 @@ class QueuedJobService
                             ));
                             if ($jobDescriptor->JobStatus != QueuedJob::STATUS_BROKEN) {
                                 $jobDescriptor->JobStatus = QueuedJob::STATUS_WAIT;
+                                $this->releaseJobLock($jobDescriptor);
                             }
                             $broken = true;
                         }
@@ -933,6 +958,7 @@ class QueuedJobService
                             ));
                             if ($jobDescriptor->JobStatus != QueuedJob::STATUS_BROKEN) {
                                 $jobDescriptor->JobStatus = QueuedJob::STATUS_WAIT;
+                                $this->releaseJobLock($jobDescriptor);
                             }
                             $broken = true;
                         }
@@ -1032,7 +1058,7 @@ class QueuedJobService
                 'exception' => $e,
             ]
         );
-        $jobDescriptor->JobStatus =  QueuedJob::STATUS_BROKEN;
+        $this->markJobAsBroken($jobDescriptor);
         $this->extend('updateJobDescriptorAndJobOnException', $jobDescriptor, $job, $e);
         $jobDescriptor->write();
     }
@@ -1415,6 +1441,29 @@ class QueuedJobService
     }
 
     /**
+     * Get expiry time for a INIT state of a queued job
+     * this helps to identify jobs that have stalled more accurately
+     *
+     * @return string
+     * @throws Exception
+     */
+    protected function getInitStateExpiry(): string
+    {
+        $now = DBDatetime::now()->Rfc2822();
+        $time = new DateTime($now);
+        $timeToLive = $this->config()->get('initialising_state_ttl');
+
+        if ($timeToLive) {
+            $time->sub(new DateInterval($timeToLive));
+        }
+
+        /** @var DBDatetime $expiry */
+        $expiry = DBField::create_field('Datetime', $time->getTimestamp());
+
+        return $expiry->Rfc2822();
+    }
+
+    /**
      * Add job-specific logger functionality which has the ability to flush logs into
      * the job descriptor database record. Based on the default logger set for this class,
      * which means it'll also log to other channels (e.g. stdout/stderr).
@@ -1457,6 +1506,27 @@ class QueuedJobService
                 );
             }
         }
+    }
+
+    /**
+     * Release job lock on the descriptor so it can run again
+     *
+     * @param QueuedJobDescriptor $descriptor
+     */
+    protected function releaseJobLock(QueuedJobDescriptor $descriptor): void
+    {
+        $descriptor->Worker = null;
+    }
+
+    /**
+     * Mark a Job as Broken and release the lock so it can be resumed
+     *
+     * @param QueuedJobDescriptor $descriptor
+     */
+    protected function markJobAsBroken(QueuedJobDescriptor $descriptor): void
+    {
+        $descriptor->JobStatus = QueuedJob::STATUS_BROKEN;
+        $this->releaseJobLock($descriptor);
     }
 
     /**
