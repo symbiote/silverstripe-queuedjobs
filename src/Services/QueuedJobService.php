@@ -899,7 +899,9 @@ class QueuedJobService
                     if (!$broken) {
                         // Collect output where jobs aren't using the logger singleton
                         ob_start(function ($buffer, $phase) use ($job, $jobDescriptor) {
-                            $job->addMessage($buffer);
+                            if (!empty($buffer)) {
+                                $job->addMessage($buffer);
+                            }
                             if ($jobDescriptor) {
                                 $this->copyJobToDescriptor($job, $jobDescriptor);
                                 $jobDescriptor->write();
