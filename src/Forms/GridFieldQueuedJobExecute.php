@@ -12,7 +12,6 @@ use Symbiote\QueuedJobs\Services\QueuedJob;
 
 class GridFieldQueuedJobExecute implements GridField_ColumnProvider, GridField_ActionProvider
 {
-
     protected $action = 'execute';
 
     /**

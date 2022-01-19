@@ -13,7 +13,6 @@ use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
  */
 class DeleteAllJobsTask extends BuildTask
 {
-
     /**
      * @inheritdoc
      * @return string
