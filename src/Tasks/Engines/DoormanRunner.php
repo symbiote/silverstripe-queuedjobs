@@ -99,8 +99,7 @@ class DoormanRunner extends BaseRunner implements TaskRunnerEngine
         );
 
         $logPath = Environment::getEnv('SS_DOORMAN_LOGPATH');
-
-        if ($logPath) {
+        if ($logPath && is_dir($logPath) && is_writable($logPath)) {
             $manager->setLogPath($logPath);
         }
 
