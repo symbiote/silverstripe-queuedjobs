@@ -562,6 +562,13 @@ class QueuedJobService
                     );
                     continue;
                 }
+
+                // Check for specific queue configuration
+                if (array_key_exists('queue', $jobConfig) && (int) $jobConfig['queue'] !== (int) $queue) {
+                    // Default job is specific to a queue type, and it doesn't match - bail out
+                    continue;
+                }
+
                 $job = $activeJobs->filter(array_merge(
                     ['Implementation' => $jobConfig['type']],
                     $jobConfig['filter']

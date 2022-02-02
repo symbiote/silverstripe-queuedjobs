@@ -74,6 +74,8 @@ SilverStripe\Core\Injector\Injector:
           recreate: 1
           # Set the email address to send the alert to if not set site admin email is used OPTIONAL
           email: 'admin@example.com'
+          # Make this job specific to only certain queue type (see QueuedJob interface)
+          queue: 1 # This would make this job be picked up only by Immediate queue
         # Minimal implementation will send alerts but not recreate
         AnotherTitle:
           type: 'AJob'
