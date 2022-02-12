@@ -99,11 +99,11 @@ class QueuedJobsAdmin extends ModelAdmin
         $list = QueuedJobDescriptor::get()->where($filter)->sort('Created', 'DESC');
 
         $gridFieldConfig = GridFieldConfig_RecordEditor::create()
-            ->addComponent(new GridFieldQueuedJobExecute('execute'))
-            ->addComponent(new GridFieldQueuedJobExecute('pause', function ($record) {
+            ->addComponent(GridFieldQueuedJobExecute::create('execute'))
+            ->addComponent(GridFieldQueuedJobExecute::create('pause', function ($record) {
                 return $record->JobStatus == QueuedJob::STATUS_WAIT || $record->JobStatus == QueuedJob::STATUS_RUN;
             }))
-            ->addComponent(new GridFieldQueuedJobExecute('resume', function ($record) {
+            ->addComponent(GridFieldQueuedJobExecute::create('resume', function ($record) {
                 return $record->JobStatus == QueuedJob::STATUS_PAUSED || $record->JobStatus == QueuedJob::STATUS_BROKEN;
             }))
             ->removeComponentsByType([
