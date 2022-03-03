@@ -2,6 +2,7 @@
 
 namespace Symbiote\QueuedJobs\Forms;
 
+use SilverStripe\Forms\GridField\AbstractGridFieldComponent;
 use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Forms\GridField\GridField_ActionProvider;
 use SilverStripe\Forms\GridField\GridField_ColumnProvider;
@@ -10,7 +11,9 @@ use SilverStripe\ORM\DataObject;
 use SilverStripe\View\Requirements;
 use Symbiote\QueuedJobs\Services\QueuedJob;
 
-class GridFieldQueuedJobExecute implements GridField_ColumnProvider, GridField_ActionProvider
+class GridFieldQueuedJobExecute extends AbstractGridFieldComponent implements
+    GridField_ColumnProvider,
+    GridField_ActionProvider
 {
     protected $action = 'execute';
 
