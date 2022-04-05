@@ -1316,6 +1316,9 @@ class QueuedJobService
      */
     public function processJobQueue($name)
     {
+        if (!DB::is_active()) {
+            return;
+        }
         // Start timer to measure lifetime
         $this->markStarted();
 
