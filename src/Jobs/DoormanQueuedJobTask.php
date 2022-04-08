@@ -72,41 +72,55 @@ class DoormanQueuedJobTask implements Task, Expires, Process, Cancellable
         $this->descriptor = $descriptor;
     }
 
-    /**
-     * @inheritdoc
-     *
-     * @return string
-     */
-    public function serialize()
+    public function __serialize(): array
     {
-        return serialize(array(
+        return [
             'descriptor' => $this->descriptor->ID,
-        ));
+        ];
+    }
+
+    public function __unserialize(array $data): void
+    {
+        if (!isset($data['descriptor'])) {
+            throw new InvalidArgumentException('Malformed data');
+        }
+        $descriptor = QueuedJobDescriptor::get()
+            ->filter('ID', $data['descriptor'])
+            ->first();
+        if (!$descriptor) {
+            throw new InvalidArgumentException('Descriptor not found');
+        }
+        $this->descriptor = $descriptor;
     }
 
     /**
+     * The __serialize() magic method will be automatically used instead of this
+     *
+     * @inheritdoc
+     *
+     * @return string
+     * @deprecated will be removed in 5.0
+     */
+    public function serialize()
+    {
+        return serialize($this->__serialize);
+    }
+
+    /**
+     * The __unserialize() magic method will be automatically used instead of this almost all the time
+     * This method will be automatically used if existing serialized data was not saved as an associative array
+     * and the PHP version used in less than PHP 9.0
+     *
      * @inheritdoc
      *
      * @throws InvalidArgumentException
      * @param string
+     * @deprecated will be removed in 5.0
      */
     public function unserialize($serialized)
     {
         $data = unserialize($serialized);
-
-        if (!isset($data['descriptor'])) {
-            throw new InvalidArgumentException('Malformed data');
-        }
-
-        $descriptor = QueuedJobDescriptor::get()
-            ->filter('ID', $data['descriptor'])
-            ->first();
-
-        if (!$descriptor) {
-            throw new InvalidArgumentException('Descriptor not found');
-        }
-
-        $this->descriptor = $descriptor;
+        $this->__unserialize($data);
     }
 
     /**
