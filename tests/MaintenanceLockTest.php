@@ -30,11 +30,11 @@ class MaintenanceLockTest extends AbstractTest
 
         QueuedJobService::singleton()->enableMaintenanceLock();
 
-        $this->assertEquals($fileExists, file_exists($filePath));
+        $this->assertEquals($fileExists, file_exists($filePath ?? ''));
         $this->assertEquals($lockActive, QueuedJobService::singleton()->isMaintenanceLockActive());
 
         QueuedJobService::singleton()->disableMaintenanceLock();
-        $this->assertFalse(file_exists($filePath));
+        $this->assertFalse(file_exists($filePath ?? ''));
         $this->assertFalse(QueuedJobService::singleton()->isMaintenanceLockActive());
     }
 

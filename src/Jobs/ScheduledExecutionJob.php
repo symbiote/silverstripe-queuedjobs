@@ -75,7 +75,7 @@ class ScheduledExecutionJob extends AbstractQueuedJob
                 $timeStr = '+' . $executeInterval . ' ' . $object->ExecuteEvery;
             }
 
-            $next = strtotime($timeStr);
+            $next = strtotime($timeStr ?? '');
             if ($next > DBDatetime::now()->getTimestamp()) {
                 // in the future
                 $nextGen = DBDatetime::create()->setValue($next)->Rfc2822();

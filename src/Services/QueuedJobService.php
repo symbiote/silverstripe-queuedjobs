@@ -303,7 +303,7 @@ class QueuedJobService
      */
     public function startJob($jobDescriptor, $startAfter = null)
     {
-        if ($startAfter && strtotime($startAfter) > DBDatetime::now()->getTimestamp()) {
+        if ($startAfter && strtotime($startAfter ?? '') > DBDatetime::now()->getTimestamp()) {
             $this->queueHandler->scheduleJob($jobDescriptor, $startAfter);
         } else {
             // immediately start it on the queue, however that works
@@ -365,12 +365,12 @@ class QueuedJobService
         $messages = null;
 
         // switching to php's serialize methods... not sure why this wasn't done from the start!
-        $jobData = @unserialize($jobDescriptor->SavedJobData);
-        $messages = @unserialize($jobDescriptor->SavedJobMessages);
+        $jobData = @unserialize($jobDescriptor->SavedJobData ?? '');
+        $messages = @unserialize($jobDescriptor->SavedJobMessages ?? '');
 
         // try decoding as json if null
-        $jobData = $jobData ?: json_decode($jobDescriptor->SavedJobData);
-        $messages = $messages ?: json_decode($jobDescriptor->SavedJobMessages);
+        $jobData = $jobData ?: json_decode($jobDescriptor->SavedJobData ?? '');
+        $messages = $messages ?: json_decode($jobDescriptor->SavedJobMessages ?? '');
 
         $job->setJobData(
             $jobDescriptor->TotalSteps,
@@ -471,7 +471,7 @@ class QueuedJobService
         foreach ($stalledJobs as $stalledJob) {
             $jobClass = $stalledJob->Implementation;
 
-            if (!class_exists($jobClass)) {
+            if (!class_exists($jobClass ?? '')) {
                 $stalledJob->delete();
 
                 continue;
@@ -510,7 +510,7 @@ class QueuedJobService
             'broken' => $brokenIDs,
         ];
 
-        if (count($brokenIDs) === 0) {
+        if (count($brokenIDs ?? []) === 0) {
             return $result;
         }
 
@@ -522,7 +522,7 @@ class QueuedJobService
             ]
         );
 
-        $placeholders = implode(', ', array_fill(0, count($brokenIDs), '?'));
+        $placeholders = implode(', ', array_fill(0, count($brokenIDs ?? []), '?'));
         $query = SQLUpdate::create(
             '"QueuedJobDescriptor"',
             ['"NotifiedBroken"' => 1],
@@ -540,7 +540,7 @@ class QueuedJobService
     public function checkDefaultJobs($queue = null)
     {
         $queue = $queue ?: QueuedJob::QUEUED;
-        if (count($this->defaultJobs)) {
+        if (count($this->defaultJobs ?? [])) {
             $activeJobs = QueuedJobDescriptor::get()->filter(
                 'JobStatus',
                 [
@@ -582,7 +582,7 @@ class QueuedJobService
 
                     if (isset($jobConfig['recreate']) && $jobConfig['recreate']) {
                         if (
-                            !array_key_exists('construct', $jobConfig)
+                            !array_key_exists('construct', $jobConfig ?? [])
                             || !isset($jobConfig['startDateFormat'])
                             || !isset($jobConfig['startTimeString'])
                         ) {
@@ -597,7 +597,7 @@ class QueuedJobService
                         }
                         QueuedJobService::singleton()->queueJob(
                             Injector::inst()->createWithArgs($jobConfig['type'], $jobConfig['construct']),
-                            date($jobConfig['startDateFormat'], strtotime($jobConfig['startTimeString']))
+                            date($jobConfig['startDateFormat'] ?? '', strtotime($jobConfig['startTimeString'] ?? ''))
                         );
                         $this->getLogger()->info(
                             "Default Job config: $title has been re-added to the Queue",
@@ -725,7 +725,7 @@ class QueuedJobService
 
                 $row = DB::query(sprintf($query, Convert::raw2sql($descriptorId)))->first();
 
-                if (!is_array($row) || !array_key_exists('ID', $row) || !$row['ID']) {
+                if (!is_array($row) || !array_key_exists('ID', $row ?? []) || !$row['ID']) {
                     throw new Exception('Failed to read job lock');
                 }
 
@@ -737,7 +737,7 @@ class QueuedJobService
                     . ', "WorkerCount" = "WorkerCount" + 1 WHERE "ID" = %s';
 
                 DB::query(sprintf(
-                    $query,
+                    $query ?? '',
                     Convert::raw2sql($expiry, true),
                     Convert::raw2sql($mutex, true),
                     Convert::raw2sql($descriptorId)
@@ -1010,7 +1010,7 @@ class QueuedJobService
             // any messages added after this point will be auto-flushed on PHP shutdown through the handler.
             // This causes a database write, and assumes the database and table will be available at this point.
             if ($logger instanceof Logger) {
-                $logger->setHandlers(array_filter($logger->getHandlers(), function ($handler) {
+                $logger->setHandlers(array_filter($logger->getHandlers() ?? [], function ($handler) {
                     return !($handler instanceof BufferHandler);
                 }));
             }
@@ -1211,7 +1211,7 @@ class QueuedJobService
      */
     protected function getPHPMemoryLimit()
     {
-        return $this->parseMemory(trim(ini_get("memory_limit")));
+        return $this->parseMemory(trim(ini_get("memory_limit") ?? ''));
     }
 
     /**
@@ -1224,17 +1224,17 @@ class QueuedJobService
      */
     protected function parseMemory($memString)
     {
-        switch (strtolower(substr($memString, -1))) {
+        switch (strtolower(substr($memString ?? '', -1))) {
             case "b":
-                return round(substr($memString, 0, -1));
+                return round(substr($memString ?? '', 0, -1));
             case "k":
-                return round(substr($memString, 0, -1) * 1024);
+                return round(substr($memString ?? '', 0, -1) * 1024);
             case "m":
-                return round(substr($memString, 0, -1) * 1024 * 1024);
+                return round(substr($memString ?? '', 0, -1) * 1024 * 1024);
             case "g":
-                return round(substr($memString, 0, -1) * 1024 * 1024 * 1024);
+                return round(substr($memString ?? '', 0, -1) * 1024 * 1024 * 1024);
             default:
-                return round($memString);
+                return round($memString ?? 0.0);
         }
     }
 
@@ -1389,7 +1389,7 @@ class QueuedJobService
         $path = $this->lockFilePath();
         $contents = DBDatetime::now()->Rfc2822();
 
-        file_put_contents($path, $contents);
+        file_put_contents($path ?? '', $contents);
     }
 
     public function disableMaintenanceLock()
@@ -1399,11 +1399,11 @@ class QueuedJobService
         }
 
         $path = $this->lockFilePath();
-        if (!file_exists($path)) {
+        if (!file_exists($path ?? '')) {
             return;
         }
 
-        unlink($path);
+        unlink($path ?? '');
     }
 
     /**
@@ -1417,7 +1417,7 @@ class QueuedJobService
 
         $path = $this->lockFilePath();
 
-        return file_exists($path);
+        return file_exists($path ?? '');
     }
 
     /**

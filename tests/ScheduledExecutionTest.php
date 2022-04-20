@@ -104,7 +104,7 @@ class ScheduledExecutionTest extends AbstractTest
         $actual = new DateTime($job->StartAfter);
 
         // Allow within 1 second.
-        $this->assertLessThanOrEqual(1, abs($actual->diff($expected)->s), 'Did not reschedule 1 minute later');
+        $this->assertLessThanOrEqual(1, abs($actual->diff($expected)->s ?? 0.0), 'Did not reschedule 1 minute later');
 
         // test a custom interval of 3 minutes
 
@@ -121,6 +121,6 @@ class ScheduledExecutionTest extends AbstractTest
         $expected = new DateTime('+3 minutes');
         $actual = new DateTime($job->StartAfter);
 
-        $this->assertLessThanOrEqual(1, abs($actual->diff($expected)->s), 'Did not reschedule 3 minutes later');
+        $this->assertLessThanOrEqual(1, abs($actual->diff($expected)->s ?? 0.0), 'Did not reschedule 3 minutes later');
     }
 }

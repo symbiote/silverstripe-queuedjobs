@@ -42,7 +42,7 @@ if (interface_exists('GearmanHandler')) {
             $job = QueuedJobDescriptor::get()->byID($jobId);
             if ($job) {
                 // check that we're not trying to execute something tooo soon
-                if (strtotime($job->StartAfter) > DBDatetime::now()->getTimestamp()) {
+                if (strtotime($job->StartAfter ?? '') > DBDatetime::now()->getTimestamp()) {
                     return;
                 }
 

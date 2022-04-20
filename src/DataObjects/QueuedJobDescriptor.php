@@ -244,7 +244,7 @@ class QueuedJobDescriptor extends DataObject
             $jobDir = TEMP_FOLDER . '/' . $jobDir;
         }
 
-        if (!is_dir($jobDir)) {
+        if (!is_dir($jobDir ?? '')) {
             Filesystem::makeFolder($jobDir);
         }
         return $jobDir;
@@ -264,8 +264,8 @@ class QueuedJobDescriptor extends DataObject
     {
         // remove the job's temp file if it exists
         $tmpFile = $this->getJobDir() . '/queuedjob-' . $this->ID;
-        if (file_exists($tmpFile)) {
-            unlink($tmpFile);
+        if (file_exists($tmpFile ?? '')) {
+            unlink($tmpFile ?? '');
         }
     }
 
@@ -294,8 +294,8 @@ class QueuedJobDescriptor extends DataObject
      */
     public function getMessages()
     {
-        if (strlen($this->SavedJobMessages)) {
-            $messages = @unserialize($this->SavedJobMessages);
+        if (strlen($this->SavedJobMessages ?? '')) {
+            $messages = @unserialize($this->SavedJobMessages ?? '');
             if (!empty($messages)) {
                 return DBField::create_field(
                     'HTMLText',
@@ -313,9 +313,9 @@ class QueuedJobDescriptor extends DataObject
      */
     public function getLastMessage()
     {
-        if (strlen($this->SavedJobMessages)) {
-            $msgs = @unserialize($this->SavedJobMessages);
-            if (is_array($msgs) && sizeof($msgs)) {
+        if (strlen($this->SavedJobMessages ?? '')) {
+            $msgs = @unserialize($this->SavedJobMessages ?? '');
+            if (is_array($msgs) && sizeof($msgs ?? [])) {
                 return array_pop($msgs);
             }
         }
@@ -432,7 +432,7 @@ class QueuedJobDescriptor extends DataObject
                 )
             ),
             $jobTitle = TextField::create('JobTitle', 'Title'),
-            $status = DropdownField::create('JobStatus', 'Status', array_combine($statuses, $statuses)),
+            $status = DropdownField::create('JobStatus', 'Status', array_combine($statuses ?? [], $statuses ?? [])),
             $jobType = DropdownField::create('JobType', 'Queue type', $this->getJobTypeValues()),
             $runAs,
             $startAfter = DatetimeField::create('StartAfter', 'Scheduled Start Time'),
@@ -547,7 +547,7 @@ class QueuedJobDescriptor extends DataObject
             )
         );
 
-        if (strlen($this->SavedJobMessages)) {
+        if (strlen($this->SavedJobMessages ?? '')) {
             $fields->addFieldToTab('Root.Messages', LiteralField::create('Messages', $this->getMessages()));
         }
 

@@ -119,7 +119,7 @@ class DoormanQueuedJobTask implements Task, Expires, Process, Cancellable
      */
     public function unserialize($serialized)
     {
-        $data = unserialize($serialized);
+        $data = unserialize($serialized ?? '');
         $this->__unserialize($data);
     }
 
@@ -233,7 +233,7 @@ class DoormanQueuedJobTask implements Task, Expires, Process, Cancellable
         ];
 
         if ($this->descriptor) {
-            return in_array($this->descriptor->JobStatus, $cancelledStates, true);
+            return in_array($this->descriptor->JobStatus, $cancelledStates ?? [], true);
         }
 
         return true;

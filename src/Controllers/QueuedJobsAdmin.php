@@ -135,7 +135,7 @@ class QueuedJobsAdmin extends ModelAdmin
 
         if (QueuedJobDescriptor::singleton()->canCreate()) {
             $types = ClassInfo::subclassesFor(AbstractQueuedJob::class);
-            $types = array_combine($types, $types);
+            $types = array_combine($types ?? [], $types ?? []);
             foreach ($types as $class) {
                 $reflection = new ReflectionClass($class);
                 if (!$reflection->isInstantiable()) {
@@ -200,10 +200,10 @@ class QueuedJobsAdmin extends ModelAdmin
             // If the user has select the European date format as their setting then replace '/' with '-' in the
             // date string so PHP treats the date as this format.
             if (Security::getCurrentUser()->DateFormat == self::$date_format_european) {
-                $time = str_replace('/', '-', $time);
+                $time = str_replace('/', '-', $time ?? '');
             }
 
-            if ($jobType && class_exists($jobType) && is_subclass_of($jobType, QueuedJob::class)) {
+            if ($jobType && class_exists($jobType ?? '') && is_subclass_of($jobType, QueuedJob::class)) {
                 $jobClass = new ReflectionClass($jobType);
                 $job = $jobClass->newInstanceArgs($params);
                 if ($this->jobQueue->queueJob($job, $time)) {

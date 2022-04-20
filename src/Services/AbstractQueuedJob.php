@@ -243,7 +243,7 @@ abstract class AbstractQueuedJob implements QueuedJob, UserContextInterface
      */
     public function addMessage($message, $severity = 'INFO')
     {
-        $severity = strtoupper($severity);
+        $severity = strtoupper($severity ?? '');
         $this->messages[] = '[' . DBDatetime::now()->Rfc2822() . "][$severity] $message";
     }
 
