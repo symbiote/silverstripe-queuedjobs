@@ -33,13 +33,13 @@ class QJUtils
             // first break the field up into its two components
             $operator = '';
             if (is_string($field)) {
-                list($field, $operator) = explode(' ', trim($field));
+                list($field, $operator) = explode(' ', trim($field ?? ''));
             }
 
             $value = $this->recursiveQuote($value);
 
-            if (strpos($field, '.')) {
-                list($tb, $fl) = explode('.', $field);
+            if (strpos($field ?? '', '.')) {
+                list($tb, $fl) = explode('.', $field ?? '');
                 $string .= $sep . $quoteChar . $tb . $quoteChar . '.' . $quoteChar . $fl . $quoteChar
                     . " $operator " . $value;
             } else {

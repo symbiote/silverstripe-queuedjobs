@@ -105,7 +105,7 @@ class PublishItemsJob extends AbstractQueuedJob implements QueuedJob
         $remainingChildren = $this->remainingChildren;
 
         // if there's no more, we're done!
-        if (!count($remainingChildren)) {
+        if (!count($remainingChildren ?? [])) {
             $this->isComplete = true;
             return;
         }
@@ -137,7 +137,7 @@ class PublishItemsJob extends AbstractQueuedJob implements QueuedJob
         // and now we store the new list of remaining children
         $this->remainingChildren = $remainingChildren;
 
-        if (!count($remainingChildren)) {
+        if (!count($remainingChildren ?? [])) {
             $this->isComplete = true;
             return;
         }

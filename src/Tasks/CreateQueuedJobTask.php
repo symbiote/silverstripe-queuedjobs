@@ -52,7 +52,7 @@ class CreateQueuedJobTask extends BuildTask
         }
 
         if (isset($request['start'])) {
-            $start = strtotime($request['start']);
+            $start = strtotime($request['start'] ?? '');
             $now = DBDatetime::now()->getTimestamp();
             if ($start >= $now) {
                 $friendlyStart = DBDatetime::create()->setValue($start)->Rfc2822();

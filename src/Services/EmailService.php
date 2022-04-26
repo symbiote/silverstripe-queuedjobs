@@ -44,7 +44,7 @@ class EmailService
     {
         $subject = sprintf('Default Job "%s" missing', $title);
         $from = Config::inst()->get(Email::class, 'queued_job_admin_email');
-        $to = array_key_exists('email', $jobConfig) &&  $jobConfig['email']
+        $to = array_key_exists('email', $jobConfig ?? []) &&  $jobConfig['email']
             ? $jobConfig['email']
             : $from;
 

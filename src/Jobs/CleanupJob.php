@@ -152,7 +152,7 @@ class CleanupJob extends AbstractQueuedJob
             $this->reenqueue();
             return;
         }
-        $numJobs = count($staleJobs);
+        $numJobs = count($staleJobs ?? []);
         $staleJobs = implode('\', \'', $staleJobs);
         DB::query('DELETE FROM "QueuedJobDescriptor"
 			WHERE "ID"

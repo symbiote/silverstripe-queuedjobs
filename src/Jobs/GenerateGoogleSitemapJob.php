@@ -39,7 +39,7 @@ class GenerateGoogleSitemapJob extends AbstractQueuedJob
     {
         $this->pagesToProcess = DB::query('SELECT ID FROM "SiteTree_Live" WHERE "ShowInSearch"=1')->column();
         $this->currentStep = 0;
-        $this->totalSteps = count($this->pagesToProcess);
+        $this->totalSteps = count($this->pagesToProcess ?? []);
     }
 
     /**
@@ -81,9 +81,9 @@ class GenerateGoogleSitemapJob extends AbstractQueuedJob
         Environment::increaseTimeLimitTo();
 
         $restart = $this->currentStep == 0;
-        if (!$this->tempFile || !file_exists($this->tempFile)) {
-            $tmpfile = tempnam(TempFolder::getTempFolder(BASE_PATH), 'sitemap');
-            if (file_exists($tmpfile)) {
+        if (!$this->tempFile || !file_exists($this->tempFile ?? '')) {
+            $tmpfile = tempnam(TempFolder::getTempFolder(BASE_PATH) ?? '', 'sitemap');
+            if (file_exists($tmpfile ?? '')) {
                 $this->tempFile = $tmpfile;
             }
             $restart = true;
@@ -101,9 +101,9 @@ class GenerateGoogleSitemapJob extends AbstractQueuedJob
     {
         parent::prepareForRestart();
         // if the file we've been building is missing, lets fix it up
-        if (!$this->tempFile || !file_exists($this->tempFile)) {
-            $tmpfile = tempnam(TempFolder::getTempFolder(BASE_PATH), 'sitemap');
-            if (file_exists($tmpfile)) {
+        if (!$this->tempFile || !file_exists($this->tempFile ?? '')) {
+            $tmpfile = tempnam(TempFolder::getTempFolder(BASE_PATH) ?? '', 'sitemap');
+            if (file_exists($tmpfile ?? '')) {
                 $this->tempFile = $tmpfile;
             }
             $this->currentStep = 0;
@@ -117,14 +117,14 @@ class GenerateGoogleSitemapJob extends AbstractQueuedJob
             throw new Exception("Temporary sitemap file has not been set");
         }
 
-        if (!file_exists($this->tempFile)) {
+        if (!file_exists($this->tempFile ?? '')) {
             throw new Exception("Temporary file $this->tempFile has been deleted!");
         }
 
         $remainingChildren = $this->pagesToProcess;
 
         // if there's no more, we're done!
-        if (!count($remainingChildren)) {
+        if (!count($remainingChildren ?? [])) {
             $this->completeJob();
             $this->isComplete = true;
             return;
@@ -172,11 +172,11 @@ class GenerateGoogleSitemapJob extends AbstractQueuedJob
                 // do the generation of the file in a temporary location
                 $content = $page->renderWith('SitemapEntry');
 
-                $fp = fopen($this->tempFile, "a");
+                $fp = fopen($this->tempFile ?? '', "a");
                 if (!$fp) {
                     throw new Exception("Could not open $this->tempFile for writing");
                 }
-                fputs($fp, $content, strlen($content));
+                fputs($fp, $content ?? '', strlen($content ?? ''));
                 fclose($fp);
             }
         }
@@ -185,7 +185,7 @@ class GenerateGoogleSitemapJob extends AbstractQueuedJob
         $this->pagesToProcess = $remainingChildren;
         $this->currentStep++;
 
-        if (!count($remainingChildren)) {
+        if (!count($remainingChildren ?? [])) {
             $this->completeJob();
             $this->isComplete = true;
             return;
@@ -199,15 +199,15 @@ class GenerateGoogleSitemapJob extends AbstractQueuedJob
     {
         $content = '<?xml version="1.0" encoding="UTF-8"?>' .
                     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
-        $content .= file_get_contents($this->tempFile);
+        $content .= file_get_contents($this->tempFile ?? '');
         $content .= '</urlset>';
 
         $sitemap = Director::baseFolder() . '/sitemap.xml';
 
-        file_put_contents($sitemap, $content);
+        file_put_contents($sitemap ?? '', $content);
 
-        if (file_exists($this->tempFile)) {
-            unlink($this->tempFile);
+        if (file_exists($this->tempFile ?? '')) {
+            unlink($this->tempFile ?? '');
         }
 
         $nextgeneration = Injector::inst()->create(GenerateGoogleSitemapJob::class);

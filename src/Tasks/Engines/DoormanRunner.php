@@ -99,7 +99,7 @@ class DoormanRunner extends BaseRunner implements TaskRunnerEngine
         );
 
         $logPath = Environment::getEnv('SS_DOORMAN_LOGPATH');
-        if ($logPath && is_dir($logPath) && is_writable($logPath)) {
+        if ($logPath && is_dir($logPath ?? '') && is_writable($logPath ?? '')) {
             $manager->setLogPath($logPath);
         }
 
@@ -155,7 +155,7 @@ class DoormanRunner extends BaseRunner implements TaskRunnerEngine
             }
 
             $tickCount += 1;
-            sleep($this->getTickInterval());
+            sleep($this->getTickInterval() ?? 0);
             $descriptor = $service->getNextPendingJob($queue);
         }
     }

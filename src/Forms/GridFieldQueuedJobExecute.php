@@ -59,7 +59,7 @@ class GridFieldQueuedJobExecute extends AbstractGridFieldComponent implements
      */
     public function augmentColumns($gridField, &$columns)
     {
-        if (!in_array('Actions', $columns)) {
+        if (!in_array('Actions', $columns ?? [])) {
             $columns[] = 'Actions';
         }
     }
@@ -138,7 +138,7 @@ class GridFieldQueuedJobExecute extends AbstractGridFieldComponent implements
             array('RecordID' => $record->ID)
         );
 
-        $humanTitle = ucfirst($this->action);
+        $humanTitle = ucfirst($this->action ?? '');
         $title = _t(__CLASS__ . '.' . $humanTitle, $humanTitle);
 
         $field
@@ -163,7 +163,7 @@ class GridFieldQueuedJobExecute extends AbstractGridFieldComponent implements
     public function handleAction(GridField $gridField, $actionName, $arguments, $data)
     {
         $actions = $this->getActions(null);
-        if (in_array($actionName, $actions)) {
+        if (in_array($actionName, $actions ?? [])) {
             $item = $gridField->getList()->byID($arguments['RecordID']);
             if (!$item) {
                 return;

@@ -82,7 +82,7 @@ class RunBuildTaskJob extends AbstractQueuedJob
         }
 
         $getVars = [];
-        parse_str($this->QueryString, $getVars);
+        parse_str($this->QueryString ?? '', $getVars);
         $request = new HTTPRequest('GET', '/', $getVars);
         $task->run($request);
 

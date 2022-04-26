@@ -89,13 +89,13 @@ class QueuedTaskRunner extends TaskRunner
 
         // universal tasks
         foreach ($tasks as $task) {
-            if (in_array($task['class'], $blacklist)) {
+            if (in_array($task['class'], $blacklist ?? [])) {
                 $backlistedTasks[] = $task;
 
                 continue;
             }
 
-            if (in_array($task['class'], $queuedOnlyList)) {
+            if (in_array($task['class'], $queuedOnlyList ?? [])) {
                 $queuedOnlyTasks[] = $task;
 
                 continue;
@@ -162,7 +162,7 @@ class QueuedTaskRunner extends TaskRunner
         unset($variables['flush']);
         unset($variables['flushtoken']);
         unset($variables['isDev']);
-        $querystring = http_build_query($variables);
+        $querystring = http_build_query($variables ?? []);
 
         $title = function ($content) {
             printf(Director::is_cli() ? "%s\n\n" : '<h1>%s</h1>', $content);

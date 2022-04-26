@@ -74,9 +74,9 @@ class ProcessJobQueueTask extends BuildTask
         }
 
         // Check if there is a job to run
-        if (($job = $request->getVar('job')) && strpos($job, '-')) {
+        if (($job = $request->getVar('job')) && strpos($job ?? '', '-')) {
             // Run from a isngle job
-            $parts = explode('-', $job);
+            $parts = explode('-', $job ?? '');
             $id = $parts[1];
             $service->runJob($id);
             return;
@@ -103,7 +103,7 @@ class ProcessJobQueueTask extends BuildTask
             $queue = 'Queued';
         }
 
-        switch (strtolower($queue)) {
+        switch (strtolower($queue ?? '')) {
             case 'immediate':
                 $queue = QueuedJob::IMMEDIATE;
                 break;

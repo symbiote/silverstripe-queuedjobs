@@ -24,7 +24,7 @@ class ProcessJobQueueChildTask extends BuildTask
             return;
         }
 
-        $task = @unserialize(@base64_decode($_SERVER['argv'][2]));
+        $task = @unserialize(@base64_decode($_SERVER['argv'][2] ?? ''));
 
         if ($task) {
             $this->getService()->runJob($task->getDescriptor()->ID);
