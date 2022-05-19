@@ -594,25 +594,27 @@ class QueuedJobsTest extends AbstractTest
         $this->assertEquals(QueuedJob::STATUS_BROKEN, $descriptor->JobStatus);
     }
 
-    public function testCheckdefaultJobs()
+    public function testCheckdefaultJobs(): void
     {
         // Create a job and add it to the queue
         $svc = $this->getService();
-        $testDefaultJobsArray = array(
-            'ArbitraryName' => array(
+        $testDefaultJobsArray = [
+            'ArbitraryName' => [
                 # I'll get restarted and create an alert email
                 'type' => TestQueuedJob::class,
-                'filter' => array(
-                    'JobTitle' => "A Test job"
-                ),
+                'filter' => [
+                    'JobTitle' => "A Test job",
+                ],
                 'recreate' => 1,
-                'construct' => array(
-                    'queue' => QueuedJob::QUEUED
-                ),
+                'construct' => [
+                    'queue' => QueuedJob::QUEUED,
+                ],
                 'startDateFormat' => 'Y-m-d 02:00:00',
                 'startTimeString' => 'tomorrow',
-                'email' => 'test@queuejobtest.com'
-            ));
+                'email' => 'test@queuejobtest.com',
+                'queue' => QueuedJob::QUEUED,
+            ],
+        ];
         $svc->defaultJobs = $testDefaultJobsArray;
         $jobConfig = $testDefaultJobsArray['ArbitraryName'];
 
@@ -627,11 +629,22 @@ class QueuedJobsTest extends AbstractTest
             )
         );
         //assert no jobs currently active
-        $this->assertCount(0, $activeJobs);
+        $this->assertCount(0, $activeJobs, 'We expect no jobs in the queue initially');
+
+        $svc->checkdefaultJobs(QueuedJob::IMMEDIATE);
+        $this->assertCount(
+            0,
+            $activeJobs,
+            'We expect no jobs after running default jobs check for the immediate queue'
+        );
 
         //add a default job to the queue
         $svc->checkdefaultJobs();
-        $this->assertCount(1, $activeJobs);
+        $this->assertCount(
+            1,
+            $activeJobs,
+            'We expect to find a job after running default jobs check for the medium queue'
+        );
         $descriptor = $activeJobs->filter(array_merge(
             array('Implementation' => $jobConfig['type']),
             $jobConfig['filter']
