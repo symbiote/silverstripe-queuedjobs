@@ -564,7 +564,7 @@ class QueuedJobService
                 }
 
                 // Check for specific queue configuration
-                if (array_key_exists('queue', $jobConfig) && (int) $jobConfig['queue'] !== (int) $queue) {
+                if (array_key_exists('jobType', $jobConfig) && (int) $jobConfig['jobType'] !== (int) $queue) {
                     // Default job is specific to a queue type, and it doesn't match - bail out
                     continue;
                 }

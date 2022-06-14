@@ -612,7 +612,7 @@ class QueuedJobsTest extends AbstractTest
                 'startDateFormat' => 'Y-m-d 02:00:00',
                 'startTimeString' => 'tomorrow',
                 'email' => 'test@queuejobtest.com',
-                'queue' => QueuedJob::QUEUED,
+                'jobType' => QueuedJob::QUEUED,
             ],
         ];
         $svc->defaultJobs = $testDefaultJobsArray;
