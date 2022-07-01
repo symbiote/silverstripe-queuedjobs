@@ -18,7 +18,7 @@ use SilverStripe\Forms\GridField\GridFieldDataColumns;
 use SilverStripe\Forms\GridField\GridFieldPageCount;
 use SilverStripe\Forms\GridField\GridFieldToolbarHeader;
 use SilverStripe\Forms\TextareaField;
-use SilverStripe\Security\Permission;
+use SilverStripe\ORM\ValidationResult;
 use SilverStripe\Security\Security;
 use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
 use Symbiote\QueuedJobs\Forms\GridFieldQueuedJobExecute;
@@ -207,7 +207,10 @@ class QueuedJobsAdmin extends ModelAdmin
                 $jobClass = new ReflectionClass($jobType);
                 $job = $jobClass->newInstanceArgs($params);
                 if ($this->jobQueue->queueJob($job, $time)) {
-                    $form->sessionMessage(_t(__CLASS__ . '.QueuedJobSuccess', 'Successfully queued job'), 'success');
+                    $form->sessionMessage(
+                        _t(__CLASS__ . '.QueuedJobSuccess', 'Successfully queued job'),
+                        ValidationResult::TYPE_GOOD
+                    );
                 }
             }
         }
