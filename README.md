@@ -1,12 +1,11 @@
-# SilverStripe Queued Jobs Module
+# Silverstripe Queued Jobs Module
 
 [![CI](https://github.com/symbiote/silverstripe-queuedjobs/actions/workflows/ci.yml/badge.svg)](https://github.com/symbiote/silverstripe-queuedjobs/actions/workflows/ci.yml)
-[![Scrutinizer](https://scrutinizer-ci.com/g/symbiote/silverstripe-queuedjobs/badges/quality-score.png)](https://scrutinizer-ci.com/g/symbiote/silverstripe-queuedjobs/)
-[![SilverStripe supported module](https://img.shields.io/badge/silverstripe-supported-0071C4.svg)](https://www.silverstripe.org/software/addons/silverstripe-commercially-supported-module-list/)
+[![Silverstripe supported module](https://img.shields.io/badge/silverstripe-supported-0071C4.svg)](https://www.silverstripe.org/software/addons/silverstripe-commercially-supported-module-list/)
 
 ## Overview
 
-The Queued Jobs module provides a framework for SilverStripe developers to
+The Queued Jobs module provides a framework for Silverstripe developers to
 define long running processes that should be run as background tasks.
 This asynchronous processing allows users to continue using the system
 while long running tasks proceed when time permits. It also lets
@@ -53,7 +52,6 @@ emulator such as cygwin.
 In order to enable this, configure the ProcessJobQueueTask to use this backend.
 
 In your YML set the below:
-
 
 ```yaml
 
@@ -384,7 +382,6 @@ If defining your own jobs, please ensure you follow PSR conventions, i.e. use "Y
 
 Ensure that notifications are configured so that you can get updates or stalled or broken jobs. You can
 set the notification email address in your config as below:
-
 
 ```yaml
 SilverStripe\Control\Email\Email:
