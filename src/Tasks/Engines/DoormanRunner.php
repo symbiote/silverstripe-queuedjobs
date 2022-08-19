@@ -103,6 +103,11 @@ class DoormanRunner extends BaseRunner implements TaskRunnerEngine
             $manager->setLogPath($logPath);
         }
 
+        $phpBinary = Environment::getEnv('SS_DOORMAN_PHPBINARY');
+        if ($phpBinary && is_executable($phpBinary)) {
+            $manager->setBinary($phpBinary);
+        }
+
         // Assign default rules
         $defaultRules = $this->getDefaultRules();
 
