@@ -31,6 +31,7 @@ use Symbiote\QueuedJobs\Interfaces\UserContextInterface;
 use Symbiote\QueuedJobs\Jobs\RunBuildTaskJob;
 use Symbiote\QueuedJobs\QJUtils;
 use Symbiote\QueuedJobs\Tasks\Engines\TaskRunnerEngine;
+use Throwable;
 
 /**
  * A service that can be used for starting, stopping and listing queued jobs.
@@ -760,7 +761,7 @@ class QueuedJobService
             });
 
             return true;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // note that error here may not be an issue as failing to acquire a job lock is a valid state
             // which happens when other process claimed the job lock first
             $this->getLogger()->debug(
@@ -836,7 +837,14 @@ class QueuedJobService
             $job = null;
 
             try {
-                $job = $this->initialiseJob($jobDescriptor);
+                try {
+                    $job = $this->initialiseJob($jobDescriptor);
+                } catch (Throwable $e) {
+                    $this->handleJobInitialisationException($jobDescriptor, $e);
+                    $broken = true;
+                    $this->finaliseLogging($logger);
+                    return;
+                }
 
                 // get the job ready to begin.
                 if (!$jobDescriptor->JobStarted) {
@@ -918,7 +926,7 @@ class QueuedJobService
 
                         try {
                             $job->process();
-                        } catch (\Throwable $e) {
+                        } catch (Throwable $e) {
                             $logger->error($e->getMessage(), ['exception' => $e]);
                             $this->markJobAsBroken($jobDescriptor);
                             $this->extend('updateJobDescriptorAndJobOnException', $jobDescriptor, $job, $e);
@@ -998,34 +1006,38 @@ class QueuedJobService
 
                     $this->extend('updateJobDescriptorAndJobOnCompletion', $jobDescriptor, $job);
                 }
-            } catch (\Throwable $e) {
-                // PHP 7 Error handling)
+            } catch (Throwable $e) {
                 $this->handleBrokenJobException($jobDescriptor, $job, $e);
                 $broken = true;
             }
 
-            // Write any remaining batched messages at the end.
-            if ($logger instanceof Logger) {
-                foreach ($logger->getHandlers() as $handler) {
-                    if ($handler instanceof BufferHandler) {
-                        $handler->flush();
-                    }
-                }
-            }
-
-            // If using a global singleton logger here,
-            // any messages added after this point will be auto-flushed on PHP shutdown through the handler.
-            // This causes a database write, and assumes the database and table will be available at this point.
-            if ($logger instanceof Logger) {
-                $logger->setHandlers(array_filter($logger->getHandlers() ?? [], function ($handler) {
-                    return !($handler instanceof BufferHandler);
-                }));
-            }
+            $this->finaliseLogging($logger);
         });
 
         $this->unsetRunAsUser($runAsUser, $originalUser);
 
         return !$broken;
+    }
+
+    protected function finaliseLogging(LoggerInterface $logger)
+    {
+        if (!$logger instanceof Logger) {
+            return;
+        }
+
+        // Write any remaining batched messages at the end.
+        foreach ($logger->getHandlers() as $handler) {
+            if ($handler instanceof BufferHandler) {
+                $handler->flush();
+            }
+        }
+
+        // If using a global singleton logger here,
+        // any messages added after this point will be auto-flushed on PHP shutdown through the handler.
+        // This causes a database write, and assumes the database and table will be available at this point.
+        $logger->setHandlers(array_filter($logger->getHandlers() ?? [], function ($handler) {
+            return !($handler instanceof BufferHandler);
+        }));
     }
 
     /**
@@ -1051,19 +1063,27 @@ class QueuedJobService
         }
     }
 
+    protected function handleJobInitialisationException(QueuedJobDescriptor $jobDescriptor, Throwable $e)
+    {
+        $this->getLogger()->info(
+            $e->getMessage(),
+            ['exception' => $e]
+        );
+        $this->markJobAsBroken($jobDescriptor);
+        $this->extend('updateJobDescriptorOnInitialisationException', $jobDescriptor, $e);
+        $jobDescriptor->write();
+    }
+
     /**
      * @param QueuedJobDescriptor $jobDescriptor
      * @param QueuedJob $job
-     * @param Exception|\Throwable $e
+     * @param Exception|Throwable $e
      */
     protected function handleBrokenJobException(QueuedJobDescriptor $jobDescriptor, QueuedJob $job, $e)
     {
-        // okay, we'll just catch this exception for now
         $this->getLogger()->info(
             $e->getMessage(),
-            [
-                'exception' => $e,
-            ]
+            ['exception' => $e]
         );
         $this->markJobAsBroken($jobDescriptor);
         $this->extend('updateJobDescriptorAndJobOnException', $jobDescriptor, $job, $e);
