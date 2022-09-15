@@ -76,7 +76,7 @@ class DoormanRunner extends BaseRunner implements TaskRunnerEngine
      */
     public function runQueue($queue)
     {
-        $service = QueuedJobService::singleton();
+        $service = $this->getService();
         $logger = $service->getLogger();
 
         // check if queue can be processed
