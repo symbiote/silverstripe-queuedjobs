@@ -132,14 +132,6 @@ class QueuedJobDescriptor extends DataObject
     ];
 
     /**
-     * @var array
-     */
-    private static $field_labels = [
-        'JobStatus' => 'Status',
-        'JobType' => 'Queue Type'
-    ];
-
-    /**
      * @var string
      */
     private static $default_sort = 'Created DESC';
@@ -590,7 +582,7 @@ class QueuedJobDescriptor extends DataObject
         $statuses = $this->getJobStatusValues();
         return DropdownField::create(
             'JobStatus',
-            $this->fieldLabel('JobStatus'),
+            _t(__CLASS__ . '.TABLE_STATUS', 'Status'),
             array_combine($statuses ?? [], $statuses ?? [])
         );
     }
@@ -602,7 +594,7 @@ class QueuedJobDescriptor extends DataObject
     {
         return DropdownField::create(
             'JobType',
-            $this->fieldLabel('JobType'),
+            _t(__CLASS__ . '.JOB_TYPE', 'Job Type'),
             $this->getJobTypeValues()
         );
     }
