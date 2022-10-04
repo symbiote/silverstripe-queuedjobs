@@ -19,6 +19,7 @@ use SilverStripe\Forms\TextField;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBDatetime;
 use SilverStripe\ORM\FieldType\DBField;
+use SilverStripe\ORM\Filters\ExactMatchFilter;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\Permission;
 use Symbiote\QueuedJobs\Services\QueuedJob;
@@ -126,6 +127,8 @@ class QueuedJobDescriptor extends DataObject
      */
     private static $searchable_fields = [
         'JobTitle',
+        'JobStatus' => ExactMatchFilter::class,
+        'JobType' => ExactMatchFilter::class
     ];
 
     /**
@@ -393,9 +396,7 @@ class QueuedJobDescriptor extends DataObject
     public function getCMSFields()
     {
         $fields = parent::getCMSFields();
-        $statuses = $this->getJobStatusValues();
         $runAs = $fields->fieldByName('Root.Main.RunAsID');
-
         $fields->removeByName([
             'Expiry',
             'Implementation',
@@ -432,8 +433,8 @@ class QueuedJobDescriptor extends DataObject
                 )
             ),
             $jobTitle = TextField::create('JobTitle', 'Title'),
-            $status = DropdownField::create('JobStatus', 'Status', array_combine($statuses ?? [], $statuses ?? [])),
-            $jobType = DropdownField::create('JobType', 'Queue type', $this->getJobTypeValues()),
+            $status = $this->buildJobStatusField(),
+            $jobType = $this->buildJobTypeField(),
             $runAs,
             $startAfter = DatetimeField::create('StartAfter', 'Scheduled Start Time'),
             HeaderField::create('JobTimelineTitle', 'Timeline'),
@@ -573,6 +574,31 @@ class QueuedJobDescriptor extends DataObject
         return $fields->makeReadonly();
     }
 
+    /**
+     * Generate a Dropdown field with the list of possible job
+     */
+    private function buildJobStatusField(): DropdownField
+    {
+        $statuses = $this->getJobStatusValues();
+        return DropdownField::create(
+            'JobStatus',
+            _t(__CLASS__ . '.TABLE_STATUS', 'Status'),
+            array_combine($statuses ?? [], $statuses ?? [])
+        );
+    }
+
+    /**
+     * Generate a drop down field with a list of possible job types
+     */
+    private function buildJobTypeField(): DropdownField
+    {
+        return DropdownField::create(
+            'JobType',
+            _t(__CLASS__ . '.JOB_TYPE', 'Job Type'),
+            $this->getJobTypeValues()
+        );
+    }
+
     private function getWorkerExpiry()
     {
         $now = DBDatetime::now();
@@ -584,5 +610,13 @@ class QueuedJobDescriptor extends DataObject
         }
 
         return $time->getTimestamp() - $now->getTimestamp();
+    }
+
+    public function scaffoldSearchFields($_params = null)
+    {
+        $fields = parent::scaffoldSearchFields($_params);
+        $fields->push($this->buildJobStatusField()->setEmptyString(''));
+        $fields->push($this->buildJobTypeField()->setEmptyString(''));
+        return $fields;
     }
 }
