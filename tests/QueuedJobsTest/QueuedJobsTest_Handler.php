@@ -3,6 +3,7 @@
 namespace Symbiote\QueuedJobs\Tests\QueuedJobsTest;
 
 use Monolog\Handler\AbstractProcessingHandler;
+use Monolog\LogRecord;
 use SilverStripe\Dev\TestOnly;
 
 /**
@@ -32,8 +33,8 @@ class QueuedJobsTest_Handler extends AbstractProcessingHandler implements TestOn
         $this->messages = array();
     }
 
-    protected function write(array $record)
+    protected function write(LogRecord $record): void
     {
-        $this->messages[] = $record['message'];
+        $this->messages[] = $record->message;
     }
 }
