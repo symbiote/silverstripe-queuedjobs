@@ -57,3 +57,5 @@ eo:
     ScheduleTabTitle: Plano
   ScheduledExecutionJob:
     Title: 'Planita plenumo por {title}'
+  RunBuildTaskJob:
+    JOB_TITLE: 'Ruli je KonstruiTaskon'
