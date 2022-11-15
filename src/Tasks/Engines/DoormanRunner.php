@@ -2,6 +2,7 @@
 
 namespace Symbiote\QueuedJobs\Tasks\Engines;
 
+use SilverStripe\Dev\Deprecation;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Environment;
@@ -198,10 +199,11 @@ class DoormanRunner extends BaseRunner implements TaskRunnerEngine
     /**
      * @param string $queue
      * @return QueuedJobDescriptor|null
-     * @deprecated 5.0
+     * @deprecated 4.11.0 Use QueuedJobService::getNextPendingJob() instead
      */
     protected function getNextJobDescriptorWithoutMutex($queue)
     {
+        Deprecation::notice('4.11.0', 'Use QueuedJobService::getNextPendingJob() instead');
         return $this->getService()->getNextPendingJob($queue);
     }
 }
