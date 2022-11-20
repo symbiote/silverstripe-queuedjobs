@@ -2,6 +2,7 @@
 
 namespace Symbiote\QueuedJobs\Jobs;
 
+use SilverStripe\Dev\Deprecation;
 use AsyncPHP\Doorman\Cancellable;
 use AsyncPHP\Doorman\Expires;
 use AsyncPHP\Doorman\Process;
@@ -99,10 +100,11 @@ class DoormanQueuedJobTask implements Task, Expires, Process, Cancellable
      * @inheritdoc
      *
      * @return string
-     * @deprecated will be removed in 5.0
+     * @deprecated 4.11.0 Use __serialize() instead
      */
     public function serialize()
     {
+        Deprecation::notice('4.11.0', 'Use __serialize() instead');
         return serialize($this->__serialize);
     }
 
@@ -115,10 +117,11 @@ class DoormanQueuedJobTask implements Task, Expires, Process, Cancellable
      *
      * @throws InvalidArgumentException
      * @param string
-     * @deprecated will be removed in 5.0
+     * @deprecated 4.11.0 Use __unserialize() instead
      */
     public function unserialize($serialized)
     {
+        Deprecation::notice('4.11.0', 'Use __unserialize() instead');
         $data = unserialize($serialized ?? '');
         $this->__unserialize($data);
     }
