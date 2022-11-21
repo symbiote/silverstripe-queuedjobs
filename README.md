@@ -62,7 +62,7 @@ After: '#queuedjobsettings'
 SilverStripe\Core\Injector\Injector:
   Symbiote\QueuedJobs\Services\QueuedJobService:
     properties:
-      queueRunner: %$DoormanRunner
+      queueRunner: '%$DoormanRunner'
 ```
 
 ## Using Gearman for running jobs
