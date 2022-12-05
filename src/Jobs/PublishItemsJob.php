@@ -121,7 +121,7 @@ class PublishItemsJob extends AbstractQueuedJob implements QueuedJob
         $page = DataObject::get_by_id(Page::class, $ID);
         if ($page) {
             // publish it
-            $page->doPublish();
+            $page->publishRecursive();
 
             // and add its children to the list to be published
             foreach ($page->Children() as $child) {
