@@ -731,7 +731,7 @@ class QueuedJobService
             DB::get_conn()->withTransaction(function () use ($descriptorId) {
                 $query = 'SELECT "ID" FROM "QueuedJobDescriptor" WHERE "ID" = %s AND "Worker" IS NULL FOR UPDATE';
 
-                $row = DB::query(sprintf($query, Convert::raw2sql($descriptorId)))->first();
+                $row = DB::query(sprintf($query, Convert::raw2sql($descriptorId)))->record();
 
                 if (!is_array($row) || !array_key_exists('ID', $row ?? []) || !$row['ID']) {
                     throw new Exception('Failed to read job lock');
