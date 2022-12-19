@@ -1,0 +1,61 @@
+sl:
+  CleanupJob:
+    Title: 'Odstrani zastarele naloge iz baze'
+  CreateQueuedJobTask:
+    Description: 'Procedura za ustvarjanje novih naročenih nalog. Vnesite naziv naročene naloge v "name" in opcijsko še termin za zagon naloge v "start" (strtotime).'
+  DeleteObjectJob:
+    DELETE_JOB: 'Izbriši nalogo'
+    DELETE_OBJ2: 'Izbriši {title}'
+  GenerateSitemapJob:
+    REGENERATE: 'Ponovno zgeneriraj sitemap.xml za Google '
+  ProcessJobQueueTask:
+    Description: 'Uporablja ''cron job'' za izvedbo naročenih nalog, ki morajo biti izvedene.'
+  PublishItemsJob:
+    Title: 'Objavi elemente pod {title}'
+  QueuedJobDescriptor:
+    PLURALNAME: 'Definicije naročenih nalog'
+    SINGULARNAME: 'Definicija naročene naloge'
+  QueuedJobRule:
+    PLURALNAME: 'Pravila naročenih nalog'
+    SINGULARNAME: 'Pravilo naročene naloge'
+  QueuedJobs:
+    CREATE_JOB_TYPE: 'Ustvari nalogo tipa'
+    CREATE_NEW_JOB: 'Ustvari novo nalogo'
+    JOB_EXCEPT: 'Naloga je naletela na izjemo %s v %s v vrstici %s'
+    JOB_PAUSED: 'Naloga je bila ustavljena na %s'
+    JOB_STALLED: 'Naloga je zastala po %s poskusih - prosimo, preverite'
+    JOB_TYPE: 'Tip naloge'
+    JOB_TYPE_PARAMS: 'Parametri za vzpostavitev naloge'
+    JobsFieldTitle: Naloge
+    MEMORY_RELEASE: 'Čakam, da naloga sprosti spomin (%s uporabljenega)'
+    STALLED_JOB: 'Zastale naloge'
+    STALLED_JOB_MSG: 'Naročena naloga %s je zastala, zato smo ustavili njeno izvajanje. Preverite stanje.'
+    START_JOB_TIME: 'Izvedi nalogo ob'
+    TABLE_ADDE: Dodano
+    TABLE_MESSAGES: Sporočila
+    TABLE_NUM_PROCESSED: Zaključeno
+    TABLE_STARTED: Sproženo
+    TABLE_START_AFTER: 'Izvedi nalogo po'
+    TABLE_STATUS: Status
+    TABLE_TITLE: Naziv
+    TABLE_TOTAL: Skupaj
+    TIME_LIMIT: 'Naročena naloga je presegla časovno omejite, zato se mora ponovno zagnati.'
+  QueuedJobsAdmin:
+    MENUTITLE: Naloge
+  RunBuildTaskJob:
+    JOB_TITLE: 'Ustvari nalogo za {task}'
+  ScheduledExecution:
+    EXECUTE_EVERY: 'Izvedi vsakih'
+    EXECUTE_FREE: 'Naročeno za (v formatu strtotime od prve izvedbe)'
+    ExecuteEveryDay: dni
+    ExecuteEveryFortnight: 'dva tedna'
+    ExecuteEveryHour: ur
+    ExecuteEveryMinute: minut
+    ExecuteEveryMonth: mesecev
+    ExecuteEveryWeek: tednov
+    ExecuteEveryYear: let
+    FIRST_EXECUTION: 'Izvedeno prvič'
+    NEXT_RUN_DATE: 'Datum naslednje izvedbe'
+    ScheduleTabTitle: 'Urnik izvajanja'
+  ScheduledExecutionJob:
+    Title: 'Naročena izvedba za {title}'

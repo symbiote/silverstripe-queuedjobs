@@ -33,6 +33,9 @@ de:
     TABLE_STATUS: Status
     TABLE_TITLE: Titel
     TABLE_TOTAL: Insgesamt
+    JOB_TYPE_PARAMS: 'Konstruktor-Parameter für die Joberstellung'
+    MEMORY_RELEASE: 'Job gibt Speicher frei und wartet (1%s verwendet)'
+    TIME_LIMIT: 'Die Warteschlange hat das Zeitlimit überschritten und wird neu gestartet'
   QueuedJobsAdmin:
     MENUTITLE: Aufträge
   ScheduledExecution:
@@ -50,3 +53,9 @@ de:
     ScheduleTabTitle: Planen
   ScheduledExecutionJob:
     Title: 'Geplante Ausführung für {title}'
+  CleanupJob:
+    Title: 'Bereinigt alte Aufträge aus der Datenbank'
+  CreateQueuedJobTask:
+    Description: 'Ein Task um geplante Aufträge zu erstellen. Parameter sind: "name". Name der Klasse, "start" (optional): Startzeit für den Auftrag, im strtotime Format'
+  RunBuildTaskJob:
+    JOB_TITLE: 'BuildTask {task} ausführen'

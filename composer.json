@@ -2,7 +2,10 @@
     "name": "symbiote/silverstripe-queuedjobs",
     "description": "A framework for defining and running background jobs in a queued manner",
     "type": "silverstripe-vendormodule",
-    "keywords": ["silverstripe", "jobs"],
+    "keywords": [
+        "silverstripe",
+        "jobs"
+    ],
     "license": "BSD-3-Clause",
     "authors": [
         {
@@ -27,9 +30,6 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "extra": {
-        "branch-alias": {
-            "dev-master": "4.x-dev"
-        },
         "expose": [
             "client/styles"
         ]

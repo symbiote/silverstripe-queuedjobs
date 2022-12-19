@@ -22,7 +22,7 @@ ar:
     STALLED_JOB_MSG: 'وظيفة باسم s% تبين أنها تعطلت. قد تم توقفها, من فضلك سجل الدخول لكى تتحقق منها'
     TABLE_ADDE: 'تمت إضافته'
     TABLE_MESSAGES: رسالة
-    TABLE_NUM_PROCESSED: 'تم'
+    TABLE_NUM_PROCESSED: تم
     TABLE_STARTED: 'تم البدأ'
     TABLE_START_AFTER: 'ابدأ بعد'
     TABLE_STATUS: الحالة
@@ -33,7 +33,7 @@ ar:
   ScheduledExecution:
     EXECUTE_EVERY: 'قم بتنفيذ كل'
     EXECUTE_FREE: 'محددة (بصيغة إس تى آر تو تايم من التنفيذ الأول)'
-    ExecuteEveryDay: 'يوم'
+    ExecuteEveryDay: يوم
     ExecuteEveryFortnight: أسبوعان
     ExecuteEveryHour: ساعة
     ExecuteEveryMonth: شهر
