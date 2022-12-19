@@ -1,0 +1,61 @@
+pl:
+  CleanupJob:
+    Title: 'Wyczyść stare zadania z bazy danych'
+  CreateQueuedJobTask:
+    Description: 'Zadanie zostało użyte do utworzenia zadania w kolejce. Przekaż kolejkę nazw klasy zadania jako parametr "nazwa", przekazuj opcjonalny parametr "start" (analizowany przez strtotime), aby ustawić czas rozpoczęcia zadania.'
+  DeleteObjectJob:
+    DELETE_JOB: 'Usuń węzeł'
+    DELETE_OBJ2: 'Usuń {title}'
+  GenerateSitemapJob:
+    REGENERATE: 'Ponownie wygeneruj plik .xml mapy witryny'
+  ProcessJobQueueTask:
+    Description: 'Używane przez zadanie cron do uruchamiania zadań oczekujących w kolejce, które należy uruchomić.'
+  PublishItemsJob:
+    Title: 'Opublikuj poniższe elementy {title}'
+  QueuedJobDescriptor:
+    PLURALNAME: 'Zadania w kolejce'
+    SINGULARNAME: 'Zadanie w kolejce'
+  QueuedJobRule:
+    PLURALNAME: 'Kolejkowe reguły zadań'
+    SINGULARNAME: 'Kolejkowa reguła zadania'
+  QueuedJobs:
+    CREATE_JOB_TYPE: 'Utwórz zadanie typu'
+    CREATE_NEW_JOB: 'Utwórz nowe zadanie'
+    JOB_EXCEPT: 'Zadanie spowodowało wyjątek %s w %s w linii %s'
+    JOB_PAUSED: 'Zadanie zostało wstrzymane via %s'
+    JOB_STALLED: 'Zadanie wstrzymane po %s próbach - proszę sprawdzić'
+    JOB_TYPE: 'Typ zadania'
+    JOB_TYPE_PARAMS: 'Parametry konstruktora dla tworzenia zadania'
+    JobsFieldTitle: Zadania
+    MEMORY_RELEASE: 'Pamięć zwalniająca zadania i oczekująca (%s użyto)'
+    STALLED_JOB: 'Zawieszenie zadania'
+    STALLED_JOB_MSG: 'Wydaje się, że zadanie o nazwie %s zawiesiło się. Zostało wstrzymane, zaloguj się, aby to sprawdzić'
+    START_JOB_TIME: 'Rozpocznij zadanie o'
+    TABLE_ADDE: Dodano
+    TABLE_MESSAGES: Komunikat
+    TABLE_NUM_PROCESSED: Gotowe
+    TABLE_STARTED: Rozpoczęty
+    TABLE_START_AFTER: 'Zacznij po'
+    TABLE_STATUS: Status
+    TABLE_TITLE: Tytuł
+    TABLE_TOTAL: Razem
+    TIME_LIMIT: 'Kolejka przekroczyła limit czasu i zostanie wznowiona przed kontynuowaniem'
+  QueuedJobsAdmin:
+    MENUTITLE: Zadania
+  RunBuildTaskJob:
+    JOB_TITLE: 'Uruchom narzędzie {task}'
+  ScheduledExecution:
+    EXECUTE_EVERY: 'Wykonaj każdy'
+    EXECUTE_FREE: 'Zaplanowane (w formacie strtotime od pierwszego wykonania)'
+    ExecuteEveryDay: Dzień
+    ExecuteEveryFortnight: 'Dwa tygodnie'
+    ExecuteEveryHour: Godzina
+    ExecuteEveryMinute: Minuta
+    ExecuteEveryMonth: Miesiąc
+    ExecuteEveryWeek: Tydzień
+    ExecuteEveryYear: Rok
+    FIRST_EXECUTION: 'Pierwsze wykonanie'
+    NEXT_RUN_DATE: 'Następna data uruchomienia'
+    ScheduleTabTitle: Harmonogram
+  ScheduledExecutionJob:
+    Title: 'Zaplanowane wykonanie dla {title}'

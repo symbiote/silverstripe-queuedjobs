@@ -54,6 +54,6 @@ ru:
     ExecuteEveryYear: Год
     FIRST_EXECUTION: 'Первое исполнение'
     NEXT_RUN_DATE: 'Дата следующего исполнения'
-    ScheduleTabTitle: 'Расписание'
+    ScheduleTabTitle: Расписание
   ScheduledExecutionJob:
     Title: 'Запланировано исполнение {title}'
