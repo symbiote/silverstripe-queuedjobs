@@ -18,7 +18,6 @@ use Symbiote\QueuedJobs\Interfaces\UserContextInterface;
  *
  * @author Marcus Nyeholt <marcus@symbiote.com.au>
  * @license BSD http://silverstripe.org/bsd-license/
- * @skipUpgrade
  */
 abstract class AbstractQueuedJob implements QueuedJob, UserContextInterface
 {
