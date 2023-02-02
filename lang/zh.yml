@@ -2,7 +2,7 @@ zh:
   CreateQueuedJobTask:
     Description: '用于创建一个排队作业的任务。将排队作业的类名作为 “name” 参数传递，欲设置作业的开始时间，可传递一个可选的 “start" 参数（由 strtotime 解析）。'
   DeleteObjectJob:
-    DELETE_JOB: '删除节点'
+    DELETE_JOB: 删除节点
     DELETE_OBJ2: '删除 {title}'
   GenerateSitemapJob:
     REGENERATE: '重新生成谷歌网站地图 .xml 文件'
@@ -20,19 +20,19 @@ zh:
     MEMORY_RELEASE: '工作正在释放内存并等待（%s 已用）'
     STALLED_JOB: 呆滞任务
     STALLED_JOB_MSG: '名为 %s 的工作似乎停滞不前。它已暂停，请登录查看'
-    TABLE_ADDE: '已添加'
+    TABLE_ADDE: 已添加
     TABLE_MESSAGES: 消息
     TABLE_NUM_PROCESSED: 完成
     TABLE_STARTED: 已开始
     TABLE_START_AFTER: 开始于
     TABLE_STATUS: 状态
-    TABLE_TITLE: '标题'
-    TABLE_TOTAL: '全部'
+    TABLE_TITLE: 标题
+    TABLE_TOTAL: 全部
   QueuedJobsAdmin:
     MENUTITLE: 作业
   ScheduledExecution:
     EXECUTE_EVERY: 执行每
-    EXECUTE_FREE: '已调度（以首次执行的时间戳格式显示）'
+    EXECUTE_FREE: 已调度（以首次执行的时间戳格式显示）
     ExecuteEveryDay: 日
     ExecuteEveryFortnight: 两周
     ExecuteEveryHour: 时

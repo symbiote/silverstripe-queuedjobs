@@ -1,4 +1,64 @@
 en:
+  CleanupJob:
+    Title: 'Clean up old jobs from the database'
+  CreateQueuedJobTask:
+    Description: 'A task used to create a queued job. Pass the queued job class name as the "name" parameter, pass an optional "start" parameter (parseable by strtotime) to set a start time for the job.'
+  DeleteObjectJob:
+    DELETE_JOB: 'Delete node'
+    DELETE_OBJ2: 'Delete {title}'
+  GenerateSitemapJob:
+    REGENERATE: 'Regenerate Google sitemap .xml file'
+  ProcessJobQueueTask:
+    Description: 'Used via a cron job to execute queued jobs that need to be run.'
+  PublishItemsJob:
+    Title: 'Publish items beneath {title}'
+  QueuedJobDescriptor:
+    PLURALNAME: 'Queued Job Descriptors'
+    SINGULARNAME: 'Queued Job Descriptor'
+  QueuedJobRule:
+    PLURALNAME: 'Queued Job Rules'
+    SINGULARNAME: 'Queued Job Rule'
+  QueuedJobs:
+    CREATE_JOB_TYPE: 'Create job of type'
+    CREATE_NEW_JOB: 'Create new job'
+    JOB_EXCEPT: 'Job caused exception %s in %s at line %s'
+    JOB_PAUSED: 'Job paused at %s'
+    JOB_STALLED: 'Job stalled after %s attempts - please check'
+    JOB_TYPE: 'Job Type'
+    JOB_TYPE_PARAMS: 'Constructor parameters for job creation'
+    JobsFieldTitle: Jobs
+    MEMORY_RELEASE: 'Job releasing memory and waiting (%s used)'
+    STALLED_JOB: 'Stalled job'
+    STALLED_JOB_MSG: 'A job named %s appears to have stalled. It has been paused, please login to check it'
+    START_JOB_TIME: 'Start job at'
+    TABLE_ADDE: Added
+    TABLE_MESSAGES: Message
+    TABLE_NUM_PROCESSED: Done
+    TABLE_STARTED: Started
+    TABLE_START_AFTER: 'Start After'
+    TABLE_STATUS: Status
+    TABLE_TITLE: Title
+    TABLE_TOTAL: Total
+    TIME_LIMIT: 'Queue has passed time limit and will restart before continuing'
+  QueuedJobsAdmin:
+    MENUTITLE: Jobs
+  RunBuildTaskJob:
+    JOB_TITLE: 'Run BuildTask {task}'
+  ScheduledExecution:
+    EXECUTE_EVERY: 'Execute every'
+    EXECUTE_FREE: 'Scheduled (in strtotime format from first execution)'
+    ExecuteEveryDay: Day
+    ExecuteEveryFortnight: Fortnight
+    ExecuteEveryHour: Hour
+    ExecuteEveryMinute: Minute
+    ExecuteEveryMonth: Month
+    ExecuteEveryWeek: Week
+    ExecuteEveryYear: Year
+    FIRST_EXECUTION: 'First Execution'
+    NEXT_RUN_DATE: 'Next run date'
+    ScheduleTabTitle: Schedule
+  ScheduledExecutionJob:
+    Title: 'Scheduled execution for {title}'
   Symbiote\QueuedJobs\Controllers\QueuedJobsAdmin:
     CREATE_JOB_TYPE: 'Create job of type'
     CREATE_NEW_JOB: 'Create new job'
@@ -15,6 +75,7 @@ en:
       other: '{count} Queued Job Descriptors'
     SINGULARNAME: 'Queued Job Descriptor'
     TABLE_ADDE: Added
+    TABLE_FINISHED: Finished
     TABLE_MESSAGES: Message
     TABLE_NUM_PROCESSED: Done
     TABLE_STARTED: Started
@@ -22,12 +83,18 @@ en:
     TABLE_STATUS: Status
     TABLE_TITLE: Title
     TABLE_TOTAL: Total
+    TYPE_IMMEDIATE: Immediate
+    TYPE_LARGE: Large
+    TYPE_QUEUED: Queued
   Symbiote\QueuedJobs\DataObjects\QueuedJobRule:
     PLURALNAME: 'Queued Job Rules'
     PLURALS:
       one: 'A Queued Job Rule'
       other: '{count} Queued Job Rules'
     SINGULARNAME: 'Queued Job Rule'
+  Symbiote\QueuedJobs\Extensions\MaintenanceLockExtension:
+    LOCK_DESCRIPTION: 'Enable maintenance lock to prevent new queued jobs from being started'
+    LOCK_ENABLED: 'Maintenance Lock Enabled'
   Symbiote\QueuedJobs\Extensions\ScheduledExecutionExtension:
     EXECUTE_EVERY: 'Execute every'
     EXECUTE_FREE: 'Scheduled (in strtotime format from first execution)'
@@ -61,6 +128,8 @@ en:
     STALLED_JOB_MSG: 'A job named {name} appears to have stalled. It has been paused, please login to check it'
     STALLED_JOB_RESTART_MSG: 'A job named {name} appears to have stalled. It will be stopped and restarted, please login to make sure it has continued'
     TIME_LIMIT: 'Queue has passed time limit and will restart before continuing'
+  Symbiote\QueuedJobs\Tasks\CheckJobHealthTask:
+    Description: 'A task used to check the health of jobs that are "running". Pass a specific queue as the "queue" parameter or otherwise the "Queued" queue will be checked'
   Symbiote\QueuedJobs\Tasks\CreateQueuedJobTask:
     Description: 'A task used to create a queued job. Pass the queued job class name as the "name" parameter, pass an optional "start" parameter (parseable by strtotime) to set a start time for the job.'
   Symbiote\QueuedJobs\Tasks\ProcessJobQueueTask:
