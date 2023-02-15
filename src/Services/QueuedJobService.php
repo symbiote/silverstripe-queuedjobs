@@ -304,6 +304,10 @@ class QueuedJobService
      */
     public function startJob($jobDescriptor, $startAfter = null)
     {
+        if (!$this->queueHandler) {
+            return;
+        }
+
         if ($startAfter && strtotime($startAfter ?? '') > DBDatetime::now()->getTimestamp()) {
             $this->queueHandler->scheduleJob($jobDescriptor, $startAfter);
         } else {
@@ -603,10 +607,12 @@ class QueuedJobService
                             );
                             continue;
                         }
-                        QueuedJobService::singleton()->queueJob(
-                            Injector::inst()->createWithArgs($jobConfig['type'], $jobConfig['construct']),
-                            date($jobConfig['startDateFormat'] ?? '', strtotime($jobConfig['startTimeString'] ?? ''))
+                        $queuedJob = Injector::inst()->createWithArgs($jobConfig['type'], $jobConfig['construct']);
+                        $queuDate = date(
+                            $jobConfig['startDateFormat'] ?? '',
+                            strtotime($jobConfig['startTimeString'] ?? '')
                         );
+                        $this->queueJob($queuedJob, $queuDate);
                         $this->getLogger()->info(
                             "Default Job config: $title has been re-added to the Queue",
                             [
@@ -1516,7 +1522,7 @@ class QueuedJobService
             if (!$exists) {
                 // Add the handler
                 /** @var QueuedJobHandler $queuedJobHandler */
-                $queuedJobHandler = QueuedJobHandler::create($job, $jobDescriptor);
+                $queuedJobHandler = new QueuedJobHandler($job, $jobDescriptor);
 
                 // Only write for every 100 messages to avoid excessive database activity
                 $bufferHandler = new BufferHandler(

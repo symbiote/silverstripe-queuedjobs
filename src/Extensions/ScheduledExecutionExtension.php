@@ -128,8 +128,8 @@ class ScheduledExecutionExtension extends DataExtension
                     $time = DBDatetime::create()->setValue($this->owner->FirstExecution)->Rfc2822();
                 }
 
-                $this->owner->ScheduledJobID = QueuedJobService::singleton()
-                    ->queueJob($job, $time);
+                $queuedJobService = new QueuedJobService();
+                $this->owner->ScheduledJobID = $queuedJobService->queueJob($job, $time);
             }
         }
     }
