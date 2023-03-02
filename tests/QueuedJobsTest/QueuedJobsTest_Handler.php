@@ -11,6 +11,17 @@ use SilverStripe\Dev\TestOnly;
  */
 class QueuedJobsTest_Handler extends AbstractProcessingHandler implements TestOnly
 {
+    public function __construct()
+    {
+        // It's important that we call parent::__contruct() here in case we construct
+        // this class passing in the QueuedJobsHandler::__construct() parameters:
+        // (QueuedJob $job, QueuedJobDescriptor $jobDescriptor)
+        // This is because AbstractProcessingHandlers construtor in AbstractHandler::__construct()
+        // has a totally different signature:
+        // (int|string|Level $level = Level::Debug, bool $bubble = true)
+        parent::__construct();
+    }
+
     /**
      * Messages
      *
