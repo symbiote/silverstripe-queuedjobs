@@ -45,3 +45,44 @@ hr:
     ScheduleTabTitle: Raspored
   ScheduledExecutionJob:
     Title: 'Planirano izvršenje za {title}'
+  Symbiote\QueuedJobs\Controllers\QueuedJobsAdmin:
+    CREATE_JOB_TYPE: 'Kreiraj posao tipa'
+    CREATE_NEW_JOB: 'Kreiraj novi posao'
+    JobsFieldTitle: Poslovi
+    MENUTITLE: Poslovi
+    START_JOB_TIME: 'Pokreni posao u'
+  Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor:
+    JOB_TYPE: 'Tip posla'
+    TABLE_ADDE: Dodano
+    TABLE_MESSAGES: Poruka
+    TABLE_NUM_PROCESSED: Gotovo
+    TABLE_STARTED: Započeto
+    TABLE_START_AFTER: 'Započni nakon'
+    TABLE_STATUS: Status
+    TABLE_TITLE: Naslov
+    TABLE_TOTAL: Ukupno
+  Symbiote\QueuedJobs\Extensions\ScheduledExecutionExtension:
+    EXECUTE_EVERY: 'Izvrši svaki'
+    EXECUTE_FREE: 'Planirano (u strtotime formatu od prvog pokretanja)'
+    ExecuteEveryDay: dan
+    ExecuteEveryFortnight: 'dve nedjelje'
+    ExecuteEveryHour: sat
+    ExecuteEveryMinute: minuta
+    ExecuteEveryMonth: mjesec
+    ExecuteEveryWeek: tjedan
+    ExecuteEveryYear: godina
+    FIRST_EXECUTION: 'Prvo pokretanje'
+    NEXT_RUN_DATE: 'Sljedeći datum pokretanja'
+    ScheduleTabTitle: Raspored
+  Symbiote\QueuedJobs\Jobs\CleanupJob:
+    Title: 'Očisti stare poslove iz baze'
+  Symbiote\QueuedJobs\Jobs\DeleteObjectJob:
+    DELETE_JOB: 'Obriši čvor'
+    DELETE_OBJ2: 'Obriši {title}'
+  Symbiote\QueuedJobs\Jobs\GenerateGoogleSitemapJob:
+    REGENERATE: 'Regeneriraj Google sitemap .xml datoteku'
+  Symbiote\QueuedJobs\Jobs\ScheduledExecutionJob:
+    Title: 'Planirano izvršenje za {title}'
+  Symbiote\QueuedJobs\Services\QueuedJobService:
+    STALLED_JOB: 'Zaglavljen posao'
+    TIME_LIMIT: 'Red je prešao vremenski limit i resetirat će se prije započinjanja'

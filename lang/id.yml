@@ -15,3 +15,23 @@ id:
     ExecuteEveryMonth: Bulan
     ExecuteEveryWeek: Minggu
     ExecuteEveryYear: Tahun
+  QueuedJobsAdmin:
+    MENUTITLE: Pekerjaan
+  Symbiote\QueuedJobs\Controllers\QueuedJobsAdmin:
+    JobsFieldTitle: Pekerjaan
+    MENUTITLE: Pekerjaan
+  Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor:
+    JOB_TYPE: 'Jenis Pekerjaan'
+    TABLE_MESSAGES: Pesan
+    TABLE_NUM_PROCESSED: Selesai
+    TABLE_STATUS: Status
+    TABLE_TITLE: Judul
+    TABLE_TOTAL: Total
+  Symbiote\QueuedJobs\Extensions\ScheduledExecutionExtension:
+    ExecuteEveryDay: Hari
+    ExecuteEveryHour: Jam
+    ExecuteEveryMonth: Bulan
+    ExecuteEveryWeek: Minggu
+    ExecuteEveryYear: Tahun
+  Symbiote\QueuedJobs\Jobs\DeleteObjectJob:
+    DELETE_OBJ2: 'Hapus {title}'

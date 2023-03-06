@@ -57,3 +57,55 @@ ru:
     ScheduleTabTitle: Расписание
   ScheduledExecutionJob:
     Title: 'Запланировано исполнение {title}'
+  Symbiote\QueuedJobs\Controllers\QueuedJobsAdmin:
+    CREATE_JOB_TYPE: 'Создать задачу типа'
+    CREATE_NEW_JOB: 'Создать задачу'
+    JobsFieldTitle: Задачи
+    MENUTITLE: Задачи
+    START_JOB_TIME: 'Начать задачу в'
+  Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor:
+    JOB_TYPE: 'Тип задачи'
+    PLURALNAME: 'Дескрипторы отложенных задач'
+    SINGULARNAME: 'Дескриптор отложенной задачи'
+    TABLE_ADDE: Добавлена
+    TABLE_MESSAGES: Сообщение
+    TABLE_NUM_PROCESSED: Выполнено
+    TABLE_STARTED: Начата
+    TABLE_START_AFTER: 'Начать после'
+    TABLE_STATUS: Статус
+    TABLE_TITLE: Заголовок
+    TABLE_TOTAL: Итого
+  Symbiote\QueuedJobs\DataObjects\QueuedJobRule:
+    PLURALNAME: 'Настройки отложенных задач'
+    SINGULARNAME: 'Настройки отложенной задачи'
+  Symbiote\QueuedJobs\Extensions\ScheduledExecutionExtension:
+    EXECUTE_EVERY: 'Выполнять каждые'
+    EXECUTE_FREE: 'Запланировано (в формате strtotime после первого выполнения)'
+    ExecuteEveryDay: День
+    ExecuteEveryFortnight: 'Две недели'
+    ExecuteEveryHour: Час
+    ExecuteEveryMinute: Минута
+    ExecuteEveryMonth: Месяц
+    ExecuteEveryWeek: Неделя
+    ExecuteEveryYear: Год
+    FIRST_EXECUTION: 'Первое исполнение'
+    NEXT_RUN_DATE: 'Дата следующего исполнения'
+    ScheduleTabTitle: Расписание
+  Symbiote\QueuedJobs\Jobs\CleanupJob:
+    Title: 'Стереть старые задания из базы данных'
+  Symbiote\QueuedJobs\Jobs\DeleteObjectJob:
+    DELETE_JOB: Удалить
+    DELETE_OBJ2: 'Удалить {title}'
+  Symbiote\QueuedJobs\Jobs\GenerateGoogleSitemapJob:
+    REGENERATE: 'Генерировать Google sitemap .xml файл'
+  Symbiote\QueuedJobs\Jobs\PublishItemsJob:
+    Title: 'Опубликовать вложенные объекты {title}'
+  Symbiote\QueuedJobs\Jobs\ScheduledExecutionJob:
+    Title: 'Запланировано исполнение {title}'
+  Symbiote\QueuedJobs\Services\QueuedJobService:
+    STALLED_JOB: 'Замороженная задача'
+    TIME_LIMIT: 'Очередь достигла лимита по времени и будет начата заново перед продолжением'
+  Symbiote\QueuedJobs\Tasks\CreateQueuedJobTask:
+    Description: 'Задача используется для создания отложенного действия. Укажите тип задачи, укажите опциональный параметр "start" (обрабатывается функцией strtotime) для времени начала.'
+  Symbiote\QueuedJobs\Tasks\ProcessJobQueueTask:
+    Description: 'Используется cron для выполнения отложенных задач.'

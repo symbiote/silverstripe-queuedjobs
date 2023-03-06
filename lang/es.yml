@@ -1,0 +1,18 @@
+es:
+  QueuedJobs:
+    TABLE_STATUS: Estado
+    TABLE_TITLE: Título
+    TABLE_TOTAL: Total
+  ScheduledExecution:
+    ExecuteEveryDay: Día
+    ExecuteEveryMonth: Mes
+    ExecuteEveryYear: Año
+  Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor:
+    TABLE_FINISHED: Terminado
+    TABLE_STATUS: Estado
+    TABLE_TITLE: Título
+    TABLE_TOTAL: Total
+  Symbiote\QueuedJobs\Extensions\ScheduledExecutionExtension:
+    ExecuteEveryDay: Día
+    ExecuteEveryMonth: Mes
+    ExecuteEveryYear: Año
