@@ -195,15 +195,4 @@ class DoormanRunner extends BaseRunner implements TaskRunnerEngine
     {
         return (string) $this->config()->get('child_runner');
     }
-
-    /**
-     * @param string $queue
-     * @return QueuedJobDescriptor|null
-     * @deprecated 4.11.0 Use QueuedJobService::getNextPendingJob() instead
-     */
-    protected function getNextJobDescriptorWithoutMutex($queue)
-    {
-        Deprecation::notice('4.11.0', 'Use QueuedJobService::getNextPendingJob() instead');
-        return $this->getService()->getNextPendingJob($queue);
-    }
 }

@@ -95,38 +95,6 @@ class DoormanQueuedJobTask implements Task, Expires, Process, Cancellable
     }
 
     /**
-     * The __serialize() magic method will be automatically used instead of this
-     *
-     * @inheritdoc
-     *
-     * @return string
-     * @deprecated 4.11.0 Use __serialize() instead
-     */
-    public function serialize()
-    {
-        Deprecation::notice('4.11.0', 'Use __serialize() instead');
-        return serialize($this->__serialize);
-    }
-
-    /**
-     * The __unserialize() magic method will be automatically used instead of this almost all the time
-     * This method will be automatically used if existing serialized data was not saved as an associative array
-     * and the PHP version used in less than PHP 9.0
-     *
-     * @inheritdoc
-     *
-     * @throws InvalidArgumentException
-     * @param string
-     * @deprecated 4.11.0 Use __unserialize() instead
-     */
-    public function unserialize($serialized)
-    {
-        Deprecation::notice('4.11.0', 'Use __unserialize() instead');
-        $data = unserialize($serialized ?? '');
-        $this->__unserialize($data);
-    }
-
-    /**
      * @return string
      */
     public function getHandler()
