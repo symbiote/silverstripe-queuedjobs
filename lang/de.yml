@@ -59,3 +59,56 @@ de:
     Description: 'Ein Task um geplante Aufträge zu erstellen. Parameter sind: "name". Name der Klasse, "start" (optional): Startzeit für den Auftrag, im strtotime Format'
   RunBuildTaskJob:
     JOB_TITLE: 'BuildTask {task} ausführen'
+  Symbiote\QueuedJobs\Controllers\QueuedJobsAdmin:
+    CREATE_JOB_TYPE: 'Erstelle einen Auftrag dieses Types'
+    CREATE_NEW_JOB: 'Neuen Auftrag erstellen'
+    JobsFieldTitle: Aufträge
+    MENUTITLE: Aufträge
+    START_JOB_TIME: 'Auftrag starten um'
+  Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor:
+    JOB_TYPE: Auftragstyp
+    PLURALNAME: 'Beschreibungen der geplanten Aufträge'
+    SINGULARNAME: 'Beschreibung des geplanten Auftrags'
+    TABLE_ADDE: Hinzugefügt
+    TABLE_FINISHED: Abgeschlossen
+    TABLE_MESSAGES: Nachricht
+    TABLE_NUM_PROCESSED: Fertig
+    TABLE_STARTED: Gestartet
+    TABLE_START_AFTER: 'Beginn nach'
+    TABLE_STATUS: Status
+    TABLE_TITLE: Titel
+    TABLE_TOTAL: Insgesamt
+  Symbiote\QueuedJobs\DataObjects\QueuedJobRule:
+    PLURALNAME: 'Regeln für den geplanten Auftrag'
+    SINGULARNAME: 'Regel für den geplanten Auftrag'
+  Symbiote\QueuedJobs\Extensions\ScheduledExecutionExtension:
+    EXECUTE_EVERY: 'Alle ausführen'
+    EXECUTE_FREE: 'Geplant (in strtotime-format nach dem ersten Ausführen)'
+    ExecuteEveryDay: Tag
+    ExecuteEveryFortnight: 'Zwei Wochen'
+    ExecuteEveryHour: Stunde
+    ExecuteEveryMinute: Minute
+    ExecuteEveryMonth: Monat
+    ExecuteEveryWeek: Woche
+    ExecuteEveryYear: Jahr
+    FIRST_EXECUTION: 'Erste Ausführung'
+    NEXT_RUN_DATE: 'Nächstes Ausführungsdatum'
+    ScheduleTabTitle: Planen
+  Symbiote\QueuedJobs\Jobs\CleanupJob:
+    Title: 'Bereinigt alte Aufträge aus der Datenbank'
+  Symbiote\QueuedJobs\Jobs\DeleteObjectJob:
+    DELETE_JOB: 'Knoten löschen'
+    DELETE_OBJ2: '{title} löschen'
+  Symbiote\QueuedJobs\Jobs\GenerateGoogleSitemapJob:
+    REGENERATE: 'Generiere Google sitemap.xml Datei'
+  Symbiote\QueuedJobs\Jobs\PublishItemsJob:
+    Title: 'Veröffentlich Artikel mit Titel {title}'
+  Symbiote\QueuedJobs\Jobs\ScheduledExecutionJob:
+    Title: 'Geplante Ausführung für {title}'
+  Symbiote\QueuedJobs\Services\QueuedJobService:
+    STALLED_JOB: 'Angehaltener Auftrag'
+    TIME_LIMIT: 'Die Warteschlange hat das Zeitlimit überschritten und wird neu gestartet'
+  Symbiote\QueuedJobs\Tasks\CreateQueuedJobTask:
+    Description: 'Ein Task um geplante Aufträge zu erstellen. Parameter sind: "name". Name der Klasse, "start" (optional): Startzeit für den Auftrag, im strtotime Format'
+  Symbiote\QueuedJobs\Tasks\ProcessJobQueueTask:
+    Description: 'Genutzt durch einen cron-job zur Ausführung von geplanten Aufträgen.'

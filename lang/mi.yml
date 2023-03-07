@@ -43,3 +43,43 @@ mi:
     NEXT_RUN_DATE: 'Rā whakahaere anō'
   ScheduledExecutionJob:
     Title: 'Ka whakaritea te kawenga mō {title}'
+  Symbiote\QueuedJobs\Controllers\QueuedJobsAdmin:
+    JobsFieldTitle: 'Ngā Mahi'
+    MENUTITLE: 'Ngā Mahi'
+  Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor:
+    JOB_TYPE: 'Momo mahi'
+    PLURALNAME: 'Ngā Pūwhakaahua Mahi Kua Tūtiratia'
+    SINGULARNAME: 'Pūwhakaahua Mahi Kua Tūtiratia'
+    TABLE_ADDE: 'I Tāpiritia'
+    TABLE_FINISHED: 'Kua Oti'
+    TABLE_MESSAGES: Karere
+    TABLE_NUM_PROCESSED: 'Kua Oti'
+    TABLE_STARTED: 'I Tīmata'
+    TABLE_START_AFTER: 'Tīmata Ā Muri'
+    TABLE_STATUS: Tūnga
+    TABLE_TITLE: Taitara
+    TABLE_TOTAL: Tapeke
+  Symbiote\QueuedJobs\Extensions\ScheduledExecutionExtension:
+    EXECUTE_EVERY: 'Kawea Te Katoa'
+    EXECUTE_FREE: 'Kua whakaritea ( i te hōputu strtotime mai i te kawenga tuatahi)'
+    ExecuteEveryDay: Rā
+    ExecuteEveryFortnight: 'Rua Wiki'
+    ExecuteEveryHour: Haora
+    ExecuteEveryMonth: Marama
+    ExecuteEveryWeek: Wiki
+    ExecuteEveryYear: Tau
+    FIRST_EXECUTION: 'Kawenga Tuatahi'
+    NEXT_RUN_DATE: 'Rā whakahaere anō'
+  Symbiote\QueuedJobs\Jobs\DeleteObjectJob:
+    DELETE_JOB: 'Muku kōpuku'
+    DELETE_OBJ2: 'Muku {title}'
+  Symbiote\QueuedJobs\Jobs\GenerateGoogleSitemapJob:
+    REGENERATE: 'Whakatupuriā anō te kōnae .xml maherepae Google'
+  Symbiote\QueuedJobs\Jobs\PublishItemsJob:
+    Title: 'Whakaputa tuemi ki raro i {title}'
+  Symbiote\QueuedJobs\Jobs\ScheduledExecutionJob:
+    Title: 'Ka whakaritea te kawenga mō {title}'
+  Symbiote\QueuedJobs\Services\QueuedJobService:
+    STALLED_JOB: 'Mahi Kua Auporoa'
+  Symbiote\QueuedJobs\Tasks\CreateQueuedJobTask:
+    Description: 'He taumahi e whakamahia ana hei hanga mahi kua tūtirahia. Tukuna te ingoa tauaha mahi kua tūtirahia hei tawhā "ingoa", tukuna he tawhā "tīmata" kōwhiringa (ka taea te poroporo mā te strtotime) hei tautuhi i te wā tīmata mō te mahi.'

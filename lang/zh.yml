@@ -44,3 +44,44 @@ zh:
     ScheduleTabTitle: 日程表
   ScheduledExecutionJob:
     Title: '{title}计划执行'
+  Symbiote\QueuedJobs\Controllers\QueuedJobsAdmin:
+    JobsFieldTitle: 作业
+    MENUTITLE: 作业
+  Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor:
+    JOB_TYPE: 工作类型
+    PLURALNAME: 排队作业描述符
+    SINGULARNAME: 排队作业描述符
+    TABLE_ADDE: 已添加
+    TABLE_FINISHED: 完成
+    TABLE_MESSAGES: 消息
+    TABLE_NUM_PROCESSED: 完成
+    TABLE_STARTED: 已开始
+    TABLE_START_AFTER: 开始于
+    TABLE_STATUS: 状态
+    TABLE_TITLE: 题目
+    TABLE_TOTAL: 总数
+  Symbiote\QueuedJobs\Extensions\ScheduledExecutionExtension:
+    EXECUTE_EVERY: 执行每
+    EXECUTE_FREE: 已调度（以首次执行的时间戳格式显示）
+    ExecuteEveryDay: 日
+    ExecuteEveryFortnight: 两周
+    ExecuteEveryHour: 时
+    ExecuteEveryMonth: 月
+    ExecuteEveryWeek: 周
+    ExecuteEveryYear: 年
+    FIRST_EXECUTION: 第一次执行
+    NEXT_RUN_DATE: 下一次运行日期
+    ScheduleTabTitle: 日程表
+  Symbiote\QueuedJobs\Jobs\DeleteObjectJob:
+    DELETE_JOB: 删除节点
+    DELETE_OBJ2: '删除 {title}'
+  Symbiote\QueuedJobs\Jobs\GenerateGoogleSitemapJob:
+    REGENERATE: '重新生成谷歌网站地图 .xml 文件'
+  Symbiote\QueuedJobs\Jobs\PublishItemsJob:
+    Title: '发布下列项 {title}'
+  Symbiote\QueuedJobs\Jobs\ScheduledExecutionJob:
+    Title: '{title}计划执行'
+  Symbiote\QueuedJobs\Services\QueuedJobService:
+    STALLED_JOB: 呆滞任务
+  Symbiote\QueuedJobs\Tasks\CreateQueuedJobTask:
+    Description: '用于创建一个排队作业的任务。将排队作业的类名作为 “name” 参数传递，欲设置作业的开始时间，可传递一个可选的 “start" 参数（由 strtotime 解析）。'

@@ -48,3 +48,49 @@ fi:
     ScheduleTabTitle: Aikatauluta
   ScheduledExecutionJob:
     Title: 'Suoritusaikataulu kohteelle {title}'
+  Symbiote\QueuedJobs\Controllers\QueuedJobsAdmin:
+    CREATE_JOB_TYPE: 'Luo tehtävä tyypiltään'
+    CREATE_NEW_JOB: 'Luo uusi tehtävä'
+    JobsFieldTitle: Tehtävät
+    MENUTITLE: Tehtävät
+    START_JOB_TIME: 'Aloita tehtävä ajankohtana'
+  Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor:
+    JOB_TYPE: Tehtävätyyppi
+    PLURALNAME: 'Jonossa olevien tehtävien kuvaajat'
+    SINGULARNAME: 'Jonossa olevan tehtävän kuvaaja'
+    TABLE_ADDE: Lisätty
+    TABLE_MESSAGES: Viesti
+    TABLE_NUM_PROCESSED: Tehty
+    TABLE_STARTED: Aloitettu
+    TABLE_START_AFTER: 'Aloita jälkeen'
+    TABLE_STATUS: Tila
+    TABLE_TITLE: Otsikko
+    TABLE_TOTAL: Yhteensä
+  Symbiote\QueuedJobs\DataObjects\QueuedJobRule:
+    PLURALNAME: 'Jonossa olevan tehtävän säännöt'
+    SINGULARNAME: 'Jonossa olevan tehtävän sääntö'
+  Symbiote\QueuedJobs\Extensions\ScheduledExecutionExtension:
+    EXECUTE_EVERY: 'Suorita joka'
+    ExecuteEveryDay: Päivä
+    ExecuteEveryFortnight: 'Kaksi viikkoa'
+    ExecuteEveryHour: Tunti
+    ExecuteEveryMinute: Minuutti
+    ExecuteEveryMonth: Kuukausi
+    ExecuteEveryWeek: Viikko
+    ExecuteEveryYear: Vuosi
+    FIRST_EXECUTION: 'Ensimmäinen suoritus'
+    NEXT_RUN_DATE: 'Seuraava suorituspäivä'
+    ScheduleTabTitle: Aikatauluta
+  Symbiote\QueuedJobs\Jobs\CleanupJob:
+    Title: 'Siivoa vanhat työt tietokannasta'
+  Symbiote\QueuedJobs\Jobs\DeleteObjectJob:
+    DELETE_JOB: 'Poista solmu'
+    DELETE_OBJ2: 'Poista {title}'
+  Symbiote\QueuedJobs\Jobs\GenerateGoogleSitemapJob:
+    REGENERATE: 'Luo Google-sivukartta .xml-tiedosto uudelleen'
+  Symbiote\QueuedJobs\Jobs\PublishItemsJob:
+    Title: 'Julkaise kohteet {title} alla'
+  Symbiote\QueuedJobs\Jobs\ScheduledExecutionJob:
+    Title: 'Suoritusaikataulu kohteelle {title}'
+  Symbiote\QueuedJobs\Services\QueuedJobService:
+    STALLED_JOB: 'Pysäytetty työ'

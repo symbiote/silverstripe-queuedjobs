@@ -59,3 +59,55 @@ pl:
     ScheduleTabTitle: Harmonogram
   ScheduledExecutionJob:
     Title: 'Zaplanowane wykonanie dla {title}'
+  Symbiote\QueuedJobs\Controllers\QueuedJobsAdmin:
+    CREATE_JOB_TYPE: 'Utwórz zadanie typu'
+    CREATE_NEW_JOB: 'Utwórz nowe zadanie'
+    JobsFieldTitle: Zadania
+    MENUTITLE: Zadania
+    START_JOB_TIME: 'Rozpocznij zadanie o'
+  Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor:
+    JOB_TYPE: 'Typ zadania'
+    PLURALNAME: 'Zadania w kolejce'
+    SINGULARNAME: 'Zadanie w kolejce'
+    TABLE_ADDE: Dodano
+    TABLE_MESSAGES: Komunikat
+    TABLE_NUM_PROCESSED: Gotowe
+    TABLE_STARTED: Rozpoczęty
+    TABLE_START_AFTER: 'Zacznij po'
+    TABLE_STATUS: Status
+    TABLE_TITLE: Tytuł
+    TABLE_TOTAL: Razem
+  Symbiote\QueuedJobs\DataObjects\QueuedJobRule:
+    PLURALNAME: 'Kolejkowe reguły zadań'
+    SINGULARNAME: 'Kolejkowa reguła zadania'
+  Symbiote\QueuedJobs\Extensions\ScheduledExecutionExtension:
+    EXECUTE_EVERY: 'Wykonaj każdy'
+    EXECUTE_FREE: 'Zaplanowane (w formacie strtotime od pierwszego wykonania)'
+    ExecuteEveryDay: Dzień
+    ExecuteEveryFortnight: 'Dwa tygodnie'
+    ExecuteEveryHour: Godzina
+    ExecuteEveryMinute: Minuta
+    ExecuteEveryMonth: Miesiąc
+    ExecuteEveryWeek: Tydzień
+    ExecuteEveryYear: Rok
+    FIRST_EXECUTION: 'Pierwsze wykonanie'
+    NEXT_RUN_DATE: 'Następna data uruchomienia'
+    ScheduleTabTitle: Harmonogram
+  Symbiote\QueuedJobs\Jobs\CleanupJob:
+    Title: 'Wyczyść stare zadania z bazy danych'
+  Symbiote\QueuedJobs\Jobs\DeleteObjectJob:
+    DELETE_JOB: 'Usuń węzeł'
+    DELETE_OBJ2: 'Usuń {title}'
+  Symbiote\QueuedJobs\Jobs\GenerateGoogleSitemapJob:
+    REGENERATE: 'Ponownie wygeneruj plik .xml mapy witryny'
+  Symbiote\QueuedJobs\Jobs\PublishItemsJob:
+    Title: 'Opublikuj poniższe elementy {title}'
+  Symbiote\QueuedJobs\Jobs\ScheduledExecutionJob:
+    Title: 'Zaplanowane wykonanie dla {title}'
+  Symbiote\QueuedJobs\Services\QueuedJobService:
+    STALLED_JOB: 'Zawieszenie zadania'
+    TIME_LIMIT: 'Kolejka przekroczyła limit czasu i zostanie wznowiona przed kontynuowaniem'
+  Symbiote\QueuedJobs\Tasks\CreateQueuedJobTask:
+    Description: 'Zadanie zostało użyte do utworzenia zadania w kolejce. Przekaż kolejkę nazw klasy zadania jako parametr "nazwa", przekazuj opcjonalny parametr "start" (analizowany przez strtotime), aby ustawić czas rozpoczęcia zadania.'
+  Symbiote\QueuedJobs\Tasks\ProcessJobQueueTask:
+    Description: 'Używane przez zadanie cron do uruchamiania zadań oczekujących w kolejce, które należy uruchomić.'
