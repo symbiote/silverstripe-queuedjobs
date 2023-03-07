@@ -44,3 +44,44 @@ ar:
     ScheduleTabTitle: 'الجدول الزمني'
   ScheduledExecutionJob:
     Title: 'موعد التنفيذ المحدد ل {title}'
+  Symbiote\QueuedJobs\Controllers\QueuedJobsAdmin:
+    JobsFieldTitle: وظائف
+    MENUTITLE: وظائف
+  Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor:
+    JOB_TYPE: 'نوع الوظيفة'
+    PLURALNAME: 'الواصفات الوظيفية الموضوعة في قائمة الانتظار'
+    SINGULARNAME: 'الواصف الوظيفي الموضوع في قائمة الانتظار'
+    TABLE_ADDE: 'تمت إضافته'
+    TABLE_FINISHED: انتهى
+    TABLE_MESSAGES: رسالة
+    TABLE_NUM_PROCESSED: تم
+    TABLE_STARTED: 'تم البدأ'
+    TABLE_START_AFTER: 'ابدأ بعد'
+    TABLE_STATUS: الحالة
+    TABLE_TITLE: عنوان
+    TABLE_TOTAL: المجموع
+  Symbiote\QueuedJobs\Extensions\ScheduledExecutionExtension:
+    EXECUTE_EVERY: 'قم بتنفيذ كل'
+    EXECUTE_FREE: 'محددة (بصيغة إس تى آر تو تايم من التنفيذ الأول)'
+    ExecuteEveryDay: يوم
+    ExecuteEveryFortnight: أسبوعان
+    ExecuteEveryHour: ساعة
+    ExecuteEveryMonth: شهر
+    ExecuteEveryWeek: أسبوع
+    ExecuteEveryYear: سنة
+    FIRST_EXECUTION: 'التنفيذ الأول'
+    NEXT_RUN_DATE: 'موعد التشغيل التالى'
+    ScheduleTabTitle: 'الجدول الزمني'
+  Symbiote\QueuedJobs\Jobs\DeleteObjectJob:
+    DELETE_JOB: 'حذف عقدة فى النظام'
+    DELETE_OBJ2: 'حذف {title}'
+  Symbiote\QueuedJobs\Jobs\GenerateGoogleSitemapJob:
+    REGENERATE: 'إعادة إنتاج ملف جوجل سايت ماب.إكس إم إل'
+  Symbiote\QueuedJobs\Jobs\PublishItemsJob:
+    Title: 'قم بإعلان العناصر تحت عنوان {title}'
+  Symbiote\QueuedJobs\Jobs\ScheduledExecutionJob:
+    Title: 'موعد التنفيذ المحدد ل {title}'
+  Symbiote\QueuedJobs\Services\QueuedJobService:
+    STALLED_JOB: 'الوظيفة المؤجلة'
+  Symbiote\QueuedJobs\Tasks\CreateQueuedJobTask:
+    Description: 'مهمة تستخدم لإنشاء وظيفة مجدولة. قم بتمرير اسم تصنيف الوظيفة المجدولة ك "اسم" العامل المتغير, قم بتمرير عامل متغير "بادئ" (قابل للقراءة عن طريق إس تى آر تو تايم) لتحديد وقت بدء الوظيفة.'

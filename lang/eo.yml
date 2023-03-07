@@ -59,3 +59,78 @@ eo:
     Title: 'Planita plenumo por {title}'
   RunBuildTaskJob:
     JOB_TITLE: 'Ruli je KonstruiTaskon'
+  Symbiote\QueuedJobs\Controllers\QueuedJobsAdmin:
+    CREATE_JOB_TYPE: 'Krei taskon de la tipo'
+    CREATE_NEW_JOB: 'Krei novan taskon'
+    JOB_TYPE_PARAMS: 'Konstruaj parametroj por taskokreo (je unu en ĉiu linio)'
+    JobsFieldTitle: Taskoj
+    MENUTITLE: Taskoj
+    QueuedJobSuccess: 'Sukcese envicigis taskon'
+    START_JOB_TIME: 'Startigi taskon je'
+  Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor:
+    JOB_TYPE: 'Tipo de tasko'
+    PLURALNAME: 'Atendovicaj priaĵoj'
+    PLURALS:
+      one: 'Unu atendovica priaĵo'
+      other: '{count} atendovicaj priaĵoj'
+    SINGULARNAME: 'Atendovica priaĵo'
+    TABLE_ADDE: Aldonita
+    TABLE_FINISHED: Finis
+    TABLE_MESSAGES: Mesaĝo
+    TABLE_NUM_PROCESSED: Farita
+    TABLE_STARTED: Startis
+    TABLE_START_AFTER: 'Startigi post'
+    TABLE_STATUS: Stato
+    TABLE_TITLE: Titolo
+    TABLE_TOTAL: Totalo
+    TYPE_IMMEDIATE: tuja
+    TYPE_LARGE: Granda
+    TYPE_QUEUED: Envicigita
+  Symbiote\QueuedJobs\DataObjects\QueuedJobRule:
+    PLURALNAME: 'Atendovicaj reguloj'
+    PLURALS:
+      one: 'Unu atendovica priaĵo'
+      other: '{count} atendovicaj priaĵoj'
+    SINGULARNAME: 'Atendovica regulo'
+  Symbiote\QueuedJobs\Extensions\MaintenanceLockExtension:
+    LOCK_DESCRIPTION: 'Ebligi ke mastrumila ŝlosilo preventi ŝtartigi novajn envicigitajn taskojn'
+    LOCK_ENABLED: 'Mastrumila ŝlosilo ŝaltita'
+  Symbiote\QueuedJobs\Extensions\ScheduledExecutionExtension:
+    EXECUTE_EVERY: 'Plenumi ĉiun'
+    EXECUTE_FREE: 'Planita (en strtotime-formato ek de unua plenumo)'
+    ExecuteEveryDay: Tago
+    ExecuteEveryFortnight: 'Du semajnoj'
+    ExecuteEveryHour: Horo
+    ExecuteEveryMinute: Minuto
+    ExecuteEveryMonth: Monato
+    ExecuteEveryWeek: Semajno
+    ExecuteEveryYear: Jaro
+    FIRST_EXECUTION: 'Unua plenumo'
+    NEXT_RUN_DATE: 'Sekva ruldato'
+    ScheduleTabTitle: Plano
+  Symbiote\QueuedJobs\Jobs\CleanupJob:
+    Title: 'Purigi malnovajn taskojn el la datumbazo'
+  Symbiote\QueuedJobs\Jobs\DeleteObjectJob:
+    DELETE_JOB: 'Forigi nodon'
+    DELETE_OBJ2: 'Forigi je {title}'
+  Symbiote\QueuedJobs\Jobs\GenerateGoogleSitemapJob:
+    REGENERATE: 'Regeneri xml-dosieron de Guglo-paĝarmapo'
+  Symbiote\QueuedJobs\Jobs\PublishItemsJob:
+    Title: 'Publikigi erojn sub {title}'
+  Symbiote\QueuedJobs\Jobs\ScheduledExecutionJob:
+    Title: 'Planita plenumo por {title}'
+  Symbiote\QueuedJobs\Services\QueuedJobService:
+    JOB_EXCEPT: 'Tasko kaŭzis escepton  {message} en {file} ĉe linio {line}'
+    JOB_PAUSED: 'Tasko paŭzis je {time}'
+    JOB_STALLED: 'Tasko haltis post {attempts} provoj - bonvole kontrolu'
+    MEMORY_RELEASE: 'Tasko liberigas memoron kaj atendas ({used} uzita)'
+    STALLED_JOB: 'Haltinta tasko'
+    STALLED_JOB_MSG: 'Ŝajnas ke haltis tasko nomita {name}.  Ĝi estas paŭzigita. Bonvolu ensaluti por kontroli ĝin.'
+    STALLED_JOB_RESTART_MSG: 'Ŝajnas ke haltis tasko nomita {name}.  Ĝi haltos kaj restartiĝos. Bonvolu ensaluti por kontroli ke ĝi daŭris'
+    TIME_LIMIT: 'Atendovico pasis la tempolimon kaj restartos antaŭ ol daŭri'
+  Symbiote\QueuedJobs\Tasks\CheckJobHealthTask:
+    Description: 'Tasko kontrolis la sanon de taskoj "rulantaj". Enigi specifan atendovicon kiel la parametro "atendovico"; alie la "envicigita" atendovico kontroliĝos.'
+  Symbiote\QueuedJobs\Tasks\CreateQueuedJobTask:
+    Description: 'Tasko uzota por krei atendovican taskon. Pasu la klasnomon de la atendovican tasko kiel la parametron "nomo", pasu malnepran parametron "starto" (analizeblan de strtotime) por agordi startotempon por la tasko.'
+  Symbiote\QueuedJobs\Tasks\ProcessJobQueueTask:
+    Description: 'Uzebla per ''cron''-tasko por plenumi envicigitajn taskojn rulotajn.'
