@@ -59,3 +59,55 @@ sl:
     ScheduleTabTitle: 'Urnik izvajanja'
   ScheduledExecutionJob:
     Title: 'Naročena izvedba za {title}'
+  Symbiote\QueuedJobs\Controllers\QueuedJobsAdmin:
+    CREATE_JOB_TYPE: 'Ustvari nalogo tipa'
+    CREATE_NEW_JOB: 'Ustvari novo nalogo'
+    JobsFieldTitle: Naloge
+    MENUTITLE: Naloge
+    START_JOB_TIME: 'Izvedi nalogo ob'
+  Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor:
+    JOB_TYPE: 'Tip naloge'
+    PLURALNAME: 'Definicije naročenih nalog'
+    SINGULARNAME: 'Definicija naročene naloge'
+    TABLE_ADDE: Dodano
+    TABLE_MESSAGES: Sporočila
+    TABLE_NUM_PROCESSED: Zaključeno
+    TABLE_STARTED: Sproženo
+    TABLE_START_AFTER: 'Izvedi nalogo po'
+    TABLE_STATUS: Status
+    TABLE_TITLE: Naziv
+    TABLE_TOTAL: Skupaj
+  Symbiote\QueuedJobs\DataObjects\QueuedJobRule:
+    PLURALNAME: 'Pravila naročenih nalog'
+    SINGULARNAME: 'Pravilo naročene naloge'
+  Symbiote\QueuedJobs\Extensions\ScheduledExecutionExtension:
+    EXECUTE_EVERY: 'Izvedi vsakih'
+    EXECUTE_FREE: 'Naročeno za (v formatu strtotime od prve izvedbe)'
+    ExecuteEveryDay: dni
+    ExecuteEveryFortnight: 'dva tedna'
+    ExecuteEveryHour: ur
+    ExecuteEveryMinute: minut
+    ExecuteEveryMonth: mesecev
+    ExecuteEveryWeek: tednov
+    ExecuteEveryYear: let
+    FIRST_EXECUTION: 'Izvedeno prvič'
+    NEXT_RUN_DATE: 'Datum naslednje izvedbe'
+    ScheduleTabTitle: 'Urnik izvajanja'
+  Symbiote\QueuedJobs\Jobs\CleanupJob:
+    Title: 'Odstrani zastarele naloge iz baze'
+  Symbiote\QueuedJobs\Jobs\DeleteObjectJob:
+    DELETE_JOB: 'Izbriši nalogo'
+    DELETE_OBJ2: 'Izbriši {title}'
+  Symbiote\QueuedJobs\Jobs\GenerateGoogleSitemapJob:
+    REGENERATE: 'Ponovno zgeneriraj sitemap.xml za Google '
+  Symbiote\QueuedJobs\Jobs\PublishItemsJob:
+    Title: 'Objavi elemente pod {title}'
+  Symbiote\QueuedJobs\Jobs\ScheduledExecutionJob:
+    Title: 'Naročena izvedba za {title}'
+  Symbiote\QueuedJobs\Services\QueuedJobService:
+    STALLED_JOB: 'Zastale naloge'
+    TIME_LIMIT: 'Naročena naloga je presegla časovno omejite, zato se mora ponovno zagnati.'
+  Symbiote\QueuedJobs\Tasks\CreateQueuedJobTask:
+    Description: 'Procedura za ustvarjanje novih naročenih nalog. Vnesite naziv naročene naloge v "name" in opcijsko še termin za zagon naloge v "start" (strtotime).'
+  Symbiote\QueuedJobs\Tasks\ProcessJobQueueTask:
+    Description: 'Uporablja ''cron job'' za izvedbo naročenih nalog, ki morajo biti izvedene.'
