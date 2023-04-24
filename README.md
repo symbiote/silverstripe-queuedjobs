@@ -20,13 +20,15 @@ The module comes with
 
 ## Installation
 
-```
+```sh
 composer require symbiote/silverstripe-queuedjobs
 ```
 
-Now setup a cron job:
+## Setup
 
-```
+Setup a cron job:
+
+```sh
 */1 * * * * /path/to/silverstripe/vendor/bin/sake dev/tasks/ProcessJobQueueTask
 ```
 
@@ -36,7 +38,6 @@ The following will run the publish job in 1 day's time from now.
 ```php
 use SilverStripe\ORM\FieldType\DBDatetime;
 use Symbiote\QueuedJobs\Services\QueuedJobService;
-
 $publish = new PublishItemsJob(21);
 QueuedJobService::singleton()
     ->queueJob($publish, DBDatetime::create()->setValue(DBDatetime::now()->getTimestamp() + 86400)->Rfc2822());
