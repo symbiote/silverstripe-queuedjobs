@@ -3,6 +3,7 @@
 namespace Symbiote\QueuedJobs\Controllers;
 
 use SilverStripe\Admin\AdminRootController;
+use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Core\Convert;
@@ -102,8 +103,8 @@ class QueuedTaskRunner extends TaskRunner
             }
 
             $taskList->push(ArrayData::create([
-                'QueueLink' => $baseUrl . 'dev/tasks/queue/' . $task['segment'],
-                'TaskLink' => $baseUrl . 'dev/tasks/' . $task['segment'],
+                'QueueLink' => Controller::join_links($baseUrl, 'dev/tasks/queue', $task['segment']),
+                'TaskLink' => Controller::join_links($baseUrl, 'dev/tasks', $task['segment']),
                 'Title' => $task['title'],
                 'Description' => $task['description'],
                 'Type' => 'universal',
@@ -113,7 +114,7 @@ class QueuedTaskRunner extends TaskRunner
         // Non-queueable tasks
         foreach ($backlistedTasks as $task) {
             $taskList->push(ArrayData::create([
-                'TaskLink' => $baseUrl . 'dev/tasks/' . $task['segment'],
+                'TaskLink' => Controller::join_links($baseUrl, 'dev/tasks', $task['segment']),
                 'Title' => $task['title'],
                 'Description' => $task['description'],
                 'Type' => 'immediate',
@@ -125,7 +126,7 @@ class QueuedTaskRunner extends TaskRunner
 
         foreach ($queuedOnlyTasks as $task) {
             $taskList->push(ArrayData::create([
-                'QueueLink' => $baseUrl . 'dev/tasks/queue/' . $task['segment'],
+                'QueueLink' => Controller::join_links($baseUrl, 'dev/tasks/queue', $task['segment']),
                 'Title' => $task['title'],
                 'Description' => $task['description'],
                 'Type' => 'queue-only',
@@ -187,8 +188,12 @@ class QueuedTaskRunner extends TaskRunner
                 $jobID = Injector::inst()->get(QueuedJobService::class)->queueJob($job);
 
                 $message('Done: queued with job ID ' . $jobID);
-                $adminUrl = Director::baseURL() . AdminRootController::config()->get('url_base');
-                $adminLink = $adminUrl . "/queuedjobs/" . str_replace('\\', '-', QueuedJobDescriptor::class);
+                $adminLink = Controller::join_links(
+                    Director::baseURL(),
+                    AdminRootController::config()->get('url_base'),
+                    'queuedjobs',
+                    str_replace('\\', '-', QueuedJobDescriptor::class)
+                );
                 $message("Visit <a href=\"$adminLink\">queued jobs admin</a> to see job status");
                 return;
             }
