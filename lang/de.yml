@@ -94,6 +94,7 @@ de:
     FIRST_EXECUTION: 'Erste Ausführung'
     NEXT_RUN_DATE: 'Nächstes Ausführungsdatum'
     ScheduleTabTitle: Planen
+    db_ExecuteEvery: 'Alle ausführen'
   Symbiote\QueuedJobs\Jobs\CleanupJob:
     Title: 'Bereinigt alte Aufträge aus der Datenbank'
   Symbiote\QueuedJobs\Jobs\DeleteObjectJob:

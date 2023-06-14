@@ -81,6 +81,7 @@ fi:
     FIRST_EXECUTION: 'Ensimmäinen suoritus'
     NEXT_RUN_DATE: 'Seuraava suorituspäivä'
     ScheduleTabTitle: Aikatauluta
+    db_ExecuteEvery: 'Suorita joka'
   Symbiote\QueuedJobs\Jobs\CleanupJob:
     Title: 'Siivoa vanhat työt tietokannasta'
   Symbiote\QueuedJobs\Jobs\DeleteObjectJob:

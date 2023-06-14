@@ -70,6 +70,7 @@ mi:
     ExecuteEveryYear: Tau
     FIRST_EXECUTION: 'Kawenga Tuatahi'
     NEXT_RUN_DATE: 'Rā whakahaere anō'
+    db_ExecuteEvery: 'Kawea Te Katoa'
   Symbiote\QueuedJobs\Jobs\DeleteObjectJob:
     DELETE_JOB: 'Muku kōpuku'
     DELETE_OBJ2: 'Muku {title}'

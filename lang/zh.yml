@@ -72,6 +72,7 @@ zh:
     FIRST_EXECUTION: 第一次执行
     NEXT_RUN_DATE: 下一次运行日期
     ScheduleTabTitle: 日程表
+    db_ExecuteEvery: 执行每
   Symbiote\QueuedJobs\Jobs\DeleteObjectJob:
     DELETE_JOB: 删除节点
     DELETE_OBJ2: '删除 {title}'
