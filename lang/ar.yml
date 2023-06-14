@@ -72,6 +72,7 @@ ar:
     FIRST_EXECUTION: 'التنفيذ الأول'
     NEXT_RUN_DATE: 'موعد التشغيل التالى'
     ScheduleTabTitle: 'الجدول الزمني'
+    db_ExecuteEvery: 'قم بتنفيذ كل'
   Symbiote\QueuedJobs\Jobs\DeleteObjectJob:
     DELETE_JOB: 'حذف عقدة فى النظام'
     DELETE_OBJ2: 'حذف {title}'
