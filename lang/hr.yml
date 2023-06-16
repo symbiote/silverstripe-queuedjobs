@@ -74,6 +74,7 @@ hr:
     FIRST_EXECUTION: 'Prvo pokretanje'
     NEXT_RUN_DATE: 'Sljedeći datum pokretanja'
     ScheduleTabTitle: Raspored
+    db_ExecuteEvery: 'Izvrši svaki'
   Symbiote\QueuedJobs\Jobs\CleanupJob:
     Title: 'Očisti stare poslove iz baze'
   Symbiote\QueuedJobs\Jobs\DeleteObjectJob:
