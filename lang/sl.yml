@@ -93,6 +93,7 @@ sl:
     FIRST_EXECUTION: 'Izvedeno prvič'
     NEXT_RUN_DATE: 'Datum naslednje izvedbe'
     ScheduleTabTitle: 'Urnik izvajanja'
+    db_ExecuteEvery: 'Izvedi vsakih'
   Symbiote\QueuedJobs\Jobs\CleanupJob:
     Title: 'Odstrani zastarele naloge iz baze'
   Symbiote\QueuedJobs\Jobs\DeleteObjectJob:

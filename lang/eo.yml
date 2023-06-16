@@ -86,6 +86,7 @@ eo:
     TYPE_IMMEDIATE: tuja
     TYPE_LARGE: Granda
     TYPE_QUEUED: Envicigita
+    db_Expiry: Eksvalidiĝo
   Symbiote\QueuedJobs\DataObjects\QueuedJobRule:
     PLURALNAME: 'Atendovicaj reguloj'
     PLURALS:
@@ -108,6 +109,7 @@ eo:
     FIRST_EXECUTION: 'Unua plenumo'
     NEXT_RUN_DATE: 'Sekva ruldato'
     ScheduleTabTitle: Plano
+    db_ExecuteEvery: 'Plenumi ĉiun'
   Symbiote\QueuedJobs\Jobs\CleanupJob:
     Title: 'Purigi malnovajn taskojn el la datumbazo'
   Symbiote\QueuedJobs\Jobs\DeleteObjectJob:
