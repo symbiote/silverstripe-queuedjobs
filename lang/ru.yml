@@ -91,6 +91,7 @@ ru:
     FIRST_EXECUTION: 'Первое исполнение'
     NEXT_RUN_DATE: 'Дата следующего исполнения'
     ScheduleTabTitle: Расписание
+    db_ExecuteEvery: 'Выполнять каждые'
   Symbiote\QueuedJobs\Jobs\CleanupJob:
     Title: 'Стереть старые задания из базы данных'
   Symbiote\QueuedJobs\Jobs\DeleteObjectJob:

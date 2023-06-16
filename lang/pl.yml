@@ -93,6 +93,7 @@ pl:
     FIRST_EXECUTION: 'Pierwsze wykonanie'
     NEXT_RUN_DATE: 'Następna data uruchomienia'
     ScheduleTabTitle: Harmonogram
+    db_ExecuteEvery: 'Wykonaj każdy'
   Symbiote\QueuedJobs\Jobs\CleanupJob:
     Title: 'Wyczyść stare zadania z bazy danych'
   Symbiote\QueuedJobs\Jobs\DeleteObjectJob:

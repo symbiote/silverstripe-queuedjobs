@@ -86,12 +86,42 @@ en:
     TYPE_IMMEDIATE: Immediate
     TYPE_LARGE: Large
     TYPE_QUEUED: Queued
+    db_Expiry: Expiry
+    db_Implementation: Implementation
+    db_JobFinished: 'Job finished'
+    db_JobRestarted: 'Job restarted'
+    db_JobStarted: 'Job started'
+    db_JobStatus: 'Job status'
+    db_JobTitle: 'Job title'
+    db_JobType: 'Job type'
+    db_LastProcessedCount: 'Last processed count'
+    db_NotifiedBroken: 'Notified broken'
+    db_ResumeCounts: 'Resume counts'
+    db_SavedJobData: 'Saved job data'
+    db_SavedJobMessages: 'Saved job messages'
+    db_Signature: Signature
+    db_StartAfter: 'Start after'
+    db_StepsProcessed: 'Steps processed'
+    db_TotalSteps: 'Total steps'
+    db_Worker: Worker
+    db_WorkerCount: 'Worker count'
+    has_one_RunAs: 'Run as'
   Symbiote\QueuedJobs\DataObjects\QueuedJobRule:
     PLURALNAME: 'Queued Job Rules'
     PLURALS:
       one: 'A Queued Job Rule'
       other: '{count} Queued Job Rules'
     SINGULARNAME: 'Queued Job Rule'
+    db_Handler: Handler
+    db_MaximumMemoryUsage: 'Maximum memory usage'
+    db_MaximumProcessorUsage: 'Maximum processor usage'
+    db_MaximumSiblingMemoryUsage: 'Maximum sibling memory usage'
+    db_MaximumSiblingProcessorUsage: 'Maximum sibling processor usage'
+    db_MinimumMemoryUsage: 'Minimum memory usage'
+    db_MinimumProcessorUsage: 'Minimum processor usage'
+    db_MinimumSiblingMemoryUsage: 'Minimum sibling memory usage'
+    db_MinimumSiblingProcessorUsage: 'Minimum sibling processor usage'
+    db_Processes: Processes
   Symbiote\QueuedJobs\Extensions\MaintenanceLockExtension:
     LOCK_DESCRIPTION: 'Enable maintenance lock to prevent new queued jobs from being started'
     LOCK_ENABLED: 'Maintenance Lock Enabled'
@@ -108,6 +138,11 @@ en:
     FIRST_EXECUTION: 'First Execution'
     NEXT_RUN_DATE: 'Next run date'
     ScheduleTabTitle: Schedule
+    db_ExecuteEvery: 'Execute every'
+    db_ExecuteFree: 'Execute free'
+    db_ExecuteInterval: 'Execute interval'
+    db_FirstExecution: 'First execution'
+    has_one_ScheduledJob: 'Scheduled job'
   Symbiote\QueuedJobs\Jobs\CleanupJob:
     Title: 'Clean up old jobs from the database'
   Symbiote\QueuedJobs\Jobs\DeleteObjectJob:
