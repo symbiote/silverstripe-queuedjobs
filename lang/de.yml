@@ -1,4 +1,8 @@
 de:
+  CleanupJob:
+    Title: 'Bereinigt alte Aufträge aus der Datenbank'
+  CreateQueuedJobTask:
+    Description: 'Ein Task um geplante Aufträge zu erstellen. Parameter sind: "name". Name der Klasse, "start" (optional): Startzeit für den Auftrag, im strtotime Format'
   DeleteObjectJob:
     DELETE_JOB: 'Knoten löschen'
     DELETE_OBJ2: '{title} löschen'
@@ -21,7 +25,9 @@ de:
     JOB_PAUSED: 'Auftrag pausiert um %s'
     JOB_STALLED: 'Auftrag angehalten nach %s versuchen. Bitte überprüfen Sie den Auftrag.'
     JOB_TYPE: Auftragstyp
+    JOB_TYPE_PARAMS: 'Konstruktor-Parameter für die Joberstellung'
     JobsFieldTitle: Aufträge
+    MEMORY_RELEASE: 'Job gibt Speicher frei und wartet (1%s verwendet)'
     STALLED_JOB: 'Angehaltener Auftrag'
     STALLED_JOB_MSG: 'Der Auftrag %s scheint festzustecken. Er wurde angehalten. Bitte loggen Sie sich ein, um den Auftrag zu überprüfen.'
     START_JOB_TIME: 'Auftrag starten um'
@@ -33,11 +39,11 @@ de:
     TABLE_STATUS: Status
     TABLE_TITLE: Titel
     TABLE_TOTAL: Insgesamt
-    JOB_TYPE_PARAMS: 'Konstruktor-Parameter für die Joberstellung'
-    MEMORY_RELEASE: 'Job gibt Speicher frei und wartet (1%s verwendet)'
     TIME_LIMIT: 'Die Warteschlange hat das Zeitlimit überschritten und wird neu gestartet'
   QueuedJobsAdmin:
     MENUTITLE: Aufträge
+  RunBuildTaskJob:
+    JOB_TITLE: 'BuildTask {task} ausführen'
   ScheduledExecution:
     EXECUTE_EVERY: 'Alle ausführen'
     EXECUTE_FREE: 'Geplant (in strtotime-format nach dem ersten Ausführen)'
@@ -53,12 +59,6 @@ de:
     ScheduleTabTitle: Planen
   ScheduledExecutionJob:
     Title: 'Geplante Ausführung für {title}'
-  CleanupJob:
-    Title: 'Bereinigt alte Aufträge aus der Datenbank'
-  CreateQueuedJobTask:
-    Description: 'Ein Task um geplante Aufträge zu erstellen. Parameter sind: "name". Name der Klasse, "start" (optional): Startzeit für den Auftrag, im strtotime Format'
-  RunBuildTaskJob:
-    JOB_TITLE: 'BuildTask {task} ausführen'
   Symbiote\QueuedJobs\Controllers\QueuedJobsAdmin:
     CREATE_JOB_TYPE: 'Erstelle einen Auftrag dieses Types'
     CREATE_NEW_JOB: 'Neuen Auftrag erstellen'
