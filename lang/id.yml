@@ -9,14 +9,14 @@ id:
     TABLE_STATUS: Status
     TABLE_TITLE: Judul
     TABLE_TOTAL: Total
+  QueuedJobsAdmin:
+    MENUTITLE: Pekerjaan
   ScheduledExecution:
     ExecuteEveryDay: Hari
     ExecuteEveryHour: Jam
     ExecuteEveryMonth: Bulan
     ExecuteEveryWeek: Minggu
     ExecuteEveryYear: Tahun
-  QueuedJobsAdmin:
-    MENUTITLE: Pekerjaan
   Symbiote\QueuedJobs\Controllers\QueuedJobsAdmin:
     JobsFieldTitle: Pekerjaan
     MENUTITLE: Pekerjaan

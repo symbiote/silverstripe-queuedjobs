@@ -42,6 +42,8 @@ eo:
     TIME_LIMIT: 'Atendovico pasis la tempolimon kaj restartos antaŭ ol daŭri'
   QueuedJobsAdmin:
     MENUTITLE: Taskoj
+  RunBuildTaskJob:
+    JOB_TITLE: 'Ruli je KonstruiTaskon'
   ScheduledExecution:
     EXECUTE_EVERY: 'Plenumi ĉiun'
     EXECUTE_FREE: 'Planita (en strtotime-formato ek de unua plenumo)'
@@ -57,8 +59,6 @@ eo:
     ScheduleTabTitle: Plano
   ScheduledExecutionJob:
     Title: 'Planita plenumo por {title}'
-  RunBuildTaskJob:
-    JOB_TITLE: 'Ruli je KonstruiTaskon'
   Symbiote\QueuedJobs\Controllers\QueuedJobsAdmin:
     CREATE_JOB_TYPE: 'Krei taskon de la tipo'
     CREATE_NEW_JOB: 'Krei novan taskon'
@@ -87,12 +87,41 @@ eo:
     TYPE_LARGE: Granda
     TYPE_QUEUED: Envicigita
     db_Expiry: Eksvalidiĝo
+    db_Implementation: Realigo
+    db_JobFinished: 'Tasko finita'
+    db_JobRestarted: 'Tasko restartita'
+    db_JobStarted: 'Tasko startita'
+    db_JobStatus: 'Stato de tasko'
+    db_JobTitle: 'Titolo de tasko'
+    db_JobType: 'Tipo de tasko'
+    db_LastProcessedCount: 'Nombro da laste traktitaj'
+    db_NotifiedBroken: 'Atentigis rompita'
+    db_ResumeCounts: 'Restarti nombradon'
+    db_SavedJobData: 'Datumoj pri konservita tasko'
+    db_SavedJobMessages: 'Mesaĝoj pri konservita tasko'
+    db_Signature: Subskribo
+    db_StartAfter: 'Startigi post'
+    db_StepsProcessed: 'Paŝoj traktitaj'
+    db_TotalSteps: 'Sumo da paŝoj'
+    db_Worker: Laboranto
+    db_WorkerCount: 'Nombro da laborantoj'
+    has_one_RunAs: 'Ruligi kiel'
   Symbiote\QueuedJobs\DataObjects\QueuedJobRule:
     PLURALNAME: 'Atendovicaj reguloj'
     PLURALS:
       one: 'Unu atendovica priaĵo'
       other: '{count} atendovicaj priaĵoj'
     SINGULARNAME: 'Atendovica regulo'
+    db_Handler: Traktilo
+    db_MaximumMemoryUsage: 'Maksimuma memoruzado'
+    db_MaximumProcessorUsage: 'Maksimuma procesiluzado'
+    db_MaximumSiblingMemoryUsage: 'Maksimuma gefrata memoruzado'
+    db_MaximumSiblingProcessorUsage: 'Maksimuma gefrata procesiluzado'
+    db_MinimumMemoryUsage: 'Minimuma memoruzado'
+    db_MinimumProcessorUsage: 'Minimuma procesiluzado'
+    db_MinimumSiblingMemoryUsage: 'Minimuma gefrata memoruzado'
+    db_MinimumSiblingProcessorUsage: 'Minimuma gefrata procesiluzado'
+    db_Processes: Procesoj
   Symbiote\QueuedJobs\Extensions\MaintenanceLockExtension:
     LOCK_DESCRIPTION: 'Ebligi ke mastrumila ŝlosilo preventi ŝtartigi novajn envicigitajn taskojn'
     LOCK_ENABLED: 'Mastrumila ŝlosilo ŝaltita'
@@ -110,6 +139,10 @@ eo:
     NEXT_RUN_DATE: 'Sekva ruldato'
     ScheduleTabTitle: Plano
     db_ExecuteEvery: 'Plenumi ĉiun'
+    db_ExecuteFree: 'Plenumi libere'
+    db_ExecuteInterval: 'Plenuma intervalo'
+    db_FirstExecution: 'Unua plenumo'
+    has_one_ScheduledJob: 'Planita tasko'
   Symbiote\QueuedJobs\Jobs\CleanupJob:
     Title: 'Purigi malnovajn taskojn el la datumbazo'
   Symbiote\QueuedJobs\Jobs\DeleteObjectJob:
