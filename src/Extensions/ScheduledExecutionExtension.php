@@ -23,6 +23,7 @@ use Symbiote\QueuedJobs\Services\QueuedJobService;
  *
  * @author marcus@symbiote.com.au
  * @license BSD License http://silverstripe.org/bsd-license/
+ * @method QueuedJobDescriptor ScheduledJob()
  */
 class ScheduledExecutionExtension extends DataExtension
 {
