@@ -52,10 +52,9 @@ use Symbiote\QueuedJobs\Services\QueuedJobService;
  * @property bool $NotifiedBroken
  * @property int $WorkerCount
  *
- * @method Member RunAs() Member to run this job as
- *
  * @author Marcus Nyeholt <marcus@symbiote.com.au>
  * @license BSD http://silverstripe.org/bsd-license/
+ * @method Member RunAs()
  */
 class QueuedJobDescriptor extends DataObject
 {
