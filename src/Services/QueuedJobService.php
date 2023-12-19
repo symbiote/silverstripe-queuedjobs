@@ -729,7 +729,8 @@ class QueuedJobService
         try {
             // Start a transaction which will hold until we have a lock on this descriptor.
             DB::get_conn()->withTransaction(function () use ($descriptorId) {
-                $query = 'SELECT "ID" FROM "QueuedJobDescriptor" WHERE "ID" = %s AND "Worker" IS NULL FOR UPDATE';
+                $forUpdate = DB::getConfig()['type'] == 'SQLite3Database' ? '' : ' FOR UPDATE';
+                $query = 'SELECT "ID" FROM "QueuedJobDescriptor" WHERE "ID" = %s AND "Worker" IS NULL' . $forUpdate;
 
                 $row = DB::query(sprintf($query, Convert::raw2sql($descriptorId)))->first();
 
