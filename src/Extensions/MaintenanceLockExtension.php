@@ -12,8 +12,9 @@ use Symbiote\QueuedJobs\Services\QueuedJobService;
  * Class MaintenanceLockExtension
  * Adds a maintenance lock UI to SiteConfig
  *
- * @property SiteConfig|$this owner
  * @package Symbiote\QueuedJobs\Extensions
+ *
+ * @extends DataExtension<SiteConfig&static>
  */
 class MaintenanceLockExtension extends DataExtension
 {
