@@ -402,7 +402,6 @@ class QueuedJobService
             ->sort('ID', 'ASC');
 
         // see if there's any blocked jobs that need to be resumed
-        /** @var QueuedJobDescriptor $waitingJob */
         $waitingJob = $list->find('JobStatus', QueuedJob::STATUS_WAIT);
 
         if ($waitingJob) {
@@ -410,7 +409,6 @@ class QueuedJobService
         }
 
         // Otherwise, lets find any 'new' jobs that are waiting to execute
-        /** @var QueuedJobDescriptor $newJob */
         $newJob = $list
             ->filter('JobStatus', QueuedJob::STATUS_NEW)
             ->where(sprintf(
@@ -468,7 +466,6 @@ class QueuedJobService
                 '"Expiry" IS NULL AND "LastEdited" <= ?' => $this->getInitStateExpiry()
             ]);
 
-        /** @var QueuedJobDescriptor $stalledJob */
         foreach ($stalledJobs as $stalledJob) {
             $jobClass = $stalledJob->Implementation;
 
@@ -492,7 +489,6 @@ class QueuedJobService
         // now, find those that need to be marked before the next check
         // foreach job, mark it as having been incremented
         foreach ($runningJobs as $job) {
-            /** @var QueuedJobDescriptor $job */
             $job->LastProcessedCount = $job->StepsProcessed;
             $job->write();
         }
@@ -752,7 +748,6 @@ class QueuedJobService
                     Convert::raw2sql($descriptorId)
                 ));
 
-                /** @var QueuedJobDescriptor $updatedDescriptor */
                 $updatedDescriptor = QueuedJobDescriptor::get()->byID($descriptorId);
 
                 // If we couldn't find the descriptor or the descriptor is not the one we expect to have
@@ -800,7 +795,6 @@ class QueuedJobService
         $logger = $this->getLogger();
 
         // first retrieve the descriptor
-        /** @var QueuedJobDescriptor $jobDescriptor */
         $jobDescriptor = DataObject::get_by_id(
             QueuedJobDescriptor::class,
             (int)$jobId
@@ -817,7 +811,6 @@ class QueuedJobService
         // We need to use $_SESSION directly because SS ties the session to a controller that no longer exists at
         // this point of execution in some circumstances
         $originalUserID = isset($_SESSION['loggedInAs']) ? $_SESSION['loggedInAs'] : 0;
-        /** @var Member|null $originalUser */
         $originalUser = $originalUserID
             ? DataObject::get_by_id(Member::class, $originalUserID)
             : null;
@@ -869,7 +862,6 @@ class QueuedJobService
                     Subsite::changeSubsite($job->SubsiteID);
 
                     // lets set the base URL as far as Director is concerned so that our URLs are correct
-                    /** @var Subsite $subsite */
                     $subsite = DataObject::get_by_id(Subsite::class, $job->SubsiteID);
                     if ($subsite && $subsite->exists()) {
                         $domain = $subsite->domain();
@@ -882,7 +874,6 @@ class QueuedJobService
                 // while not finished
                 while (!$job->jobFinished() && !$broken) {
                     // see that we haven't been set to 'paused' or otherwise by another process
-                    /** @var QueuedJobDescriptor $jobDescriptor */
                     $jobDescriptor = DataObject::get_by_id(
                         QueuedJobDescriptor::class,
                         (int)$jobId
@@ -1282,7 +1273,7 @@ class QueuedJobService
      *          The number of seconds to include jobs that have just finished, allowing a job list to be built that
      *          includes recently finished jobs
      *
-     * @return DataList|QueuedJobDescriptor[]
+     * @return DataList<QueuedJobDescriptor>
      */
     public function getJobList($type = null, $includeUpUntil = 0)
     {

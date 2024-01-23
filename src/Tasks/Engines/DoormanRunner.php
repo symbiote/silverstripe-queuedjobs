@@ -89,7 +89,6 @@ class DoormanRunner extends BaseRunner implements TaskRunnerEngine
 
         // split jobs out into multiple tasks...
 
-        /** @var ProcessManager $manager */
         $manager = Injector::inst()->create(ProcessManager::class);
         $manager->setWorker(
             sprintf(

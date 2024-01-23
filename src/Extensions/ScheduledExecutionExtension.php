@@ -10,6 +10,7 @@ use SilverStripe\Forms\NumericField;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\Forms\TextField;
 use SilverStripe\ORM\DataExtension;
+use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBDatetime;
 use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
 use Symbiote\QueuedJobs\Jobs\ScheduledExecutionJob;
@@ -23,7 +24,10 @@ use Symbiote\QueuedJobs\Services\QueuedJobService;
  *
  * @author marcus@symbiote.com.au
  * @license BSD License http://silverstripe.org/bsd-license/
+ *
  * @method QueuedJobDescriptor ScheduledJob()
+ *
+ * @extends DataExtension<DataObject&static>
  */
 class ScheduledExecutionExtension extends DataExtension
 {
