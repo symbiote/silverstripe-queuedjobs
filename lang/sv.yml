@@ -1,0 +1,128 @@
+sv:
+  CleanupJob:
+    Title: 'Rensa upp gamla jobb från databasen'
+  DeleteObjectJob:
+    DELETE_JOB: 'Radera nod'
+    DELETE_OBJ2: 'Radera {title}'
+  GenerateSitemapJob:
+    REGENERATE: 'Återskapa .xml-filen för Google sitemap'
+  ProcessJobQueueTask:
+    Description: 'Används via ett cron-jobb för att utföra köade jobb som måste köras.'
+  PublishItemsJob:
+    Title: 'Publicera objekt under {title}'
+  QueuedJobRule:
+    PLURALNAME: 'Uppköat jobb regler'
+  QueuedJobs:
+    CREATE_JOB_TYPE: 'Skapa jobb av typ'
+    CREATE_NEW_JOB: 'Skapa nytt jobb'
+    JOB_EXCEPT: 'Jobbet orsakade erroret %s i %s vid linje %s'
+    JOB_PAUSED: 'Jobb pausat vid %s'
+    JOB_STALLED: 'Jobbet stannade efter %s försök, vänligen kontrollera'
+    JOB_TYPE: Jobbtyp
+    JOB_TYPE_PARAMS: 'Konstruktörsparametrar för att skapa jobb'
+    JobsFieldTitle: Jobb
+    MEMORY_RELEASE: 'Jobbet frigör minne och väntar (%s används)'
+    STALLED_JOB: 'Stannat jobb'
+    START_JOB_TIME: 'Börja jobbet vid'
+    TABLE_ADDE: 'Lagt till'
+    TABLE_MESSAGES: Meddelande
+    TABLE_NUM_PROCESSED: Färdig
+    TABLE_STARTED: Startad
+    TABLE_START_AFTER: 'Börja efter'
+    TABLE_STATUS: Status
+    TABLE_TITLE: Titel
+    TABLE_TOTAL: Totalt
+    TIME_LIMIT: 'Kön har passerat tidsgränsen och kommer att starta om innan den fortsätter'
+  QueuedJobsAdmin:
+    MENUTITLE: Jobb
+  RunBuildTaskJob:
+    JOB_TITLE: 'Kör BuildTask {task}'
+  ScheduledExecution:
+    EXECUTE_EVERY: 'Kör varje'
+    EXECUTE_FREE: 'Schemalagt (i strtotime-format från första körning)'
+    ExecuteEveryDay: Dag
+    ExecuteEveryFortnight: 'Två veckor'
+    ExecuteEveryHour: Timme
+    ExecuteEveryMinute: Minut
+    ExecuteEveryMonth: Månad
+    ExecuteEveryWeek: Vecka
+    ExecuteEveryYear: År
+    FIRST_EXECUTION: 'Första exekvering'
+    NEXT_RUN_DATE: 'Nästa körningsdatum'
+    ScheduleTabTitle: Schema
+  ScheduledExecutionJob:
+    Title: 'Schemalagd körning för {title}'
+  Symbiote\QueuedJobs\Controllers\QueuedJobsAdmin:
+    CREATE_JOB_TYPE: 'Skapa jobb av typ'
+    CREATE_NEW_JOB: 'Skapa nytt jobb'
+    JobsFieldTitle: Jobb
+    MENUTITLE: Jobb
+    START_JOB_TIME: 'Börja jobbet vid'
+  Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor:
+    JOB_TYPE: Jobbtyp
+    TABLE_ADDE: 'Lagt till'
+    TABLE_FINISHED: Slutförd
+    TABLE_MESSAGES: Meddelande
+    TABLE_NUM_PROCESSED: Färdig
+    TABLE_STARTED: Startad
+    TABLE_START_AFTER: 'Börja efter'
+    TABLE_STATUS: Status
+    TABLE_TITLE: Titel
+    TABLE_TOTAL: Totalt
+    TYPE_IMMEDIATE: Direkt
+    TYPE_LARGE: Stor
+    TYPE_QUEUED: 'I kö'
+    db_Expiry: Upphör
+    db_Implementation: Implementation
+    db_JobFinished: 'Jobbet avslutat'
+    db_JobRestarted: 'Jobbet startade om'
+    db_JobStarted: 'Jobb börjat'
+    db_JobStatus: Jobbstatus
+    db_JobTitle: 'Jobb titel'
+    db_JobType: Jobbtyp
+    db_LastProcessedCount: 'Antal senast behandlade'
+    db_NotifiedBroken: 'Anmäld sönder'
+    db_ResumeCounts: 'Antal gånger återupptagen'
+    db_SavedJobData: 'Sparad jobbdata'
+    db_SavedJobMessages: 'Sparade jobbmeddelanden'
+    db_Signature: Signatur
+    db_StartAfter: 'Börja efter'
+    db_StepsProcessed: 'Steg bearbetade'
+    db_TotalSteps: 'Totalt antal steg'
+    db_Worker: Arbetare
+    db_WorkerCount: 'Antal arbetare'
+    has_one_RunAs: 'Kör som'
+  Symbiote\QueuedJobs\DataObjects\QueuedJobRule:
+    PLURALNAME: 'Uppköat jobb regler'
+    db_Processes: Processer
+  Symbiote\QueuedJobs\Extensions\ScheduledExecutionExtension:
+    EXECUTE_EVERY: 'Kör varje'
+    EXECUTE_FREE: 'Schemalagt (i strtotime-format från första körning)'
+    ExecuteEveryDay: Dag
+    ExecuteEveryFortnight: 'Två veckor'
+    ExecuteEveryHour: Timme
+    ExecuteEveryMinute: Minut
+    ExecuteEveryMonth: Månad
+    ExecuteEveryWeek: Vecka
+    ExecuteEveryYear: År
+    FIRST_EXECUTION: 'Första exekvering'
+    NEXT_RUN_DATE: 'Nästa körningsdatum'
+    ScheduleTabTitle: Schema
+    db_ExecuteEvery: 'Kör varje'
+    has_one_ScheduledJob: 'Schemalagda jobb'
+  Symbiote\QueuedJobs\Jobs\CleanupJob:
+    Title: 'Rensa upp gamla jobb från databasen'
+  Symbiote\QueuedJobs\Jobs\DeleteObjectJob:
+    DELETE_JOB: 'Radera nod'
+    DELETE_OBJ2: 'Radera {title}'
+  Symbiote\QueuedJobs\Jobs\GenerateGoogleSitemapJob:
+    REGENERATE: 'Återskapa .xml-filen för Google sitemap'
+  Symbiote\QueuedJobs\Jobs\PublishItemsJob:
+    Title: 'Publicera objekt under {title}'
+  Symbiote\QueuedJobs\Jobs\ScheduledExecutionJob:
+    Title: 'Schemalagd körning för {title}'
+  Symbiote\QueuedJobs\Services\QueuedJobService:
+    STALLED_JOB: 'Stannat jobb'
+    TIME_LIMIT: 'Kön har passerat tidsgränsen och kommer att starta om innan den fortsätter'
+  Symbiote\QueuedJobs\Tasks\ProcessJobQueueTask:
+    Description: 'Används via ett cron-jobb för att utföra köade jobb som måste köras.'
