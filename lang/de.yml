@@ -21,7 +21,7 @@ de:
   QueuedJobs:
     CREATE_JOB_TYPE: 'Erstelle einen Auftrag dieses Types'
     CREATE_NEW_JOB: 'Neuen Auftrag erstellen'
-    JOB_EXCEPT: 'Auftrag hat einen ''%s'' Fehler verursacht in %s Zeile %s '
+    JOB_EXCEPT: "Auftrag hat einen '%s' Fehler verursacht in %s Zeile %s "
     JOB_PAUSED: 'Auftrag pausiert um %s'
     JOB_STALLED: 'Auftrag angehalten nach %s versuchen. Bitte überprüfen Sie den Auftrag.'
     JOB_TYPE: Auftragstyp
