@@ -9,7 +9,7 @@ eo:
   GenerateSitemapJob:
     REGENERATE: 'Regeneri xml-dosieron de Guglo-paĝarmapo'
   ProcessJobQueueTask:
-    Description: 'Uzebla per ''cron''-tasko por plenumi envicigitajn taskojn rulotajn.'
+    Description: "Uzebla per 'cron'-tasko por plenumi envicigitajn taskojn rulotajn."
   PublishItemsJob:
     Title: 'Publikigi erojn sub {title}'
   QueuedJobDescriptor:
@@ -168,4 +168,4 @@ eo:
   Symbiote\QueuedJobs\Tasks\CreateQueuedJobTask:
     Description: 'Tasko uzota por krei atendovican taskon. Pasu la klasnomon de la atendovican tasko kiel la parametron "nomo", pasu malnepran parametron "starto" (analizeblan de strtotime) por agordi startotempon por la tasko.'
   Symbiote\QueuedJobs\Tasks\ProcessJobQueueTask:
-    Description: 'Uzebla per ''cron''-tasko por plenumi envicigitajn taskojn rulotajn.'
+    Description: "Uzebla per 'cron'-tasko por plenumi envicigitajn taskojn rulotajn."
