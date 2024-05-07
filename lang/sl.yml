@@ -9,7 +9,7 @@ sl:
   GenerateSitemapJob:
     REGENERATE: 'Ponovno zgeneriraj sitemap.xml za Google '
   ProcessJobQueueTask:
-    Description: 'Uporablja ''cron job'' za izvedbo naročenih nalog, ki morajo biti izvedene.'
+    Description: "Uporablja 'cron job' za izvedbo naročenih nalog, ki morajo biti izvedene."
   PublishItemsJob:
     Title: 'Objavi elemente pod {title}'
   QueuedJobDescriptor:
@@ -36,7 +36,6 @@ sl:
     TABLE_NUM_PROCESSED: Zaključeno
     TABLE_STARTED: Sproženo
     TABLE_START_AFTER: 'Izvedi nalogo po'
-    TABLE_STATUS: Status
     TABLE_TITLE: Naziv
     TABLE_TOTAL: Skupaj
     TIME_LIMIT: 'Naročena naloga je presegla časovno omejite, zato se mora ponovno zagnati.'
@@ -74,7 +73,6 @@ sl:
     TABLE_NUM_PROCESSED: Zaključeno
     TABLE_STARTED: Sproženo
     TABLE_START_AFTER: 'Izvedi nalogo po'
-    TABLE_STATUS: Status
     TABLE_TITLE: Naziv
     TABLE_TOTAL: Skupaj
   Symbiote\QueuedJobs\DataObjects\QueuedJobRule:
@@ -111,4 +109,4 @@ sl:
   Symbiote\QueuedJobs\Tasks\CreateQueuedJobTask:
     Description: 'Procedura za ustvarjanje novih naročenih nalog. Vnesite naziv naročene naloge v "name" in opcijsko še termin za zagon naloge v "start" (strtotime).'
   Symbiote\QueuedJobs\Tasks\ProcessJobQueueTask:
-    Description: 'Uporablja ''cron job'' za izvedbo naročenih nalog, ki morajo biti izvedene.'
+    Description: "Uporablja 'cron job' za izvedbo naročenih nalog, ki morajo biti izvedene."

@@ -6,9 +6,7 @@ id:
     JobsFieldTitle: Pekerjaan
     TABLE_MESSAGES: Pesan
     TABLE_NUM_PROCESSED: Selesai
-    TABLE_STATUS: Status
     TABLE_TITLE: Judul
-    TABLE_TOTAL: Total
   QueuedJobsAdmin:
     MENUTITLE: Pekerjaan
   ScheduledExecution:
@@ -24,9 +22,7 @@ id:
     JOB_TYPE: 'Jenis Pekerjaan'
     TABLE_MESSAGES: Pesan
     TABLE_NUM_PROCESSED: Selesai
-    TABLE_STATUS: Status
     TABLE_TITLE: Judul
-    TABLE_TOTAL: Total
   Symbiote\QueuedJobs\Extensions\ScheduledExecutionExtension:
     ExecuteEveryDay: Hari
     ExecuteEveryHour: Jam

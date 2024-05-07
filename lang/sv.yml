@@ -29,7 +29,6 @@ sv:
     TABLE_NUM_PROCESSED: Färdig
     TABLE_STARTED: Startad
     TABLE_START_AFTER: 'Börja efter'
-    TABLE_STATUS: Status
     TABLE_TITLE: Titel
     TABLE_TOTAL: Totalt
     TIME_LIMIT: 'Kön har passerat tidsgränsen och kommer att starta om innan den fortsätter'
@@ -66,14 +65,12 @@ sv:
     TABLE_NUM_PROCESSED: Färdig
     TABLE_STARTED: Startad
     TABLE_START_AFTER: 'Börja efter'
-    TABLE_STATUS: Status
     TABLE_TITLE: Titel
     TABLE_TOTAL: Totalt
     TYPE_IMMEDIATE: Direkt
     TYPE_LARGE: Stor
     TYPE_QUEUED: 'I kö'
     db_Expiry: Upphör
-    db_Implementation: Implementation
     db_JobFinished: 'Jobbet avslutat'
     db_JobRestarted: 'Jobbet startade om'
     db_JobStarted: 'Jobb börjat'
