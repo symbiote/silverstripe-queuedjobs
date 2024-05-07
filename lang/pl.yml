@@ -36,7 +36,6 @@ pl:
     TABLE_NUM_PROCESSED: Gotowe
     TABLE_STARTED: Rozpoczęty
     TABLE_START_AFTER: 'Zacznij po'
-    TABLE_STATUS: Status
     TABLE_TITLE: Tytuł
     TABLE_TOTAL: Razem
     TIME_LIMIT: 'Kolejka przekroczyła limit czasu i zostanie wznowiona przed kontynuowaniem'
@@ -74,7 +73,6 @@ pl:
     TABLE_NUM_PROCESSED: Gotowe
     TABLE_STARTED: Rozpoczęty
     TABLE_START_AFTER: 'Zacznij po'
-    TABLE_STATUS: Status
     TABLE_TITLE: Tytuł
     TABLE_TOTAL: Razem
   Symbiote\QueuedJobs\DataObjects\QueuedJobRule:

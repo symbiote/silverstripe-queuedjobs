@@ -24,7 +24,6 @@ hr:
     TABLE_NUM_PROCESSED: Gotovo
     TABLE_STARTED: Započeto
     TABLE_START_AFTER: 'Započni nakon'
-    TABLE_STATUS: Status
     TABLE_TITLE: Naslov
     TABLE_TOTAL: Ukupno
     TIME_LIMIT: 'Red je prešao vremenski limit i resetirat će se prije započinjanja'
@@ -58,7 +57,6 @@ hr:
     TABLE_NUM_PROCESSED: Gotovo
     TABLE_STARTED: Započeto
     TABLE_START_AFTER: 'Započni nakon'
-    TABLE_STATUS: Status
     TABLE_TITLE: Naslov
     TABLE_TOTAL: Ukupno
   Symbiote\QueuedJobs\Extensions\ScheduledExecutionExtension:

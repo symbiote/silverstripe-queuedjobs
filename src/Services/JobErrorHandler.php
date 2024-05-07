@@ -27,7 +27,7 @@ class JobErrorHandler
         if (error_reporting()) {
             // Don't throw E_DEPRECATED in PHP 5.3+
             if (defined('E_DEPRECATED')) {
-                if ($errno == E_DEPRECATED || $errno = E_USER_DEPRECATED) {
+                if ($errno == E_DEPRECATED || $errno == E_USER_DEPRECATED) {
                     return;
                 }
             }

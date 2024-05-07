@@ -21,7 +21,7 @@ de:
   QueuedJobs:
     CREATE_JOB_TYPE: 'Erstelle einen Auftrag dieses Types'
     CREATE_NEW_JOB: 'Neuen Auftrag erstellen'
-    JOB_EXCEPT: 'Auftrag hat einen ''%s'' Fehler verursacht in %s Zeile %s '
+    JOB_EXCEPT: "Auftrag hat einen '%s' Fehler verursacht in %s Zeile %s "
     JOB_PAUSED: 'Auftrag pausiert um %s'
     JOB_STALLED: 'Auftrag angehalten nach %s versuchen. Bitte überprüfen Sie den Auftrag.'
     JOB_TYPE: Auftragstyp
@@ -36,7 +36,6 @@ de:
     TABLE_NUM_PROCESSED: Fertig
     TABLE_STARTED: Gestartet
     TABLE_START_AFTER: 'Beginn nach'
-    TABLE_STATUS: Status
     TABLE_TITLE: Titel
     TABLE_TOTAL: Insgesamt
     TIME_LIMIT: 'Die Warteschlange hat das Zeitlimit überschritten und wird neu gestartet'
@@ -50,7 +49,6 @@ de:
     ExecuteEveryDay: Tag
     ExecuteEveryFortnight: 'Zwei Wochen'
     ExecuteEveryHour: Stunde
-    ExecuteEveryMinute: Minute
     ExecuteEveryMonth: Monat
     ExecuteEveryWeek: Woche
     ExecuteEveryYear: Jahr
@@ -75,7 +73,6 @@ de:
     TABLE_NUM_PROCESSED: Fertig
     TABLE_STARTED: Gestartet
     TABLE_START_AFTER: 'Beginn nach'
-    TABLE_STATUS: Status
     TABLE_TITLE: Titel
     TABLE_TOTAL: Insgesamt
   Symbiote\QueuedJobs\DataObjects\QueuedJobRule:
@@ -87,7 +84,6 @@ de:
     ExecuteEveryDay: Tag
     ExecuteEveryFortnight: 'Zwei Wochen'
     ExecuteEveryHour: Stunde
-    ExecuteEveryMinute: Minute
     ExecuteEveryMonth: Monat
     ExecuteEveryWeek: Woche
     ExecuteEveryYear: Jahr
