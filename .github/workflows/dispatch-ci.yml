@@ -1,9 +1,11 @@
 name: Dispatch CI
 
 on:
-  # At 12:30 PM UTC, only on Sunday and Monday
+  # At 12:00 PM UTC, only on Thursday and Friday
   schedule:
-    - cron: '30 12 * * 0,1'
+    - cron: '0 12 * * 4,5'
+
+permissions: {}
 
 jobs:
   dispatch-ci:
@@ -11,6 +13,9 @@ jobs:
     # Only run cron on the symbiote account
     if: (github.event_name == 'schedule' && github.repository_owner == 'symbiote') || (github.event_name != 'schedule')
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write
     steps:
       - name: Dispatch CI
         uses: silverstripe/gha-dispatch-ci@v1
