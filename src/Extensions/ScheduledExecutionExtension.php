@@ -58,7 +58,7 @@ class ScheduledExecutionExtension extends DataExtension
     /**
      * @param FieldList $fields
      */
-    public function updateCMSFields(FieldList $fields)
+    protected function updateCMSFields(FieldList $fields)
     {
         $fields->removeByName([
             'ExecuteInterval',
@@ -105,7 +105,7 @@ class ScheduledExecutionExtension extends DataExtension
         }
     }
 
-    public function onBeforeWrite()
+    protected function onBeforeWrite()
     {
         parent::onBeforeWrite();
 
