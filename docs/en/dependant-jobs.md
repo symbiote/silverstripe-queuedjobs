@@ -20,7 +20,7 @@ In this situation, it's recommended to use the _Dependant job_ approach.
 Use the `updateJobDescriptorAndJobOnCompletion` extension point in `QueuedJobService::runJob()` like this:
 
 ```php
-public function updateJobDescriptorAndJobOnCompletion(
+protected function updateJobDescriptorAndJobOnCompletion(
     QueuedJobDescriptor $descriptor, 
     QueuedJob $job
 ): void
