@@ -21,7 +21,7 @@ class MaintenanceLockExtension extends DataExtension
     /**
      * @param FieldList $fields
      */
-    public function updateCMSFields(FieldList $fields)
+    protected function updateCMSFields(FieldList $fields)
     {
         if (!QueuedJobService::config()->get('lock_file_enabled')) {
             return;

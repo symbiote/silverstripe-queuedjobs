@@ -271,7 +271,7 @@ class QueuedJobDescriptor extends DataObject
         }
     }
 
-    public function onBeforeWrite()
+    protected function onBeforeWrite()
     {
         // if a job is marked as 'waiting' for a restart, we need to reset the
         // worker it was assigned to, otherwise it'll never pick up and go again if
@@ -283,7 +283,7 @@ class QueuedJobDescriptor extends DataObject
         parent::onBeforeWrite();
     }
 
-    public function onBeforeDelete()
+    protected function onBeforeDelete()
     {
         parent::onBeforeDelete();
         $this->cleanupJob();
