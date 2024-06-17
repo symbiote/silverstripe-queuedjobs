@@ -94,7 +94,7 @@ class QueuedJobsAdmin extends ModelAdmin
     {
         $form = parent::getEditForm($id, $fields);
 
-        $filter = $this->jobQueue->getJobListFilter(null, self::config()->max_finished_jobs_age);
+        $filter = $this->jobQueue->getJobListFilter(null, static::config()->max_finished_jobs_age);
 
         $list = QueuedJobDescriptor::get()->where($filter)->sort('Created', 'DESC');
 
@@ -199,7 +199,7 @@ class QueuedJobsAdmin extends ModelAdmin
 
             // If the user has select the European date format as their setting then replace '/' with '-' in the
             // date string so PHP treats the date as this format.
-            if (Security::getCurrentUser()->DateFormat == self::$date_format_european) {
+            if (Security::getCurrentUser()->DateFormat == QueuedJobsAdmin::$date_format_european) {
                 $time = str_replace('/', '-', $time ?? '');
             }
 

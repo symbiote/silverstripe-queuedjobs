@@ -1321,7 +1321,7 @@ class QueuedJobService
      */
     public function runQueue($queue)
     {
-        if (!self::config()->get('disable_health_check')) {
+        if (!static::config()->get('disable_health_check')) {
             $this->checkJobHealth($queue);
         }
         $this->checkdefaultJobs($queue);
