@@ -519,6 +519,15 @@ class QueuedJobService
             ]
         );
 
+        // Send broken job email notification
+        $subject = _t(__CLASS__ . '.BROKEN_JOBS', 'Broken job(s)');
+        $message = _t(__CLASS__ . '.BROKEN_JOBS_MSG', 'The following job(s) appear to be broken.');
+        $email = EmailService::singleton()->createBrokenJobsReport($subject, $message, $brokenJobs);
+        if ($email) {
+            $email->send();
+        }
+
+        // Mark broken jobs as notified
         $placeholders = implode(', ', array_fill(0, count($brokenIDs ?? []), '?'));
         $query = SQLUpdate::create(
             '"QueuedJobDescriptor"',
