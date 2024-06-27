@@ -6,7 +6,7 @@ use SilverStripe\Control\Director;
 use SilverStripe\Control\Email\Email;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Injector\Injectable;
-use SilverStripe\Subsites\Model\Subsite;
+use SilverStripe\ORM\DataList;
 
 /**
  * Class EmailService
@@ -35,11 +35,6 @@ class EmailService
         );
     }
 
-    /**
-     * @param array $jobConfig
-     * @param string $title
-     * @return Email|null
-     */
     public function createMissingDefaultJobReport(array $jobConfig, string $title): ?Email
     {
         $subject = sprintf('Default Job "%s" missing', $title);
@@ -59,12 +54,6 @@ class EmailService
             ->setHTMLTemplate('QueuedJobsDefaultJob');
     }
 
-    /**
-     * @param string $subject
-     * @param string $message
-     * @param int $jobID
-     * @return Email|null
-     */
     public function createStalledJobReport(string $subject, string $message, int $jobID): ?Email
     {
         $email = $this->createReport($subject);
@@ -81,12 +70,24 @@ class EmailService
             ->setHTMLTemplate('QueuedJobsStalledJob');
     }
 
+    public function createBrokenJobsReport(string $subject, string $message, DataList $jobs): ?Email
+    {
+        $email = $this->createReport($subject);
+        if ($email === null) {
+            return null;
+        }
+        return $email
+            ->setData([
+                'Message' => $message,
+                'Jobs' => $jobs,
+                'Site' => Director::absoluteBaseURL(),
+            ])
+            ->setHTMLTemplate('QueuedJobsBrokenJobs');
+    }
+
     /**
      * Create a generic email report
      * useful for reporting queue service issues
-     *
-     * @param string $subject
-     * @return Email|null
      */
     public function createReport(string $subject): ?Email
     {
