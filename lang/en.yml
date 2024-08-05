@@ -157,6 +157,8 @@ en:
   Symbiote\QueuedJobs\Jobs\ScheduledExecutionJob:
     Title: 'Scheduled execution for {title}'
   Symbiote\QueuedJobs\Services\QueuedJobService:
+    BROKEN_JOBS: 'Broken job(s)'
+    BROKEN_JOBS_MSG: 'The following job(s) appear to be broken.'
     JOB_EXCEPT: 'Job caused exception {message} in {file} at line {line}'
     JOB_PAUSED: 'Job paused at {time}'
     JOB_STALLED: 'Job stalled after {attempts} attempts - please check'
