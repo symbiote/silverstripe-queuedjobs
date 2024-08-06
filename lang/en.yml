@@ -19,6 +19,8 @@ en:
     PLURALNAME: 'Queued Job Rules'
     SINGULARNAME: 'Queued Job Rule'
   QueuedJobs:
+    BROKEN_JOBS: 'Broken job(s)'
+    BROKEN_JOBS_MSG: 'The following job(s) appear to be broken.'
     CREATE_JOB_TYPE: 'Create job of type'
     CREATE_NEW_JOB: 'Create new job'
     JOB_EXCEPT: 'Job caused exception %s in %s at line %s'
@@ -155,6 +157,8 @@ en:
   Symbiote\QueuedJobs\Jobs\ScheduledExecutionJob:
     Title: 'Scheduled execution for {title}'
   Symbiote\QueuedJobs\Services\QueuedJobService:
+    BROKEN_JOBS: 'Broken job(s)'
+    BROKEN_JOBS_MSG: 'The following job(s) appear to be broken.'
     JOB_EXCEPT: 'Job caused exception {message} in {file} at line {line}'
     JOB_PAUSED: 'Job paused at {time}'
     JOB_STALLED: 'Job stalled after {attempts} attempts - please check'
