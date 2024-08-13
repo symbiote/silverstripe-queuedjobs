@@ -139,6 +139,7 @@ class GridFieldQueuedJobExecute extends AbstractGridFieldComponent implements
         );
 
         $humanTitle = ucfirst($this->action ?? '');
+        /** @phpstan-ignore translation.key (we need the key to be dynamic here) */
         $title = _t(__CLASS__ . '.' . $humanTitle, $humanTitle);
 
         $field
