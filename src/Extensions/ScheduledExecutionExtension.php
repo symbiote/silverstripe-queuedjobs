@@ -9,7 +9,7 @@ use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\NumericField;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\Forms\TextField;
-use SilverStripe\ORM\DataExtension;
+use SilverStripe\Core\Extension;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBDatetime;
 use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
@@ -27,9 +27,9 @@ use Symbiote\QueuedJobs\Services\QueuedJobService;
  *
  * @method QueuedJobDescriptor ScheduledJob()
  *
- * @extends DataExtension<DataObject&static>
+ * @extends Extension<DataObject&static>
  */
-class ScheduledExecutionExtension extends DataExtension
+class ScheduledExecutionExtension extends Extension
 {
     /**
      * @var array
@@ -107,8 +107,6 @@ class ScheduledExecutionExtension extends DataExtension
 
     protected function onBeforeWrite()
     {
-        parent::onBeforeWrite();
-
         if ($this->owner->FirstExecution) {
             $changed = $this->owner->getChangedFields();
             $changed = (
