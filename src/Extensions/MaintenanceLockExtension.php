@@ -4,7 +4,7 @@ namespace Symbiote\QueuedJobs\Extensions;
 
 use SilverStripe\Forms\CheckboxField;
 use SilverStripe\Forms\FieldList;
-use SilverStripe\ORM\DataExtension;
+use SilverStripe\Core\Extension;
 use SilverStripe\SiteConfig\SiteConfig;
 use Symbiote\QueuedJobs\Services\QueuedJobService;
 
@@ -14,9 +14,9 @@ use Symbiote\QueuedJobs\Services\QueuedJobService;
  *
  * @package Symbiote\QueuedJobs\Extensions
  *
- * @extends DataExtension<SiteConfig&static>
+ * @extends Extension<SiteConfig&static>
  */
-class MaintenanceLockExtension extends DataExtension
+class MaintenanceLockExtension extends Extension
 {
     /**
      * @param FieldList $fields
