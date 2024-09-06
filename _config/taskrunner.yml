@@ -4,8 +4,7 @@ After:
   - DevelopmentAdmin
 ---
 SilverStripe\Dev\DevelopmentAdmin:
-  registered_controllers:
+  controllers:
     tasks:
-      controller: Symbiote\QueuedJobs\Controllers\QueuedTaskRunner
-      links:
-        tasks: 'See a list of build tasks to run (QueuedJobs version)'
+      class: Symbiote\QueuedJobs\Controllers\QueuedTaskRunner
+      description: 'See a list of build tasks to run (QueuedJobs version)'

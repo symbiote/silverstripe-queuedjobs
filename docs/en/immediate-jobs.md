@@ -31,12 +31,12 @@ inotifywait and then call the task when a new job is ready to run.
 SILVERSTRIPE_ROOT=/path/to/silverstripe
 SILVERSTRIPE_CACHE=/path/to/silverstripe-cache
 
-inotifywait --monitor --event attrib --format "php $SILVERSTRIPE_ROOT/vendor/bin/sake dev/tasks/ProcessJobQueueTask job=%f" $SILVERSTRIPE_CACHE/queuedjobs | sh
+inotifywait --monitor --event attrib --format "php $SILVERSTRIPE_ROOT/vendor/bin/sake tasks:ProcessJobQueueTask --job=%f" $SILVERSTRIPE_CACHE/queuedjobs | sh
 ```
 
 You can also turn this into an `init.d` service:
 
-```
+```sh
 #!/bin/bash
 #
 #	/etc/init.d/queue_processor
@@ -73,7 +73,7 @@ start() {
 	for PATH in ${SILVERSTRIPE_ROOT[@]};
 	do
 	INOTIFY_OPTS="--monitor --event attrib -q"
-	INOTIFY_ARGS="--format 'php ${PATH}/vendor/bin/sake dev/tasks/ProcessJobQueueTask job=%f' ${PATH}/silverstripe-cache/queuedjobs | /bin/sh"
+	INOTIFY_ARGS="--format 'php ${PATH}/vendor/bin/sake tasks:ProcessJobQueueTask job=%f' ${PATH}/silverstripe-cache/queuedjobs | /bin/sh"
 			daemon --user apache /usr/bin/inotifywait ${INOTIFY_OPTS} ${INOTIFY_ARGS} &
 			/bin/touch /var/lock/subsys/queue_processor
 		done
@@ -113,7 +113,7 @@ Similar concept to `inotifywait`, but with the `lsyncd` system utility.
 
 The following is an example config `/etc/lsyncd.conf` 
 
-```
+```sh
 -- Queue Processor configuration, typically placed in /etc/lsyncd.conf 
 
 settings = {
@@ -124,7 +124,7 @@ settings = {
 
 -- Define the command and path for the each system being monitored here, where webuser is the user your webserver
 -- runs as
-runcmd = "/sbin/runuser webuser -c \"/usr/bin/php /var/www/sitepath/framework/cli-script.php dev/tasks/ProcessJobQueueTask job=\"$1\" /var/www/sitepath/framework/silverstripe-cache/queuedjobs\""
+runcmd = "/sbin/runuser webuser -c \"/usr/bin/php /var/www/sitepath/vendor/bin/sake tasks:ProcessJobQueueTask job=\"$1\" /var/www/sitepath/framework/silverstripe-cache/queuedjobs\""
 
 site_processor = {
     onCreate = function(event)

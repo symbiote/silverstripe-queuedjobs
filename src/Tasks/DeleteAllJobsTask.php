@@ -2,10 +2,14 @@
 
 namespace Symbiote\QueuedJobs\Tasks;
 
-use SilverStripe\Control\HTTPRequest;
+use SilverStripe\Control\Director;
 use SilverStripe\Dev\BuildTask;
+use SilverStripe\PolyExecution\PolyOutput;
 use SilverStripe\ORM\DataObject;
 use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 
 /**
  * An administrative task to delete all queued jobs records from the database.
@@ -13,41 +17,41 @@ use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
  */
 class DeleteAllJobsTask extends BuildTask
 {
-    /**
-     * @inheritdoc
-     * @return string
-     */
-    public function getTitle()
+    protected static string $commandName = 'delete-queued-jobs';
+
+    public function getTitle(): string
     {
         return "Delete all queued jobs.";
     }
 
-    /**
-     * @inheritdoc
-     * @return string
-     */
-    public function getDescription()
+    public static function getDescription(): string
     {
         return "Remove all queued jobs from the database. Use with caution!";
     }
 
-    /**
-     * Run the task
-     * @param HTTPRequest $request
-     */
-    public function run($request)
+    protected function execute(InputInterface $input, PolyOutput $output): int
     {
-        $confirm = $request->getVar('confirm');
-
         $jobs = DataObject::get(QueuedJobDescriptor::class);
 
-        if (!$confirm) {
-            echo "Really delete " . $jobs->count() . " jobs? Please add ?confirm=1 to the URL to confirm.";
-            return;
+        if (!$input->getOption('confirm')) {
+            if (!Director::is_cli()) {
+                $confirmText = '?confirm=1 to the URL';
+            } else {
+                $confirmText = '--confirm';
+            }
+            $output->writeln('Really delete ' . $jobs->count() . " jobs? Please add $confirmText to confirm.");
+            return Command::INVALID;
         }
 
-        echo "Deleting " . $jobs->count() . " jobs...<br>\n";
+        $output->writeln('Deleting ' . $jobs->count() . ' jobs...');
         $jobs->removeAll();
-        echo "Done.";
+        return Command::SUCCESS;
+    }
+
+    public function getOptions(): array
+    {
+        return [
+            new InputOption('confirm', null, InputOption::VALUE_NONE, 'Confirm you want to delete the jobs'),
+        ];
     }
 }
