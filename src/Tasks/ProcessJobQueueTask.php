@@ -8,6 +8,8 @@ use Monolog\Logger;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Core\Environment;
 use SilverStripe\Dev\BuildTask;
+use SilverStripe\Dev\Deprecation;
+use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
 use Symbiote\QueuedJobs\Services\QueuedJob;
 use Symbiote\QueuedJobs\Services\QueuedJobService;
 
@@ -83,7 +85,7 @@ class ProcessJobQueueTask extends BuildTask
         }
 
         // Run the queue
-        $queue = $this->getQueue($request);
+        $queue = AbstractQueuedJob::getQueue($request->getVar('queue') ?? 'Queued');
         $service->runQueue($queue);
     }
 
@@ -94,9 +96,12 @@ class ProcessJobQueueTask extends BuildTask
      *
      * @param HTTPRequest $request
      * @return string
+     * @deprecated 5.3.0 Use Symbiote\QueuedJobs\Services\AbstractQueuedJob::getQueue() instead
      */
     protected function getQueue($request)
     {
+        Deprecation::notice('5.3.0', 'Use ' . AbstractQueuedJob::class . '::getQueue() instead');
+
         $queue = $request->getVar('queue');
 
         if (!$queue) {

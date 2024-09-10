@@ -13,6 +13,7 @@ use SilverStripe\ORM\FieldType\DBDatetime;
 use SilverStripe\ORM\ValidationException;
 use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
 use Symbiote\QueuedJobs\Jobs\RunBuildTaskJob;
+use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
 use Symbiote\QueuedJobs\Services\QueuedJob;
 use Symbiote\QueuedJobs\Services\QueuedJobService;
 use Symbiote\QueuedJobs\Tests\QueuedJobsTest\TestExceptingJob;
@@ -829,5 +830,59 @@ class QueuedJobsTest extends AbstractTest
             [TestExceptingJob::class, 1],
             [RunBuildTaskJob::class, 0],
         ];
+    }
+
+    public function provideGetQueue(): array
+    {
+        return [
+            'immediate const' => [
+                'queue' => QueuedJob::IMMEDIATE,
+                'expected' => QueuedJob::IMMEDIATE,
+            ],
+            'queued const' => [
+                'queue' => QueuedJob::QUEUED,
+                'expected' => QueuedJob::QUEUED,
+            ],
+            'large const' => [
+                'queue' => QueuedJob::LARGE,
+                'expected' => QueuedJob::LARGE,
+            ],
+            'immediate string' => [
+                'queue' => 'iMmEdiAte',
+                'expected' => QueuedJob::IMMEDIATE,
+            ],
+            'immediate as int' => [
+                'queue' => 1,
+                'expected' => QueuedJob::IMMEDIATE,
+            ],
+            'queued string' => [
+                'queue' => 'queued',
+                'expected' => QueuedJob::QUEUED,
+            ],
+            'large string' => [
+                'queue' => 'large',
+                'expected' => QueuedJob::LARGE,
+            ],
+            'random string' => [
+                'queue' => 'bongos',
+                'expected' => null,
+            ],
+            'negative int' => [
+                'queue' => -1,
+                'expected' => null,
+            ],
+            'random int' => [
+                'queue' => 5,
+                'expected' => null,
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider provideGetQueue
+     */
+    public function testGetQueue(int|string $queue, ?string $expected): void
+    {
+        $this->assertSame($expected, AbstractQueuedJob::getQueue($queue));
     }
 }
