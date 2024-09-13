@@ -271,4 +271,31 @@ abstract class AbstractQueuedJob implements QueuedJob, UserContextInterface
     {
         return isset($this->jobData->$name) ? $this->jobData->$name : null;
     }
+
+    /**
+     * Resolves a queue name to one of the queue constants.
+     * If $queue is already the value of one of the constants, it will be returned.
+     * If the queue is unknown, `null` will be returned.
+     */
+    public static function getQueue(string|int $queue): ?string
+    {
+        switch (strtolower($queue)) {
+            case 'immediate':
+                $queue = QueuedJob::IMMEDIATE;
+                break;
+            case 'queued':
+                $queue = QueuedJob::QUEUED;
+                break;
+            case 'large':
+                $queue = QueuedJob::LARGE;
+                break;
+            default:
+                $queue = (string) $queue;
+                $queues = [QueuedJob::IMMEDIATE, QueuedJob::QUEUED, QueuedJob::LARGE];
+                if (!ctype_digit($queue) || !in_array($queue, $queues)) {
+                    return null;
+                }
+        }
+        return $queue;
+    }
 }
