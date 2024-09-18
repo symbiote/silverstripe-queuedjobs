@@ -7,12 +7,13 @@ use SilverStripe\Dev\SapphireTest;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBDatetime;
 use Symbiote\QueuedJobs\Tests\ScheduledExecutionTest\TestScheduledDataObject;
+use Symbiote\QueuedJobs\Services\QueuedJobService;
 
 /**
  * @author marcus@symbiote.com.au
  * @license BSD License http://silverstripe.org/bsd-license/
  */
-class ScheduledExecutionTest extends AbstractTest
+class ScheduledExecutionTest extends SapphireTest
 {
     /**
      * We need the DB for this test
@@ -34,6 +35,8 @@ class ScheduledExecutionTest extends AbstractTest
         parent::setUp();
 
         DBDatetime::set_mock_now('2018-05-28 13:15:00');
+        // The shutdown handler doesn't play nicely with SapphireTest's database handling
+        QueuedJobService::config()->set('use_shutdown_function', false);
     }
 
     public function testScheduledExecutionTimes()

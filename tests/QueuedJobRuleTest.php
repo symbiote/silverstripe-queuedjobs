@@ -4,6 +4,7 @@ namespace Symbiote\QueuedJobs\Tests;
 
 use SilverStripe\Dev\SapphireTest;
 use Symbiote\QueuedJobs\DataObjects\QueuedJobRule;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class QueuedJobRuleTest extends SapphireTest
 {
@@ -11,8 +12,8 @@ class QueuedJobRuleTest extends SapphireTest
      * @param string $property
      * @param mixed $value
      * @param mixed $expected
-     * @dataProvider ruleGetterProvider
      */
+    #[DataProvider('ruleGetterProvider')]
     public function testQueueRuleGetters($property, $value, $expected)
     {
         $rule = QueuedJobRule::create();
@@ -21,7 +22,7 @@ class QueuedJobRuleTest extends SapphireTest
         $this->assertSame($expected, $rule->{$property});
     }
 
-    public function ruleGetterProvider(): array
+    public static function ruleGetterProvider(): array
     {
         return [
             ['Processes', null, 1],

@@ -6,16 +6,17 @@ use SilverStripe\Dev\SapphireTest;
 use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
 use Symbiote\QueuedJobs\Jobs\DoormanQueuedJobTask;
 use Symbiote\QueuedJobs\Services\QueuedJob;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class DoormanQueuedJobTaskTest extends SapphireTest
 {
     protected static $fixture_file = 'DoormanQueuedJobTaskTest.yml';
 
     /**
-     * @dataProvider canRunTaskProvider
      * @param string $status
      * @param bool $expected
      */
+    #[DataProvider('canRunTaskProvider')]
     public function testCanRunTask($status, $expected)
     {
         /** @var QueuedJobDescriptor $descriptor */
@@ -30,7 +31,7 @@ class DoormanQueuedJobTaskTest extends SapphireTest
     /**
      * @return array[]
      */
-    public function canRunTaskProvider()
+    public static function canRunTaskProvider()
     {
         return [
             [QueuedJob::STATUS_NEW, true],
@@ -41,10 +42,10 @@ class DoormanQueuedJobTaskTest extends SapphireTest
     }
 
     /**
-     * @dataProvider isCancelledProvider
      * @param string $status
      * @param bool $expected
      */
+    #[DataProvider('isCancelledProvider')]
     public function testIsCancelled($status, $expected)
     {
         /** @var QueuedJobDescriptor $descriptor */
@@ -59,7 +60,7 @@ class DoormanQueuedJobTaskTest extends SapphireTest
     /**
      * @return array[]
      */
-    public function isCancelledProvider()
+    public static function isCancelledProvider()
     {
         return [
             [QueuedJob::STATUS_CANCELLED, true],
