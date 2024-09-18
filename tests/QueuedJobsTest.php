@@ -19,11 +19,13 @@ use Symbiote\QueuedJobs\Services\QueuedJobService;
 use Symbiote\QueuedJobs\Tests\QueuedJobsTest\TestExceptingJob;
 use Symbiote\QueuedJobs\Tests\QueuedJobsTest\TestQJService;
 use Symbiote\QueuedJobs\Tests\QueuedJobsTest\TestQueuedJob;
+use PHPUnit\Framework\Attributes\DataProvider;
+use SilverStripe\Dev\SapphireTest;
 
 /**
  * @author Marcus Nyeholt <marcus@symbiote.com.au>
  */
-class QueuedJobsTest extends AbstractTest
+class QueuedJobsTest extends SapphireTest
 {
     /**
      * We need the DB for this test
@@ -746,8 +748,8 @@ class QueuedJobsTest extends AbstractTest
      * @param array $jobs
      * @param int $expected
      * @throws ValidationException
-     * @dataProvider jobsProvider
      */
+    #[DataProvider('jobsProvider')]
     public function testBrokenJobNotification(array $jobs, int $expected): void
     {
         /** @var QueuedJobDescriptor $descriptor */
@@ -776,8 +778,8 @@ class QueuedJobsTest extends AbstractTest
      * @param int $expected
      * @throws ValidationException
      * @throws Exception
-     * @dataProvider healthCheckProvider
      */
+    #[DataProvider('healthCheckProvider')]
     public function testExcludeTasksFromHealthCheck(string $jobClass, int $expected): void
     {
         $service = $this->getService();
@@ -802,7 +804,7 @@ class QueuedJobsTest extends AbstractTest
         );
     }
 
-    public function jobsProvider(): array
+    public static function jobsProvider(): array
     {
         return [
             [
@@ -824,7 +826,7 @@ class QueuedJobsTest extends AbstractTest
         ];
     }
 
-    public function healthCheckProvider(): array
+    public static function healthCheckProvider(): array
     {
         return [
             [TestExceptingJob::class, 1],
@@ -832,7 +834,7 @@ class QueuedJobsTest extends AbstractTest
         ];
     }
 
-    public function provideGetQueue(): array
+    public static function provideGetQueue(): array
     {
         return [
             'immediate const' => [
@@ -878,9 +880,7 @@ class QueuedJobsTest extends AbstractTest
         ];
     }
 
-    /**
-     * @dataProvider provideGetQueue
-     */
+    #[DataProvider('provideGetQueue')]
     public function testGetQueue(int|string $queue, ?string $expected): void
     {
         $this->assertSame($expected, AbstractQueuedJob::getQueue($queue));

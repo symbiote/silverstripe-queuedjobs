@@ -17,7 +17,6 @@ use Symbiote\QueuedJobs\Tests\Jobs\TestDummyJob;
 /**
  * Tests for the QueuedJobsAdmin ModelAdmin clas
  *
- * @coversDefaultClass \Symbiote\QueuedJobs\Controllers\QueuedJobsAdmin
  * @package queuedjobs
  * @author  Robbie Averill <robbie@silverstripe.com>
  */
@@ -73,8 +72,6 @@ class QueuedJobsAdminTest extends FunctionalTest
     /**
      * Ensure that when a multi-line value is entered for JobParams, it is split by new line and each value
      * passed to the constructor of the JobType that is created by the reflection in createjob()
-     *
-     * @covers ::createjob
      */
     public function testCreateJobWithConstructorParams()
     {
@@ -95,9 +92,6 @@ class QueuedJobsAdminTest extends FunctionalTest
         $this->admin->createjob($form->getData(), $form);
     }
 
-    /**
-     * @covers ::createjob
-     */
     public function testCreateJobWithStartAfterOption()
     {
         $startTimeAfter = DBDatetime::now();

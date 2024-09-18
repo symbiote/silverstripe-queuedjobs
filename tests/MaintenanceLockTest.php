@@ -5,20 +5,28 @@ namespace Symbiote\QueuedJobs\Tests;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Config\Config;
 use Symbiote\QueuedJobs\Services\QueuedJobService;
+use PHPUnit\Framework\Attributes\DataProvider;
+use SilverStripe\Dev\SapphireTest;
 
 /**
- * Class MaintenanceLockTest
- *
  * @package Symbiote\QueuedJobs\Tests
  */
-class MaintenanceLockTest extends AbstractTest
+class MaintenanceLockTest extends SapphireTest
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // The shutdown handler doesn't play nicely with SapphireTest's database handling
+        QueuedJobService::config()->set('use_shutdown_function', false);
+    }
+
     /**
      * @param $lockFileEnabled
      * @param $fileExists
      * @param $lockActive
-     * @dataProvider maintenanceCaseProvider
      */
+    #[DataProvider('maintenanceCaseProvider')]
     public function testEnableMaintenanceIfActive($lockFileEnabled, $fileExists, $lockActive)
     {
         $fileName = 'test-lock.txt';
@@ -41,7 +49,7 @@ class MaintenanceLockTest extends AbstractTest
     /**
      * @return array
      */
-    public function maintenanceCaseProvider()
+    public static function maintenanceCaseProvider()
     {
         return [
             [

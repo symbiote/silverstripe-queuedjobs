@@ -10,7 +10,7 @@ use Symbiote\QueuedJobs\Jobs\CleanupJob;
 /**
  * @author Andrew Aitken-Fincham <andrew@silverstripe.com>
  */
-class CleanupJobTest extends AbstractTest
+class CleanupJobTest extends SapphireTest
 {
     /**
      * {@inheritDoc}
