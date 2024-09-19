@@ -21,7 +21,7 @@ class ProcessJobQueueChildTask extends BuildTask
     public function __construct()
     {
         parent::__construct();
-        Deprecation::withNoReplacement(function () {
+        Deprecation::withSuppressedNotice(function () {
             Deprecation::notice(
                 '5.3.0',
                 'Will be replaced with Symbiote\QueuedJobs\Cli\ProcessJobQueueChildCommand',
