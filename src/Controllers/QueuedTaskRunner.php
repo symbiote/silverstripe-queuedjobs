@@ -11,9 +11,9 @@ use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\BuildTask;
 use SilverStripe\Dev\DebugView;
 use SilverStripe\Dev\TaskRunner;
-use SilverStripe\ORM\ArrayList;
-use SilverStripe\View\ArrayData;
-use SilverStripe\View\ViewableData;
+use SilverStripe\Model\List\ArrayList;
+use SilverStripe\Model\ArrayData;
+use SilverStripe\Model\ModelData;
 use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
 use Symbiote\QueuedJobs\Jobs\RunBuildTaskJob;
 use Symbiote\QueuedJobs\Services\QueuedJobService;
@@ -144,7 +144,7 @@ class QueuedTaskRunner extends TaskRunner
             'Info' => $renderer->renderInfo('SilverStripe Development Tools: Tasks (QueuedJobs version)', $baseUrl),
         ];
 
-        return ViewableData::create()->renderWith(static::class, $data);
+        return ModelData::create()->renderWith(static::class, $data);
     }
 
 
