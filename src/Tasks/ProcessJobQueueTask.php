@@ -2,16 +2,17 @@
 
 namespace Symbiote\QueuedJobs\Tasks;
 
-use Monolog\Handler\FilterHandler;
-use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
-use SilverStripe\Control\HTTPRequest;
-use SilverStripe\Core\Environment;
+use SilverStripe\Control\Director;
 use SilverStripe\Dev\BuildTask;
-use SilverStripe\Dev\Deprecation;
+use SilverStripe\PolyExecution\PolyOutput;
+use SilverStripe\PolyExecution\PolyOutputLogHandler;
 use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
 use Symbiote\QueuedJobs\Services\QueuedJob;
 use Symbiote\QueuedJobs\Services\QueuedJobService;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 
 /**
  * Task used to process the job queue
@@ -21,16 +22,9 @@ use Symbiote\QueuedJobs\Services\QueuedJobService;
  */
 class ProcessJobQueueTask extends BuildTask
 {
-    /**
-     * {@inheritDoc}
-     * @var string
-     */
-    private static $segment = 'ProcessJobQueueTask';
+    protected static string $commandName = 'ProcessJobQueueTask';
 
-    /**
-     * @return string
-     */
-    public function getDescription()
+    public static function getDescription(): string
     {
         return _t(
             __CLASS__ . '.Description',
@@ -38,91 +32,49 @@ class ProcessJobQueueTask extends BuildTask
         );
     }
 
-    /**
-     * @param HTTPRequest $request
-     */
-    public function run($request)
+    protected function execute(InputInterface $input, PolyOutput $output): int
     {
         if (QueuedJobService::singleton()->isMaintenanceLockActive()) {
-            return;
+            return Command::FAILURE;
+        }
+        $queue = AbstractQueuedJob::getQueue($input->getOption('queue'));
+        if ($queue === null) {
+            $output->writeln('<error>queue must be one of "immediate", "queued", or "large"</>');
+            return Command::INVALID;
         }
 
         $service = $this->getService();
 
-        // Ensure that log messages are visible when executing this task on CLI.
-        // Could be replaced with BuildTask logger: https://github.com/silverstripe/silverstripe-framework/issues/9183
-        if (Environment::isCli()) {
+        // Ensure that log messages are visible when executing this task in CLI.
+        // Running the task via browser doesn't need this output because you can check the job in the CMS.
+        // Note that if we want to output this to the browser in the future, simply removing this condition
+        // isn't enough, because it'll end up double-logging in the job messages tab.
+        if (Director::is_cli()) {
             $logger = $service->getLogger();
-
-            // Assumes that general purpose logger usually doesn't already contain a stream handler.
-            $errorHandler = new StreamHandler('php://stderr', Logger::ERROR);
-            $standardHandler = new StreamHandler('php://stdout');
-
-            // Avoid double logging of errors
-            $standardFilterHandler = new FilterHandler(
-                $standardHandler,
-                Logger::DEBUG,
-                Logger::WARNING
-            );
-
-            $logger->pushHandler($standardFilterHandler);
-            $logger->pushHandler($errorHandler);
+            if ($logger instanceof Logger) {
+                $logger->pushHandler(PolyOutputLogHandler::create($output));
+            }
         }
 
-        if ($request->getVar('list')) {
+        if ($input->getOption('list')) {
             // List helper
             $service->queueRunner->listJobs();
-            return;
+            return Command::SUCCESS;
         }
 
         // Check if there is a job to run
-        if (($job = $request->getVar('job')) && strpos($job ?? '', '-')) {
-            // Run from a isngle job
+        $job = $input->getOption('job');
+        if ($job && strpos($job, '-')) {
+            // Run from a single job
             $parts = explode('-', $job ?? '');
             $id = $parts[1];
             $service->runJob($id);
-            return;
+            return Command::SUCCESS;
         }
 
         // Run the queue
-        $queue = AbstractQueuedJob::getQueue($request->getVar('queue') ?? 'Queued');
         $service->runQueue($queue);
-    }
-
-    /**
-     * Resolves the queue name to one of a few aliases.
-     *
-     * @todo Solve the "Queued"/"queued" mystery!
-     *
-     * @param HTTPRequest $request
-     * @return string
-     * @deprecated 5.3.0 Use Symbiote\QueuedJobs\Services\AbstractQueuedJob::getQueue() instead
-     */
-    protected function getQueue($request)
-    {
-        Deprecation::notice('5.3.0', 'Use ' . AbstractQueuedJob::class . '::getQueue() instead');
-
-        $queue = $request->getVar('queue');
-
-        if (!$queue) {
-            $queue = 'Queued';
-        }
-
-        switch (strtolower($queue ?? '')) {
-            case 'immediate':
-                $queue = QueuedJob::IMMEDIATE;
-                break;
-            case 'queued':
-                $queue = QueuedJob::QUEUED;
-                break;
-            case 'large':
-                $queue = QueuedJob::LARGE;
-                break;
-            default:
-                break;
-        }
-
-        return $queue;
+        return Command::SUCCESS;
     }
 
     /**
@@ -133,5 +85,21 @@ class ProcessJobQueueTask extends BuildTask
     public function getService()
     {
         return QueuedJobService::singleton();
+    }
+
+    public function getOptions(): array
+    {
+        return [
+            new InputOption('list', null, InputOption::VALUE_NONE, 'List jobs instead of processing a queue'),
+            new InputOption('job', null, InputOption::VALUE_REQUIRED, 'A specific job to run'),
+            new InputOption(
+                'queue',
+                null,
+                InputOption::VALUE_REQUIRED,
+                'The queue to process',
+                'queued',
+                ['immediate', 'queued', 'large']
+            ),
+        ];
     }
 }

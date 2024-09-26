@@ -5,14 +5,16 @@ namespace Symbiote\QueuedJobs\Jobs;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\BuildTask;
+use SilverStripe\PolyExecution\PolyOutput;
 use SilverStripe\ORM\DataObject;
 use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
 use Symbiote\QueuedJobs\Services\QueuedJob;
+use Symfony\Component\Console\Input\ArrayInput;
 
 /**
  * A convenience wrapper for running BuildTask implementations.
  * These are usually executed via synchronous web request
- * or synchronous CLI execution (under dev/tasks/*).
+ * or synchronous CLI execution.
  *
  * Caution: This job can't increment steps. This is a signal
  * for job health checks that a job should be considered stale
@@ -83,8 +85,10 @@ class RunBuildTaskJob extends AbstractQueuedJob
 
         $getVars = [];
         parse_str($this->QueryString ?? '', $getVars);
-        $request = new HTTPRequest('GET', '/', $getVars);
-        $task->run($request);
+        $output = PolyOutput::create(PolyOutput::FORMAT_ANSI);
+        $input = new ArrayInput($getVars);
+        $input->setInteractive(false);
+        $task->run($input, $output);
 
         $this->currentStep = 1;
         $this->isComplete = true;

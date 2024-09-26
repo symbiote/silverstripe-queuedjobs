@@ -1,0 +1,6 @@
+---
+Name: queuedjobs-cli
+---
+SilverStripe\Cli\Sake:
+  commands:
+    - 'Symbiote\QueuedJobs\Cli\ProcessJobQueueChildCommand'

@@ -29,7 +29,19 @@ $Info.RAW
                     <div class="task__item task__item--{$Type}">
                         <div>
                             <h3 class="task__title">$Title</h3>
-                            <div class="task__description">$Description</div>
+                            <div class="task__description">
+                                $Description
+                                <% if $Help %>
+                                    <details class="task__help">
+                                        <summary>Display additional information</summary>
+                                        $Help
+                                    </details>
+                                <% end_if %>
+                            </div>
+                            <% if $Parameters %>
+                                Parameters:
+                                <% include SilverStripe/Dev/Parameters %>
+                            <% end_if %>
                         </div>
                         <div>
                             <% if $TaskLink %>

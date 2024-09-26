@@ -2,11 +2,17 @@
 
 namespace Symbiote\QueuedJobs\Tasks;
 
-use SilverStripe\Control\HTTPRequest;
+use Closure;
+use ReflectionClass;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Dev\BuildTask;
+use SilverStripe\PolyExecution\PolyOutput;
 use SilverStripe\ORM\FieldType\DBDatetime;
+use Symbiote\QueuedJobs\Services\QueuedJob;
 use Symbiote\QueuedJobs\Services\QueuedJobService;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 
 /**
  * A task that can be used to create a queued job.
@@ -21,16 +27,9 @@ use Symbiote\QueuedJobs\Services\QueuedJobService;
  */
 class CreateQueuedJobTask extends BuildTask
 {
-    /**
-     * {@inheritDoc}
-     * @var string
-     */
-    private static $segment = 'CreateQueuedJobTask';
+    protected static string $commandName = 'CreateQueuedJobTask';
 
-    /**
-     * @return string
-     */
-    public function getDescription()
+    public static function getDescription(): string
     {
         return _t(
             __CLASS__ . '.Description',
@@ -39,31 +38,68 @@ class CreateQueuedJobTask extends BuildTask
         );
     }
 
-    /**
-     * @param HTTPRequest $request
-     */
-    public function run($request)
+    protected function execute(InputInterface $input, PolyOutput $output): int
     {
-        if (isset($request['name']) && ClassInfo::exists($request['name'])) {
-            $clz = $request['name'];
+        $name = $input->getOption('name');
+        if ($name && ClassInfo::exists($name)) {
+            $clz = $name;
             $job = new $clz();
         } else {
             $job = new DummyQueuedJob(mt_rand(10, 100));
         }
 
-        if (isset($request['start'])) {
-            $start = strtotime($request['start'] ?? '');
+        $start = $input->getOption('start');
+        if ($start) {
+            $start = strtotime($start);
             $now = DBDatetime::now()->getTimestamp();
             if ($start >= $now) {
                 $friendlyStart = DBDatetime::create()->setValue($start)->Rfc2822();
-                echo 'Job queued to start at: <b>' . $friendlyStart . '</b>';
+                $output->writeln('Job queued to start at: <options=bold>' . $friendlyStart . '</>');
                 QueuedJobService::singleton()->queueJob($job, $start);
             } else {
-                echo "'start' parameter must be a date/time in the future, parseable with strtotime";
+                $output->writeln("'start' parameter must be a date/time in the future, parseable with strtotime");
             }
         } else {
-            echo "Job Queued";
+            $output->writeln('Job Queued');
             QueuedJobService::singleton()->queueJob($job);
         }
+        return Command::SUCCESS;
+    }
+
+    public function getOptions(): array
+    {
+        return [
+            new InputOption(
+                'name',
+                null,
+                InputOption::VALUE_REQUIRED,
+                'Fully qualified classname for the job to queue',
+                suggestedValues: Closure::fromCallable([static::class, 'getAllQueuedJobClasses'])
+            ),
+            new InputOption(
+                'start',
+                null,
+                InputOption::VALUE_REQUIRED,
+                'When to start the job. Must be parsable by '
+                . '<href=https://www.php.net/manual/en/function.strtotime.php>strtotime</>'
+            ),
+        ];
+    }
+
+    public static function getAllQueuedJobClasses(): array
+    {
+        $implementors = ClassInfo::implementorsOf(QueuedJob::class);
+        $classes = [];
+        foreach ($implementors as $class) {
+            $subclasses = ClassInfo::subclassesFor($class);
+            foreach ($subclasses as $subclass) {
+                $reflectionClass = new ReflectionClass($subclass);
+                if ($reflectionClass->isAbstract()) {
+                    continue;
+                }
+                $classes[] = $subclass;
+            }
+        }
+        return $classes;
     }
 }

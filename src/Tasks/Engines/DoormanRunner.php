@@ -2,7 +2,6 @@
 
 namespace Symbiote\QueuedJobs\Tasks\Engines;
 
-use SilverStripe\Dev\Deprecation;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Environment;
@@ -11,7 +10,6 @@ use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
 use Symbiote\QueuedJobs\Jobs\DoormanQueuedJobTask;
 use Symbiote\QueuedJobs\Services\ProcessManager;
 use Symbiote\QueuedJobs\Services\QueuedJob;
-use Symbiote\QueuedJobs\Services\QueuedJobService;
 
 /**
  * Runs all jobs through the doorman engine
@@ -38,12 +36,12 @@ class DoormanRunner extends BaseRunner implements TaskRunnerEngine
     private static $tick_interval = 1;
 
     /**
-     * Name of the dev task used to run the child process
+     * Name of the command used to run the child process
      *
      * @config
      * @var string
      */
-    private static $child_runner = 'ProcessJobQueueChildTask';
+    private static $child_runner = 'queuedjobs:process-queue-child';
 
     /**
      * @var string[]
@@ -92,7 +90,7 @@ class DoormanRunner extends BaseRunner implements TaskRunnerEngine
         $manager = Injector::inst()->create(ProcessManager::class);
         $manager->setWorker(
             sprintf(
-                '%s/vendor/silverstripe/framework/cli-script.php dev/tasks/%s',
+                '%s/vendor/bin/sake %s',
                 BASE_PATH,
                 $this->getChildRunner()
             )

@@ -3,7 +3,7 @@
 The best way to learn about defining your own jobs is by checking the examples
 
 * `PublishItemsJob` - A job used to publish all the children of a particular node. To create this job, run the PublishItemsTask passing in the parent as a request var (eg ?parent=1)
-* `GenerateGoogleSitemapJob` - A job used to create a google sitemap. If the googlesitemaps module is installed it will include priority settings as defined there, otherwise just produces a generic structure. To create an initial instance of this job, call dev/tasks/CreateDummyJob?name=GenerateGoogleSitemapJob. This will create the initial job and queue it; once the job has been run once, it will automatically schedule itself to be run again 24 hours later. 
+* `GenerateGoogleSitemapJob` - A job used to create a google sitemap. If the googlesitemaps module is installed it will include priority settings as defined there, otherwise just produces a generic structure. To create an initial instance of this job, run `sake tasks:CreateDummyJob --name=Symbiote\QueuedJobs\Jobs\GenerateGoogleSitemapJob`. This will create the initial job and queue it; once the job has been run once, it will automatically schedule itself to be run again 24 hours later. 
 * `CreateDummyJob` - A very simple skeleton job. 
 
 ## API Overview

@@ -15,14 +15,14 @@
 Install the cronjob needed to manage all the jobs within the system. It is best to have this execute as the
 same user as your webserver - this prevents any problems with file permissions.
 
-```
-*/1 * * * * /path/to/silverstripe/vendor/bin/sake dev/tasks/ProcessJobQueueTask
+```sh
+*/1 * * * * /path/to/silverstripe/vendor/bin/sake tasks:ProcessJobQueueTask
 ```
 
 To test things are working, run the following command to create a dummy task
 
-```
-vendor/bin/sake dev/tasks/CreateQueuedJobTask 
+```sh
+vendor/bin/sake tasks:CreateQueuedJobTask 
 ```
 
 Every job is tracked as a database record, through `QueuedJobDescriptor` objects.
@@ -31,8 +31,8 @@ Open up `/admin/queuedjobs` in a browser.
 You should see the new job with `Status=New`.
 Now either wait for your cron to execute, or trigger execution manually.
 
-```
-vendor/bin/sake dev/tasks/ProcessJobQueueTask 
+```sh
+vendor/bin/sake tasks:ProcessJobQueueTask 
 ```
 
 The job should now be marked with `Status=Completed`.
@@ -116,8 +116,8 @@ Symbiote\QueuedJobs\Jobs\CleanupJob:
 If your code is to make use of the 'long' jobs, ie that could take days to process, also install another task
 that processes this queue. Its time of execution can be left a little longer.
 
-```
-*/15 * * * * /path/to/silverstripe/vendor/bin/sake dev/tasks/ProcessJobQueueTask queue=large
+```sh
+*/15 * * * * /path/to/silverstripe/vendor/bin/sake tasks:ProcessJobQueueTask queue=large
 ```
 
 From your code, add a new job for execution.

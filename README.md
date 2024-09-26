@@ -29,7 +29,7 @@ composer require symbiote/silverstripe-queuedjobs
 Setup a cron job:
 
 ```sh
-*/1 * * * * /path/to/silverstripe/vendor/bin/sake dev/tasks/ProcessJobQueueTask
+*/1 * * * * /path/to/silverstripe/vendor/bin/sake tasks:ProcessJobQueueTask
 ```
 
 * To schedule a job to be executed at some point in the future, pass a date through with the call to queueJob
@@ -252,7 +252,7 @@ In addition to the config setting there is a task that can be used with a cron t
 detected:
 
 ```
-*/5 * * * * /path/to/silverstripe/vendor/bin/sake dev/tasks/CheckJobHealthTask
+*/5 * * * * /path/to/silverstripe/vendor/bin/sake tasks:CheckJobHealthTask
 ```
 ## Special job variables
 

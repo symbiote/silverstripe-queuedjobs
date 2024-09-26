@@ -19,7 +19,6 @@ use Symbiote\QueuedJobs\Jobs\RunBuildTaskJob;
 use Symbiote\QueuedJobs\Services\QueuedJobService;
 use Symbiote\QueuedJobs\Tasks\CreateQueuedJobTask;
 use Symbiote\QueuedJobs\Tasks\DeleteAllJobsTask;
-use Symbiote\QueuedJobs\Tasks\ProcessJobQueueChildTask;
 use Symbiote\QueuedJobs\Tasks\ProcessJobQueueTask;
 
 /**
@@ -29,55 +28,34 @@ use Symbiote\QueuedJobs\Tasks\ProcessJobQueueTask;
  */
 class QueuedTaskRunner extends TaskRunner
 {
-    /**
-     * @var array
-     */
-    private static $url_handlers = [
+    private static array $url_handlers = [
         'queue/$TaskName' => 'queueTask',
     ];
 
-    /**
-     * @var array
-     */
-    private static $allowed_actions = [
+    private static array $allowed_actions = [
         'queueTask',
     ];
 
-    /**
-     * @var array
-     */
-    private static $css = [
+    private static array $css = [
         'symbiote/silverstripe-queuedjobs:client/styles/task-runner.css',
     ];
 
     /**
-     * Tasks on this list will be available to be run only via browser
-     *
-     * @config
-     * @var array
+     * Tasks on this list will not be available to run via the jobs queue
      */
-    private static $task_blacklist = [
+    private static array $task_blacklist = [
         ProcessJobQueueTask::class,
-        ProcessJobQueueChildTask::class,
         CreateQueuedJobTask::class,
         DeleteAllJobsTask::class,
     ];
 
     /**
      * Tasks on this list will be available to be run only via jobs queue
-     *
-     * @config
-     * @var array
      */
-    private static $queued_only_tasks = [];
+    private static array $queued_only_tasks = [];
 
     public function index()
     {
-        if (Director::is_cli()) {
-            // CLI mode - revert to default behaviour
-            return parent::index();
-        }
-
         $baseUrl = Director::absoluteBaseURL();
         $tasks = $this->getTasks();
 
@@ -108,6 +86,8 @@ class QueuedTaskRunner extends TaskRunner
                 'Title' => $task['title'],
                 'Description' => $task['description'],
                 'Type' => 'universal',
+                'Parameters' => $task['parameters'],
+                'Help' => $task['help'],
             ]));
         }
 
@@ -118,18 +98,20 @@ class QueuedTaskRunner extends TaskRunner
                 'Title' => $task['title'],
                 'Description' => $task['description'],
                 'Type' => 'immediate',
+                'Parameters' => $task['parameters'],
+                'Help' => $task['help'],
             ]));
         }
 
         // Queue only tasks
-        $queueOnlyTaskList = ArrayList::create();
-
         foreach ($queuedOnlyTasks as $task) {
             $taskList->push(ArrayData::create([
                 'QueueLink' => Controller::join_links($baseUrl, 'dev/tasks/queue', $task['segment']),
                 'Title' => $task['title'],
                 'Description' => $task['description'],
                 'Type' => 'queue-only',
+                'Parameters' => $task['parameters'],
+                'Help' => $task['help'],
             ]));
         }
 

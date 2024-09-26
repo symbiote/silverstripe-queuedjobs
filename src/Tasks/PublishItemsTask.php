@@ -4,8 +4,12 @@ namespace Symbiote\QueuedJobs\Tasks;
 
 use Exception;
 use SilverStripe\Dev\BuildTask;
+use SilverStripe\PolyExecution\PolyOutput;
 use SilverStripe\ORM\DataObject;
 use Symbiote\QueuedJobs\Jobs\PublishItemsJob;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 
 /**
  * An example build task that publishes a bunch of pages - this demonstrates a realworld example of how the
@@ -16,21 +20,13 @@ use Symbiote\QueuedJobs\Jobs\PublishItemsJob;
  */
 class PublishItemsTask extends BuildTask
 {
-    /**
-     * {@inheritDoc}
-     * @var string
-     */
-    private static $segment = 'PublishItemsTask';
+    protected static string $commandName = 'PublishItemsTask';
 
-    /**
-     * @throws Exception
-     * @param HTTPRequest $request
-     */
-    public function run($request)
+    protected function execute(InputInterface $input, PolyOutput $output): int
     {
-        $root = $request->getVar('parent');
+        $root = $input->getOption('parent');
         if (!$root) {
-            throw new Exception("Sorry, you must provide a parent node to publish from");
+            $output->writeln('<error>Sorry, you must provide a parent node to publish from</>');
         }
 
         $item = DataObject::get_by_id('Page', $root);
@@ -39,5 +35,18 @@ class PublishItemsTask extends BuildTask
             $job = new PublishItemsJob($root);
             singleton('Symbiote\\QueuedJobs\\Services\\QueuedJobService')->queueJob($job);
         }
+        return Command::SUCCESS;
+    }
+
+    public function getOptions(): array
+    {
+        return [
+            new InputOption(
+                'parent',
+                null,
+                InputOption::VALUE_REQUIRED,
+                'The ID of the page you want to publish. This page and its children will be published'
+            ),
+        ];
     }
 }
