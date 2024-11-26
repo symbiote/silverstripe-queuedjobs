@@ -2,7 +2,6 @@
 
 namespace Symbiote\QueuedJobs\Tasks;
 
-use Composer\Console\Input\InputOption;
 use Psr\Log\LoggerInterface;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\BuildTask;
@@ -11,6 +10,7 @@ use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
 use Symbiote\QueuedJobs\Services\QueuedJobService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 
 class CheckJobHealthTask extends BuildTask
 {
