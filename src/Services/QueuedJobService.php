@@ -1096,7 +1096,7 @@ class QueuedJobService
      * @param Member|null $originalUser
      * @return null|Member
      */
-    protected function setRunAsUser(Member $runAsUser, Member $originalUser = null)
+    protected function setRunAsUser(Member $runAsUser, ?Member $originalUser = null)
     {
         // Sanity check. Can't set the user if they don't exist.
         if ($runAsUser === null || !$runAsUser->exists()) {
@@ -1129,7 +1129,7 @@ class QueuedJobService
      * @param Member|null $runAsUser
      * @param Member|null $originalUser
      */
-    protected function unsetRunAsUser(Member $runAsUser = null, Member $originalUser = null)
+    protected function unsetRunAsUser(?Member $runAsUser = null, ?Member $originalUser = null)
     {
         // No runAsUser was set, so we don't need to do anything.
         if ($runAsUser === null) {
