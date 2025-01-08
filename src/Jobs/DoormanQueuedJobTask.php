@@ -2,7 +2,6 @@
 
 namespace Symbiote\QueuedJobs\Jobs;
 
-use SilverStripe\Dev\Deprecation;
 use AsyncPHP\Doorman\Cancellable;
 use AsyncPHP\Doorman\Expires;
 use AsyncPHP\Doorman\Process;
