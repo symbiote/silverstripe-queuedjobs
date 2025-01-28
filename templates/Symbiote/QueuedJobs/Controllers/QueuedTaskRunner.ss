@@ -3,22 +3,22 @@ $Info.RAW
 
 <div class="task">
     <input type="radio" id="tab-all-tasks" class="task__selector task__selector--all" name="task__selector" checked="checked" />
-    <label class="task__label task__label--all" for="tab-all-tasks">
+    <label class="task__label task__label--all form-label" for="tab-all-tasks">
         <span class="task__label-inner">All tasks</span>
     </label>
 
     <input type="radio" id="tab-universal-tasks" class="task__selector task__selector--universal" name="task__selector" />
-    <label class="task__label task__label--universal" for="tab-universal-tasks">
+    <label class="task__label task__label--universal form-label" for="tab-universal-tasks">
         <span class="task__label-inner">Queueable task</span>
     </label>
 
     <input type="radio" id="tab-immediate-tasks" class="task__selector task__selector--immediate" name="task__selector" />
-    <label class="task__label task__label--immediate" for="tab-immediate-tasks">
+    <label class="task__label task__label--immediate form-label" for="tab-immediate-tasks">
         <span class="task__label-inner">Non-queueable tasks</span>
     </label>
 
     <input type="radio" id="tab-queue-only-tasks" class="task__selector task__selector--queue-only" name="task__selector" />
-    <label class="task__label task__label--queue-only" for="tab-queue-only-tasks">
+    <label class="task__label task__label--queue-only form-label" for="tab-queue-only-tasks">
         <span class="task__label-inner">Queueable only tasks</span>
     </label>
 
