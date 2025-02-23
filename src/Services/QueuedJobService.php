@@ -1110,7 +1110,7 @@ class QueuedJobService
 
         // We are currently either not logged in at all, or we're logged in as a different user. We should switch users
         // so that the context within the Job is correct.
-        if (Controller::has_curr()) {
+        if (Controller::curr()) {
             Security::setCurrentUser($runAsUser);
         } else {
             $_SESSION['loggedInAs'] = $runAsUser->ID;
@@ -1138,7 +1138,7 @@ class QueuedJobService
 
         // There was no originalUser, so we should make sure that we set the user back to null.
         if (!$originalUser) {
-            if (Controller::has_curr()) {
+            if (Controller::curr()) {
                 Security::setCurrentUser(null);
             } else {
                 $_SESSION['loggedInAs'] = null;
@@ -1148,7 +1148,7 @@ class QueuedJobService
         }
 
         // Okay let's reset our user.
-        if (Controller::has_curr()) {
+        if (Controller::curr()) {
             Security::setCurrentUser($originalUser);
         } else {
             $_SESSION['loggedInAs'] = $originalUser->ID;
