@@ -8,7 +8,7 @@ use SilverStripe\Dev\Deprecation;
 use Symbiote\QueuedJobs\Services\QueuedJobService;
 
 /**
- * @deprecated 5.3.0 Will be replaced with Symbiote\QueuedJobs\Cli\ProcessJobQueueChildCommand
+ * @deprecated 5.3.0 Will be replaced with Symbiote\QueuedJobs\Cli\ProcessJobQueueChildCommand in a future major release
  */
 class ProcessJobQueueChildTask extends BuildTask
 {
@@ -24,7 +24,7 @@ class ProcessJobQueueChildTask extends BuildTask
         Deprecation::withSuppressedNotice(function () {
             Deprecation::notice(
                 '5.3.0',
-                'Will be replaced with Symbiote\QueuedJobs\Cli\ProcessJobQueueChildCommand',
+                'Will be replaced with Symbiote\QueuedJobs\Cli\ProcessJobQueueChildCommand in a future major release',
                 Deprecation::SCOPE_CLASS
             );
         });
