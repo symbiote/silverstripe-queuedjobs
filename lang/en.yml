@@ -164,8 +164,8 @@ en:
     JOB_STALLED: 'Job stalled after {attempts} attempts - please check'
     MEMORY_RELEASE: 'Job releasing memory and waiting ({used} used)'
     STALLED_JOB: 'Stalled job'
-    STALLED_JOB_MSG: 'A job named {name} appears to have stalled. It has been paused, please login to check it'
-    STALLED_JOB_RESTART_MSG: 'A job named {name} appears to have stalled. It will be stopped and restarted, please login to make sure it has continued'
+    STALLED_JOB_MSG: 'A job named {name} (#{id}) appears to have stalled. It has been paused, please login to check it'
+    STALLED_JOB_RESTART_MSG: 'A job named {name} (#{id}) appears to have stalled. It will be stopped and restarted, please login to make sure it has continued'
     TIME_LIMIT: 'Queue has passed time limit and will restart before continuing'
   Symbiote\QueuedJobs\Tasks\CheckJobHealthTask:
     Description: 'A task used to check the health of jobs that are "running". Pass a specific queue as the "queue" parameter or otherwise the "Queued" queue will be checked'
