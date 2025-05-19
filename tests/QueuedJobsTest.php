@@ -445,8 +445,8 @@ class QueuedJobsTest extends AbstractTest
         // worker job lock should be cleared by now
         $this->assertNull($descriptor->Worker);
         $this->assertContains(
-            'A job named A Test job appears to have stalled. It will be stopped and restarted, please login to '
-            . 'make sure it has continued',
+            'A job named A Test job (#' . $descriptor->ID . ') appears to have stalled. It will be stopped and '
+            . 'restarted, please login to make sure it has continued',
             $logger->getMessages()
         );
 
@@ -506,8 +506,8 @@ class QueuedJobsTest extends AbstractTest
         $this->assertEquals(2, (int) $descriptor->WorkerCount);
         $this->assertEquals('2017-01-01 16:00:01', $descriptor->Expiry);
         $this->assertContains(
-            'A job named A Test job appears to have stalled. It will be stopped and restarted, please login '
-            . 'to make sure it has continued',
+            'A job named A Test job (#' . $descriptor->ID . ') appears to have stalled. It will be stopped and '
+            . 'restarted, please login to make sure it has continued',
             $logger->getMessages()
         );
 
@@ -537,7 +537,8 @@ class QueuedJobsTest extends AbstractTest
         $this->assertEquals(3, (int) $descriptor->WorkerCount);
         $this->assertEquals('2018-01-01 16:00:01', $descriptor->Expiry);
         $this->assertContains(
-            'A job named A Test job appears to have stalled. It has been paused, please login to check it',
+            'A job named A Test job (#' . $descriptor->ID . ') appears to have stalled. It has been paused, please '
+            . 'login to check it',
             $logger->getMessages()
         );
     }
