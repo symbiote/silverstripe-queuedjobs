@@ -47,11 +47,11 @@ class QueuedJobsAdmin extends ModelAdmin
      */
     private static $menu_icon_class = 'font-icon-checklist';
 
-    /**
-     * @var array
-     */
-    private static $managed_models = [
-        QueuedJobDescriptor::class
+    private static array $managed_models = [
+        'jobs' => [
+            'title' => 'Jobs',
+            'dataClass' => QueuedJobDescriptor::class,
+        ]
     ];
 
     /**

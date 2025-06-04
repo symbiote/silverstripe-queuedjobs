@@ -30,6 +30,11 @@ SilverStripe\SiteConfig\SiteConfig:
   extensions:
     - Symbiote\QueuedJobs\Extensions\MaintenanceLockExtension
 
+Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor:
+  cms_edit_owner: Symbiote\QueuedJobs\Controllers\QueuedJobsAdmin
+  extensions:
+    - SilverStripe\Admin\CMSEditLinkExtension
+
 ---
 Name: gearman_queue_settings
 Only:
