@@ -3,9 +3,9 @@
 namespace Symbiote\QueuedJobs\Tasks;
 
 use Exception;
+use Page;
 use SilverStripe\Dev\BuildTask;
 use SilverStripe\PolyExecution\PolyOutput;
-use SilverStripe\ORM\DataObject;
 use Symbiote\QueuedJobs\Jobs\PublishItemsJob;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -29,7 +29,7 @@ class PublishItemsTask extends BuildTask
             $output->writeln('<error>Sorry, you must provide a parent node to publish from</>');
         }
 
-        $item = DataObject::get_by_id('Page', $root);
+        $item = Page::get()->setUseCache(true)->byID($root);
 
         if ($item && $item->exists()) {
             $job = new PublishItemsJob($root);

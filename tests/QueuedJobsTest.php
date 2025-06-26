@@ -184,12 +184,12 @@ class QueuedJobsTest extends SapphireTest
         $job = new TestQueuedJob();
         $id = $svc->queueJob($job);
 
-        $descriptor = DataObject::get_by_id(QueuedJobDescriptor::class, $id);
+        $descriptor = QueuedJobDescriptor::get()->byID($id);
 
         $job = $svc->testInit($descriptor);
         $this->assertInstanceOf(TestQueuedJob::class, $job, 'Job has been triggered');
 
-        $descriptor = DataObject::get_by_id(QueuedJobDescriptor::class, $id);
+        $descriptor = QueuedJobDescriptor::get()->byID($id);
 
         $this->assertEquals(QueuedJob::STATUS_INIT, $descriptor->JobStatus);
     }
@@ -212,7 +212,7 @@ class QueuedJobsTest extends SapphireTest
         $this->assertTrue($result);
 
         // we want to make sure that the current user is the runas user of the job
-        $descriptor = DataObject::get_by_id(QueuedJobDescriptor::class, $id);
+        $descriptor = QueuedJobDescriptor::get()->byID($id);
         $this->assertEquals('Complete', $descriptor->JobStatus);
     }
 

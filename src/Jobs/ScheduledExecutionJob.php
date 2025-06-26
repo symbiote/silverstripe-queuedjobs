@@ -39,7 +39,7 @@ class ScheduledExecutionJob extends AbstractQueuedJob
      */
     public function getDataObject()
     {
-        return DataObject::get_by_id($this->objectType, $this->objectID);
+        return DataObject::get($this->objectType)->setUseCache(true)->byID($this->objectID);
     }
 
     /**

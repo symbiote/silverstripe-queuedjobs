@@ -62,7 +62,7 @@ class ScheduledExecutionTest extends SapphireTest
         $job->execute();
 
         // reload the test object and make sure its job has now changed
-        $test = DataObject::get_by_id(TestScheduledDataObject::class, $test->ID);
+        $test = TestScheduledDataObject::get()->byID($test->ID);
 
         $this->assertNotEquals($test->ScheduledJobID, $jobId);
         $this->assertEquals('EXECUTED', $test->Message);
@@ -96,7 +96,7 @@ class ScheduledExecutionTest extends SapphireTest
         $job->execute();
 
         // reload the test object and make sure its job has now changed
-        $test = DataObject::get_by_id(TestScheduledDataObject::class, $test->ID);
+        $test = TestScheduledDataObject::get()->byID($test->ID);
 
         $this->assertNotEquals($test->ScheduledJobID, $jobId);
         $this->assertEquals('EXECUTED', $test->Message);
@@ -117,7 +117,7 @@ class ScheduledExecutionTest extends SapphireTest
         $job = $test->ScheduledJob();
         $job->execute();
 
-        $test = DataObject::get_by_id(TestScheduledDataObject::class, $test->ID);
+        $test = TestScheduledDataObject::get()->byID($test->ID);
 
         $job = $test->ScheduledJob();
 

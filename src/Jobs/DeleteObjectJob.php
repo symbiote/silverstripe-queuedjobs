@@ -36,7 +36,7 @@ class DeleteObjectJob extends AbstractQueuedJob
      */
     protected function getObject($name = 'Object')
     {
-        return DataObject::get_by_id($this->TargetClass, $this->TargetID);
+        return DataObject::get($this->TargetClass)->setUseCache(true)->byID($this->TargetID);
     }
 
     /**

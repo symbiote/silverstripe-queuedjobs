@@ -31,7 +31,7 @@ class PublishItemsJob extends AbstractQueuedJob implements QueuedJob
 
     protected function getRoot()
     {
-        return DataObject::get_by_id(Page::class, $this->rootID);
+        return Page::get()->setUseCache(true)->byID($this->rootID);
     }
 
     /**
@@ -118,7 +118,7 @@ class PublishItemsJob extends AbstractQueuedJob implements QueuedJob
         $ID = array_shift($remainingChildren);
 
         // get the page
-        $page = DataObject::get_by_id(Page::class, $ID);
+        $page = Page::get()->setUseCache(true)->byID($ID);
         if ($page) {
             // publish it
             $page->publishRecursive();

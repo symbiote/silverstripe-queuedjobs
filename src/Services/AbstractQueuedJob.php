@@ -82,7 +82,7 @@ abstract class AbstractQueuedJob implements QueuedJob, UserContextInterface
         $id = $this->{$name . 'ID'};
         $type = $this->{$name . 'Type'};
         if ($id) {
-            return DataObject::get_by_id($type, $id);
+            return DataObject::get($type)->setUseCache(true)->byID($id);
         }
     }
 

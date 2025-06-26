@@ -804,10 +804,7 @@ class QueuedJobService
         $logger = $this->getLogger();
 
         // first retrieve the descriptor
-        $jobDescriptor = DataObject::get_by_id(
-            QueuedJobDescriptor::class,
-            (int)$jobId
-        );
+        $jobDescriptor = QueuedJobDescriptor::get()->setUseCache(true)->byID((int)$jobId);
         if (!$jobDescriptor) {
             throw new Exception("$jobId is invalid");
         }
@@ -821,7 +818,7 @@ class QueuedJobService
         // this point of execution in some circumstances
         $originalUserID = isset($_SESSION['loggedInAs']) ? $_SESSION['loggedInAs'] : 0;
         $originalUser = $originalUserID
-            ? DataObject::get_by_id(Member::class, $originalUserID)
+            ? Member::get()->setUseCache(true)->byID($originalUserID)
             : null;
         $runAsUser = null;
 
@@ -871,7 +868,7 @@ class QueuedJobService
                     Subsite::changeSubsite($job->SubsiteID);
 
                     // lets set the base URL as far as Director is concerned so that our URLs are correct
-                    $subsite = DataObject::get_by_id(Subsite::class, $job->SubsiteID);
+                    $subsite = Subsite::get()->setUseCache(true)->byID($job->SubsiteID);
                     if ($subsite && $subsite->exists()) {
                         $domain = $subsite->domain();
                         $base = rtrim(Director::protocol() . $domain, '/') . '/';
@@ -883,10 +880,7 @@ class QueuedJobService
                 // while not finished
                 while (!$job->jobFinished() && !$broken) {
                     // see that we haven't been set to 'paused' or otherwise by another process
-                    $jobDescriptor = DataObject::get_by_id(
-                        QueuedJobDescriptor::class,
-                        (int)$jobId
-                    );
+                    $jobDescriptor = QueuedJobDescriptor::get()->setUseCache(true)->byID((int)$jobId);
                     if (!$jobDescriptor || !$jobDescriptor->exists()) {
                         $broken = true;
                         $logger->error(
