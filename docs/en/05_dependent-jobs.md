@@ -1,30 +1,38 @@
-# Dependant jobs
+---
+title: Dependent Jobs
+summary: Creating jobs that depend on the completion of other jobs
+icon: code-branch
+---
+
+# Dependent jobs
 
 Sometimes it makes sense to split the work to be done between several jobs.
 For example, consider the following flow:
 
-* page gets published (generates URLs for static cache)
-* page gets statically cached (generates static HTML for provided URLs)
-* page flushes cache on CDN for provided URLs.
+- page gets published (generates URLs for static cache)
+- page gets statically cached (generates static HTML for provided URLs)
+- page flushes cache on CDN for provided URLs.
 
 One way to implement this flow using queued jobs is to split the work between several jobs.
 Note that these actions have to be done in sequence, so we may not be able to queue all needed jobs right away.
 
 This may be because of:
 
-* queue processing is run on multiple threads and we can't guarantee that jobs will be run in sequence
-* later actions have data dependencies on earlier actions.
+- queue processing is run on multiple threads and we can't guarantee that jobs will be run in sequence
+- later actions have data dependencies on earlier actions.
 
-In this situation, it's recommended to use the _Dependant job_ approach.
+In this situation, it's recommended to use the *Dependant job* approach.
 
 Use the `updateJobDescriptorAndJobOnCompletion` extension point in `QueuedJobService::runJob()` like this:
 
 ```php
+use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
+use Symbiote\QueuedJobs\Services\QueuedJob;
+
 public function updateJobDescriptorAndJobOnCompletion(
-    QueuedJobDescriptor $descriptor, 
+    QueuedJobDescriptor $descriptor,
     QueuedJob $job
-): void
-{
+): void {
     // your code goes here
 }
 ```
