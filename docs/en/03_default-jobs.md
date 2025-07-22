@@ -1,4 +1,10 @@
-# Default Jobs
+---
+title: Default Jobs
+summary: Automatically created default jobs
+icon: tasks
+---
+
+# Default jobs
 
 ## Overview
 
@@ -7,7 +13,7 @@ Default jobs are checked for at the end of each job queue process, using the job
 
 ```yml
 ArbitraryName:
-  type: 'ScheduledExternalImportJob'
+  type: 'App\Jobs\ScheduledExternalImportJob'
   filter:
     JobTitle: 'Scheduled import from Services'
 ```
@@ -15,9 +21,12 @@ ArbitraryName:
 Will become:
 
 ```php
+use App\Jobs\ScheduledExternalImportJob;
+use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
+
 QueuedJobDescriptor::get()->filter([
-  'type' => 'ScheduledExternalImportJob',
-  'JobTitle' => 'Scheduled import from Services'
+  'type' => ScheduledExternalImportJob::class,
+  'JobTitle' => 'Scheduled import from Services',
 ]);
 ```
 
@@ -34,18 +43,23 @@ ArbitraryName:
     contentItem: 100
       target: 157
 ```
+
 If the above job is missing it will be recreated as:
+
 ```php
+use App\Jobs\ScheduledExternalImportJob;
+use SilverStripe\Core\Injector\Injector;
+
 Injector::inst()->createWithArgs(ScheduledExternalImportJob::class, $construct[])
 ```
 
-## Pausing Default Jobs
+## Pausing default jobs
 
 If you need to stop a default job from raising alerts and being recreated, set an existing copy of the job to Paused in the CMS.
 
 Default jobs are defined in yml config the sample below covers the options and expected values
 
-```yaml
+```yml
 SilverStripe\Core\Injector\Injector:
   Symbiote\QueuedJobs\Services\QueuedJobService:
     properties:
@@ -85,7 +99,7 @@ SilverStripe\Core\Injector\Injector:
 
 It's possible to enable a setting which allows the pausing of the queued jobs processing. To enable it, add following code to your config YAML file:
 
-```yaml
+```yml
 Symbiote\QueuedJobs\Services\QueuedJobService:
   lock_file_enabled: true
   lock_file_path: '/shared-folder-path'
