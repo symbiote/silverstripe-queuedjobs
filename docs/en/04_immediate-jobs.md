@@ -1,9 +1,15 @@
-# Immediate 
+---
+title: Immediate Jobs
+summary: Configuring immediate jobs to run as soon as they are queued
+icon: bolt
+---
+
+# Immediate jobs
 
 ## Overview
 
 Queued jobs can be executed "immediately", which happens through
-a PHP shutdown function by default ([details](index.md#immediate-jobs)).
+a PHP shutdown function by default ([details](./01_overview.md#immediate-jobs)).
 Below are more robust ways to achieve immediate execution,
 in addition to the standard queueing behaviour.
 
@@ -14,14 +20,14 @@ Symbiote\QueuedJobs\Services\QueuedJobService:
   use_shutdown_function: false
 ```
 
-## inotifywait
+## `inotifywait`
 
 The `inotifywait` system utility monitors a folder for changes (by
 default this is SILVERSTRIPE_CACHE_DIR/queuedjobs) and triggers the `ProcessJobQueueTask`
 with `job=$filename` as the argument. An example script is in `queuedjobs/scripts` that will run
 inotifywait and then call the task when a new job is ready to run.
 
-```sh
+```bash
 #!/bin/sh
 
 # This script is an EXAMPLE ONLY. You must copy this into your system's script
@@ -36,25 +42,25 @@ inotifywait --monitor --event attrib --format "php $SILVERSTRIPE_ROOT/vendor/bin
 
 You can also turn this into an `init.d` service:
 
-```sh
+```bash
 #!/bin/bash
 #
-#	/etc/init.d/queue_processor
+#    /etc/init.d/queue_processor
 #
-#	Service that watches for changes in queued_jobs targets.  Defined targets will spawn an instance
-#	of inotitywait.
+#    Service that watches for changes in queued_jobs targets.  Defined targets will spawn an instance
+#    of inotitywait.
 #
-#	Currently only tested on Centos5.6 (x86_64)
+#    Currently only tested on Centos5.6 (x86_64)
 #
-# 	Depends: inotify-tools (tested with Centos Package inotify-tools-3.14-1.el5)
+#     Depends: inotify-tools (tested with Centos Package inotify-tools-3.14-1.el5)
 #
-#	Usage:  - Ensure that inotify-tools is installed.
-#		- Silverstripe cache paths are expected to be in $webroot/silverstripe-cache rather than /tmp
-#		- SILVERSTRIPE_ROOT is a space separated Array of Silvestripe installations
+#    Usage:  - Ensure that inotify-tools is installed.
+#        - Silverstripe cache paths are expected to be in $webroot/silverstripe-cache rather than /tmp
+#        - SILVERSTRIPE_ROOT is a space separated Array of Silvestripe installations
 #
-#		- Copy this script to /etc/init.d/queue_processor
-#		- Update the SILVERSTRIPE_ROOT to reflect your installations
-#		- execute /etc/init.d/queue_processor start
+#        - Copy this script to /etc/init.d/queue_processor
+#        - Update the SILVERSTRIPE_ROOT to reflect your installations
+#        - execute /etc/init.d/queue_processor start
 
 PATH=/bin:/usr/bin:/sbin:/usr/sbin
 export PATH
@@ -67,53 +73,52 @@ export PATH
 # list all the silverstripe root directories that you want monitored here
 SILVERSTRIPE_ROOT=(/var/www/deployer/ /home/other/public-html/deployer)
 
-
 start() {
-	echo -n "Starting queue_processor: "
-	for PATH in ${SILVERSTRIPE_ROOT[@]};
-	do
-	INOTIFY_OPTS="--monitor --event attrib -q"
-	INOTIFY_ARGS="--format 'php ${PATH}/vendor/bin/sake tasks:ProcessJobQueueTask job=%f' ${PATH}/silverstripe-cache/queuedjobs | /bin/sh"
-			daemon --user apache /usr/bin/inotifywait ${INOTIFY_OPTS} ${INOTIFY_ARGS} &
-			/bin/touch /var/lock/subsys/queue_processor
-		done
+    echo -n "Starting queue_processor: "
+    for PATH in ${SILVERSTRIPE_ROOT[@]};
+    do
+    INOTIFY_OPTS="--monitor --event attrib -q"
+    INOTIFY_ARGS="--format 'php ${PATH}/vendor/bin/sake dev/tasks/ProcessJobQueueTask job=%f' ${PATH}/silverstripe-cache/queuedjobs | /bin/sh"
+            daemon --user apache /usr/bin/inotifywait ${INOTIFY_OPTS} ${INOTIFY_ARGS} &
+            /bin/touch /var/lock/subsys/queue_processor
+        done
 
-			return 0
+            return 0
 }
 
 stop() {
-	echo -n "Shutting down queue_processor: "
-	killproc inotifywait
-	rm -f /var/lock/subsys/queue_processor
-	return 0
+    echo -n "Shutting down queue_processor: "
+    killproc inotifywait
+    rm -f /var/lock/subsys/queue_processor
+    return 0
 }
 
 case "$1" in
     start)
-	start
-	;;
+    start
+    ;;
     stop)
-	stop
-	;;
+    stop
+    ;;
     restart)
-    	stop
-	start
-	;;
+        stop
+    start
+    ;;
     *)
-	echo "Usage: queue_processor {start|stop|reload|}"
-	exit 1
-	;;
+    echo "Usage: queue_processor {start|stop|reload|}"
+    exit 1
+    ;;
 esac
 exit $?
 ```
 
-## lsyncd
+## `lsyncd`
 
-Similar concept to `inotifywait`, but with the `lsyncd` system utility. 
+Similar concept to `inotifywait`, but with the `lsyncd` system utility.
 
-The following is an example config `/etc/lsyncd.conf` 
+The following is an example config `/etc/lsyncd.conf`
 
-```sh
+```bash
 -- Queue Processor configuration, typically placed in /etc/lsyncd.conf 
 
 settings = {
