@@ -29,9 +29,9 @@ class PublishItemsTask extends BuildTask
             $output->writeln('<error>Sorry, you must provide a parent node to publish from</>');
         }
 
-        $item = Page::get()->setUseCache(true)->byID($root);
+        $itemExists = Page::get()->setUseCache(true)->filter('ID', $root)->exists();
 
-        if ($item && $item->exists()) {
+        if ($itemExists) {
             $job = new PublishItemsJob($root);
             singleton('Symbiote\\QueuedJobs\\Services\\QueuedJobService')->queueJob($job);
         }
