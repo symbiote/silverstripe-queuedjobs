@@ -1,9 +1,30 @@
 name: Dispatch CI
 
 on:
-  # At 5:25 PM UTC, only on Wednesday and Thursday
+  # At 5:25 PM UTC, only on Wednesday, Thursday, and Friday
   schedule:
-    - cron: '25 17 * * 3,4'
+    - cron: '25 17 * * 3,4,5'
+  workflow_dispatch:
+    inputs:
+      major_type:
+        description: 'Major branch type'
+        required: true
+        type: choice
+        options:
+          - 'dynamic'
+          - 'current'
+          - 'next'
+          - 'previous'
+        default: 'dynamic'
+      minor_type:
+        description: 'Minor branch type'
+        required: true
+        type: choice
+        options:
+          - 'dynamic'
+          - 'next-minor'
+          - 'next-patch'
+        default: 'dynamic'
 
 permissions: {}
 
@@ -19,3 +40,6 @@ jobs:
     steps:
       - name: Dispatch CI
         uses: silverstripe/gha-dispatch-ci@v1
+        with:
+          major_type: ${{ inputs.major_type }}
+          minor_type: ${{ inputs.minor_type }}
