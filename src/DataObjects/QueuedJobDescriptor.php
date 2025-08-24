@@ -389,188 +389,212 @@ class QueuedJobDescriptor extends DataObject
         ];
     }
 
-    /**
-     * @return FieldList
-     */
-    public function getCMSFields()
+    public function getCMSFields(): FieldList
     {
-        $fields = parent::getCMSFields();
-        $runAs = $fields->fieldByName('Root.Main.RunAsID');
-        $fields->removeByName([
-            'Expiry',
-            'Implementation',
-            'JobTitle',
-            'JobFinished',
-            'JobRestarted',
-            'JobType',
-            'JobStarted',
-            'JobStatus',
-            'LastProcessedCount',
-            'NotifiedBroken',
-            'ResumeCounts',
-            'RunAs',
-            'RunAsID',
-            'SavedJobData',
-            'SavedJobMessages',
-            'Signature',
-            'StepsProcessed',
-            'StartAfter',
-            'TotalSteps',
-            'Worker',
-            'WorkerCount',
-        ]);
+        $this->beforeUpdateCMSFields(function (FieldList $fields) {
+            $runAs = $fields->fieldByName('Root.Main.RunAsID');
+            $fields->removeByName([
+                'Expiry',
+                'Implementation',
+                'JobTitle',
+                'JobFinished',
+                'JobRestarted',
+                'JobType',
+                'JobStarted',
+                'JobStatus',
+                'LastProcessedCount',
+                'NotifiedBroken',
+                'ResumeCounts',
+                'RunAs',
+                'RunAsID',
+                'SavedJobData',
+                'SavedJobMessages',
+                'Signature',
+                'StepsProcessed',
+                'StartAfter',
+                'TotalSteps',
+                'Worker',
+                'WorkerCount',
+            ]);
 
-        // Main
-        $fields->addFieldsToTab('Root.Main', [
-            LiteralField::create(
-                'JobProgressReportIntro',
-                sprintf(
-                    '<p>%3$0.2f%% completed</p><p><progress value="%1$d" max="%2$d">%3$0.2f%%</progress></p>',
-                    $this->StepsProcessed,
-                    $this->TotalSteps,
-                    $this->TotalSteps > 0 ? ($this->StepsProcessed / $this->TotalSteps) * 100 : 0
-                )
-            ),
-            $jobTitle = TextField::create('JobTitle', 'Title'),
-            $status = $this->buildJobStatusField(),
-            $jobType = $this->buildJobTypeField(),
-            $runAs,
-            $startAfter = DatetimeField::create('StartAfter', 'Scheduled Start Time'),
-            HeaderField::create('JobTimelineTitle', 'Timeline'),
-            LiteralField::create(
-                'JobTimelineIntro',
-                sprintf(
-                    '<p>%s</p>',
-                    'It is recommended to avoid editing these fields'
-                    . ' as they are managed by the Queue Runner / Service.'
-                )
-            ),
-            $jobStarted = DatetimeField::create('JobStarted', 'Started (initial)'),
-            $jobRestarted = DatetimeField::create('JobRestarted', 'Started (recent)'),
-            $jobFinished = DatetimeField::create('JobFinished', 'Completed'),
-        ]);
+            // Main
+            $fields->addFieldsToTab('Root.Main', [
+                CompositeField::create([
+                    HeaderField::create('ProgressReportHeading', 'Progress'),
+                    LiteralField::create(
+                        'JobProgressReportIntro',
+                        sprintf(
+                            '<p>%3$0.2f%% completed</p><p><progress value="%1$d" max="%2$d">%3$0.2f%%</progress></p>',
+                            $this->StepsProcessed,
+                            $this->TotalSteps,
+                            $this->TotalSteps > 0 ? ($this->StepsProcessed / $this->TotalSteps) * 100 : 0
+                        )
+                    ),
+                ]),
+                CompositeField::create([
+                    HeaderField::create('OverviewHeading', 'Overview'),
+                    $jobTitle = TextField::create('JobTitle', 'Title'),
+                    $status = $this->buildJobStatusField(),
+                    $jobType = $this->buildJobTypeField(),
+                    $runAs,
+                    $startAfter = DatetimeField::create('StartAfter', 'Scheduled Start Time'),
+                ]),
+                CompositeField::create([
+                    HeaderField::create('JobTimelineTitle', 'Timeline'),
+                    LiteralField::create(
+                        'JobTimelineIntro',
+                        sprintf(
+                            '<p>%s</p>',
+                            'It is recommended to avoid editing these fields'
+                            . ' as they are managed by the Queue Runner / Service.'
+                        )
+                    ),
+                    $jobStarted = DatetimeField::create('JobStarted', 'Started (initial)'),
+                    $jobRestarted = DatetimeField::create('JobRestarted', 'Started (recent)'),
+                    $jobFinished = DatetimeField::create('JobFinished', 'Completed'),
+                ]),
+            ]);
 
-        $jobFinished->setDescription('Job completion time.');
-        $jobRestarted->setDescription('Most recent attempt to run the job.');
-        $jobStarted->setDescription('First attempt to run the job.');
-        $jobType->setDescription('Type of Queue which the jobs belongs to.');
-        $status->setDescription('Represents current state within the job lifecycle.');
+            $jobFinished->setDescription('Job completion time.');
+            $jobRestarted->setDescription('Most recent attempt to run the job.');
+            $jobStarted->setDescription('First attempt to run the job.');
+            $jobType->setDescription('Type of Queue which the jobs belongs to.');
+            $status->setDescription('Represents current state within the job lifecycle.');
 
-        $jobTitle->setDescription(
-            'This field can be used to hold user comments about specific jobs (no functional impact).'
-        );
-
-        $startAfter->setDescription(
-            'Used to prevent the job from starting earlier than the specified time.'
-            . ' Note that this does not guarantee that the job will start'
-            . ' exactly at the specified time (it will start the next time the cron job runs).'
-        );
-
-        $runAs
-            ->setTitle('Run With User')
-            ->setDescription(
-                'Select a user to be used to run this job.'
-                . ' This should be used in case the changes done by this job'
-                . ' have to look like the specified user made them.'
+            $jobTitle->setDescription(
+                'This field can be used to hold user comments about specific jobs (no functional impact).'
             );
 
-        // Advanced
-        $fields->addFieldsToTab('Root.Advanced', [
-            HeaderField::create('AdvancedTabTitle', 'Advanced fields', 1),
-            LiteralField::create(
-                'AdvancedTabIntro',
-                sprintf(
-                    '<p>%s</p>',
-                    'It is recommended to avoid editing these fields'
-                    . ' as they are managed by the Queue Runner / Service.'
-                )
-            ),
-            $implementation = TextField::create('Implementation', 'Job Class'),
-            $signature = TextField::create('Signature', 'Job Signature'),
-            $notifiedBroken = CheckboxField::create('NotifiedBroken', 'Broken job notification sent'),
-            HeaderField::create('AdvancedTabProgressTitle', 'Progression metadata'),
-            LiteralField::create(
-                'AdvancedTabProgressIntro',
-                sprintf(
-                    '<p>%s</p>',
-                    'Job progression mechanism related fields which are used to'
-                    . ' ensure that stalled jobs are paused / resumed.'
-                )
-            ),
-            $totalSteps = NumericField::create('TotalSteps', 'Steps Total'),
-            $stepsProcessed = NumericField::create('StepsProcessed', 'Steps Processed'),
-            $lastProcessCount = NumericField::create('LastProcessedCount', 'Steps Processed (previous)'),
-            $resumeCount = NumericField::create('ResumeCounts', 'Resume Count'),
-            HeaderField::create('AdvancedTabLockTitle', 'Lock metadata'),
-            LiteralField::create(
-                'AdvancedTabLockTitleIntro',
-                sprintf(
-                    '<p>%s</p>',
-                    'Job locking mechanism related fields which are used to'
-                    . ' ensure that every job gets executed only once at any given time.'
-                )
-            ),
-            $worker = TextField::create('Worker', 'Worker Signature'),
-            $workerCount = NumericField::create('WorkerCount', 'Worker Count'),
-            $expiry = DatetimeField::create('Expiry', 'Lock Expiry'),
-        ]);
+            $startAfter->setDescription(
+                'Used to prevent the job from starting earlier than the specified time.'
+                . ' Note that this does not guarantee that the job will start'
+                . ' exactly at the specified time (it will start the next time the cron job runs).'
+            );
 
-        $implementation->setDescription('Class name which is used to execute this job.');
-        $notifiedBroken->setDescription('Indicates if a broken job notification was sent (this happens only once).');
-        $totalSteps->setDescription('Number of steps which is needed to complete this job.');
-        $stepsProcessed->setDescription('Number of steps processed so far.');
-        $workerCount->setDescription('Number of workers (processes) used to execute this job overall.');
-        $worker->setDescription(
-            'Used by a worker (process) to claim this job which prevents any other process from claiming it.'
-        );
+            $runAs
+                ->setTitle('Run With User')
+                ->setDescription(
+                    'Select a user to be used to run this job.'
+                    . ' This should be used in case the changes done by this job'
+                    . ' have to look like the specified user made them.'
+                );
 
-        $lastProcessCount->setDescription(
-            'Steps Processed value from previous execution of this job'
-            . ', used to compare against current state of the steps to determine the difference (progress).'
-        );
-
-        $signature->setDescription(
-            'Usualy derived from the job data, prevents redundant jobs from being created to some degree.'
-        );
-
-        $resumeCount->setDescription(
-            sprintf(
-                'Number of times this job stalled and was resumed (limit of %d time(s)).',
-                QueuedJobService::singleton()->config()->get('stall_threshold')
-            )
-        );
-
-        $expiry->setDescription(
-            sprintf(
-                'Specifies when the lock is released (lock expires %d seconds after the job is claimed).',
-                $this->getWorkerExpiry()
-            )
-        );
-
-        if (strlen($this->SavedJobMessages ?? '')) {
-            $fields->addFieldToTab('Root.Messages', LiteralField::create('Messages', $this->getMessages()));
-        }
-
-        if ($this->config()->get('show_job_data')) {
-            $fields->addFieldsToTab('Root.JobData', [
-                $jobDataPreview = TextareaField::create('SavedJobDataPreview', 'Job Data'),
+            // Advanced
+            $fields->addFieldsToTab('Root.Advanced', [
+                HeaderField::create('AdvancedTabTitle', 'Advanced fields', 1),
+                LiteralField::create(
+                    'AdvancedTabIntro',
+                    sprintf(
+                        '<p>%s</p>',
+                        'It is recommended to avoid editing these fields'
+                        . ' as they are managed by the Queue Runner / Service.'
+                    )
+                ),
+                CompositeField::create([
+                    $implementation = TextField::create('Implementation', 'Job Class'),
+                    $signature = TextField::create('Signature', 'Job Signature'),
+                    $notifiedBroken = CheckboxField::create('NotifiedBroken', 'Broken job notification sent'),
+                ]),
+                CompositeField::create([
+                    HeaderField::create('AdvancedTabProgressTitle', 'Progression metadata'),
+                    LiteralField::create(
+                        'AdvancedTabProgressIntro',
+                        sprintf(
+                            '<p>%s</p>',
+                            'Job progression mechanism related fields which are used to'
+                            . ' ensure that stalled jobs are paused / resumed.'
+                        )
+                    ),
+                    $totalSteps = NumericField::create('TotalSteps', 'Steps Total'),
+                    $stepsProcessed = NumericField::create('StepsProcessed', 'Steps Processed'),
+                    $lastProcessCount = NumericField::create('LastProcessedCount', 'Steps Processed (previous)'),
+                    $resumeCount = NumericField::create('ResumeCounts', 'Resume Count'),
+                ]),
+                CompositeField::create([
+                    HeaderField::create('AdvancedTabLockTitle', 'Lock metadata'),
+                    LiteralField::create(
+                        'AdvancedTabLockTitleIntro',
+                        sprintf(
+                            '<p>%s</p>',
+                            'Job locking mechanism related fields which are used to'
+                            . ' ensure that every job gets executed only once at any given time.'
+                        )
+                    ),
+                    $worker = TextField::create('Worker', 'Worker Signature'),
+                    $workerCount = NumericField::create('WorkerCount', 'Worker Count'),
+                    $expiry = DatetimeField::create('Expiry', 'Lock Expiry'),
+                ]),
             ]);
 
-            $jobDataPreview->setReadonly(true);
+            $implementation->setDescription('Class name which is used to execute this job.');
+            $notifiedBroken->setDescription('Indicates if a broken job notification was sent (this happens only once).');
+            $totalSteps->setDescription('Number of steps which is needed to complete this job.');
+            $stepsProcessed->setDescription('Number of steps processed so far.');
+            $workerCount->setDescription('Number of workers (processes) used to execute this job overall.');
+            $worker->setDescription(
+                'Used by a worker (process) to claim this job which prevents any other process from claiming it.'
+            );
 
-            $fields->addFieldsToTab('Root.MessagesRaw', [
-                $messagesRaw = TextareaField::create('MessagesRaw', 'Messages Raw'),
-            ]);
+            $lastProcessCount->setDescription(
+                'Steps Processed value from previous execution of this job'
+                . ', used to compare against current state of the steps to determine the difference (progress).'
+            );
 
-            $messagesRaw->setReadonly(true);
-        }
+            $signature->setDescription(
+                'Usualy derived from the job data, prevents redundant jobs from being created to some degree.'
+            );
 
-        if (Permission::check('ADMIN')) {
-            return $fields;
-        }
+            $resumeCount->setDescription(
+                sprintf(
+                    'Number of times this job stalled and was resumed (limit of %d time(s)).',
+                    QueuedJobService::singleton()->config()->get('stall_threshold')
+                )
+            );
 
-        // Readonly CMS view is a lot more useful for debugging than no view at all
-        return $fields->makeReadonly();
+            $expiry->setDescription(
+                sprintf(
+                    'Specifies when the lock is released (lock expires %d seconds after the job is claimed).',
+                    $this->getWorkerExpiry()
+                )
+            );
+
+            if (strlen($this->SavedJobMessages ?? '')) {
+                $fields->addFieldToTab('Root.Messages', LiteralField::create('Messages', $this->getMessages()));
+            }
+
+            if ($this->config()->get('show_job_data')) {
+                $fields->addFieldsToTab('Root.JobData', [
+                    $jobDataPreview = TextareaField::create('SavedJobDataPreview', 'Job Data'),
+                ]);
+
+                $jobDataPreview->setReadonly(true);
+
+                $fields->addFieldsToTab('Root.MessagesRaw', [
+                    $messagesRaw = TextareaField::create('MessagesRaw', 'Messages Raw'),
+                ]);
+
+                $messagesRaw->setReadonly(true);
+            }
+
+            if (Permission::check('ADMIN')) {
+                return;
+            }
+
+            // Readonly CMS view is a lot more useful for debugging than no view at all
+            $readonlyList = $fields->makeReadonly();
+
+            // Remove all existing fields
+            foreach ($fields as $field) {
+                $fields->remove($field);
+            }
+
+            // Add read only fields
+            foreach ($readonlyList as $field) {
+                $fields->add($field);
+            }
+        });
+
+        return parent::getCMSFields();
     }
 
     /**
