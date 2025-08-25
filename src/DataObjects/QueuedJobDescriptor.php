@@ -527,7 +527,9 @@ class QueuedJobDescriptor extends DataObject
             ]);
 
             $implementation->setDescription('Class name which is used to execute this job.');
-            $notifiedBroken->setDescription('Indicates if a broken job notification was sent (this happens only once).');
+            $notifiedBroken->setDescription(
+                'Indicates if a broken job notification was sent (this happens only once).'
+            );
             $totalSteps->setDescription('Number of steps which is needed to complete this job.');
             $stepsProcessed->setDescription('Number of steps processed so far.');
             $workerCount->setDescription('Number of workers (processes) used to execute this job overall.');
