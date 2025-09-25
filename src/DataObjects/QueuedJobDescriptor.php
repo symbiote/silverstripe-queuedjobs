@@ -8,6 +8,7 @@ use SilverStripe\Assets\Filesystem;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Convert;
 use SilverStripe\Forms\CheckboxField;
+use SilverStripe\Forms\CompositeField;
 use SilverStripe\Forms\DatetimeField;
 use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\FieldList;
@@ -389,7 +390,10 @@ class QueuedJobDescriptor extends DataObject
         ];
     }
 
-    public function getCMSFields(): FieldList
+    /**
+     * @return FieldList
+     */
+    public function getCMSFields()
     {
         $this->beforeUpdateCMSFields(function (FieldList $fields) {
             $runAs = $fields->fieldByName('Root.Main.RunAsID');
@@ -577,26 +581,16 @@ class QueuedJobDescriptor extends DataObject
 
                 $messagesRaw->setReadonly(true);
             }
-
-            if (Permission::check('ADMIN')) {
-                return;
-            }
-
-            // Readonly CMS view is a lot more useful for debugging than no view at all
-            $readonlyList = $fields->makeReadonly();
-
-            // Remove all existing fields
-            foreach ($fields as $field) {
-                $fields->remove($field);
-            }
-
-            // Add read only fields
-            foreach ($readonlyList as $field) {
-                $fields->add($field);
-            }
         });
 
-        return parent::getCMSFields();
+        $fields = parent::getCMSFields();
+
+        if (Permission::check('ADMIN')) {
+            return $fields;
+        }
+
+        // Readonly CMS view is a lot more useful for debugging than no view at all
+        return $fields->makeReadonly();
     }
 
     /**
