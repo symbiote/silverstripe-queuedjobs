@@ -11,12 +11,15 @@ use SilverStripe\Forms\CheckboxField;
 use SilverStripe\Forms\CompositeField;
 use SilverStripe\Forms\DatetimeField;
 use SilverStripe\Forms\DropdownField;
+use SilverStripe\Forms\FieldGroup;
 use SilverStripe\Forms\FieldList;
+use SilverStripe\Forms\FormField;
 use SilverStripe\Forms\HeaderField;
 use SilverStripe\Forms\LiteralField;
 use SilverStripe\Forms\NumericField;
 use SilverStripe\Forms\TextareaField;
 use SilverStripe\Forms\TextField;
+use SilverStripe\Forms\ToggleCompositeField;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBDatetime;
 use SilverStripe\ORM\FieldType\DBField;
@@ -421,6 +424,19 @@ class QueuedJobDescriptor extends DataObject
                 'WorkerCount',
             ]);
 
+//            public const string TYPE_GOOD = 'good'; // green
+//            public const string TYPE_NOTICE = 'notice'; // blue
+//            public const string TYPE_WARNING = 'warning'; //orange
+//            public const string TYPE_ERROR = 'error'; //red
+//            public const string TYPE_PLAIN = ''; // transparent
+//
+//            public const string CATEGORY_MESSAGE = 'message';
+//            public const string CATEGORY_ALERT = 'alert';
+            $timelineHeadingContent = <<<'HTML'
+<p class="alert warning">
+It is recommended to avoid editing these fields as they are managed by the Queue Runner / Service.
+</p>
+HTML;
             // Main
             $fields->addFieldsToTab('Root.Main', [
                 CompositeField::create([
@@ -438,24 +454,37 @@ class QueuedJobDescriptor extends DataObject
                 CompositeField::create([
                     HeaderField::create('OverviewHeading', 'Overview'),
                     $jobTitle = TextField::create('JobTitle', 'Title'),
-                    $status = $this->buildJobStatusField(),
-                    $jobType = $this->buildJobTypeField(),
-                    $runAs,
-                    $startAfter = DatetimeField::create('StartAfter', 'Scheduled Start Time'),
+                    FieldGroup::create([
+                        $status = $this->buildJobStatusField(),
+                        $jobType = $this->buildJobTypeField(),
+                    ]),
+                    FieldGroup::create([
+                        $runAs,
+                        $startAfter = DatetimeField::create('StartAfter', 'Scheduled Start Time'),
+                    ]),
+                    ToggleCompositeField::create(
+                        'OverviewInfo',
+                        'More details',
+                        [
+                            $overviewDetailsField = LiteralField::create('OverviewDetails', ''),
+                        ]
+                    )
                 ]),
                 CompositeField::create([
                     HeaderField::create('JobTimelineTitle', 'Timeline'),
-                    LiteralField::create(
-                        'JobTimelineIntro',
-                        sprintf(
-                            '<p>%s</p>',
-                            'It is recommended to avoid editing these fields'
-                            . ' as they are managed by the Queue Runner / Service.'
-                        )
-                    ),
-                    $jobStarted = DatetimeField::create('JobStarted', 'Started (initial)'),
-                    $jobRestarted = DatetimeField::create('JobRestarted', 'Started (recent)'),
-                    $jobFinished = DatetimeField::create('JobFinished', 'Completed'),
+                    LiteralField::create('JobTimelineIntro', $timelineHeadingContent),
+                    FieldGroup::create([
+                        $jobStarted = DatetimeField::create('JobStarted', 'Started (initial)'),
+                        $jobRestarted = DatetimeField::create('JobRestarted', 'Started (recent)'),
+                        $jobFinished = DatetimeField::create('JobFinished', 'Completed'),
+                    ]),
+                    ToggleCompositeField::create(
+                        'JobTimelineInfo',
+                        'More details',
+                        [
+                            $timelineDetailsField = LiteralField::create('JobTimelineDetails', ''),
+                        ]
+                    )
                 ]),
             ]);
 
@@ -483,17 +512,41 @@ class QueuedJobDescriptor extends DataObject
                     . ' have to look like the specified user made them.'
                 );
 
+            $overviewDetailsContent = $this->createSummaryListFromFields([
+                $status,
+                $jobType,
+                $runAs,
+                $startAfter,
+            ]);
+            $overviewDetailsField->setContent($overviewDetailsContent);
+
+            $timelineDetailsContent = $this->createSummaryListFromFields([
+                $jobStarted,
+                $jobRestarted,
+                $jobFinished,
+            ]);
+            $timelineDetailsField->setContent($timelineDetailsContent);
+
+            $advancedFieldsContent = <<<'HTML'
+<p class="alert warning">
+It is recommended to avoid editing these fields as they are managed by the Queue Runner / Service.
+</p>
+HTML;
+            $metadataIntroContent = <<<'HTML'
+<p class="alert notice">
+Job progression mechanism related fields which are used to ensure that stalled jobs are paused / resumed.
+</p>
+HTML;
+            $jobLockIntroContent = <<<'HTML'
+<p class="alert notice">
+Job locking mechanism related fields which are used to ensure that every job gets executed only once at any given time.
+</p>
+HTML;
+
             // Advanced
             $fields->addFieldsToTab('Root.Advanced', [
                 HeaderField::create('AdvancedTabTitle', 'Advanced fields', 1),
-                LiteralField::create(
-                    'AdvancedTabIntro',
-                    sprintf(
-                        '<p>%s</p>',
-                        'It is recommended to avoid editing these fields'
-                        . ' as they are managed by the Queue Runner / Service.'
-                    )
-                ),
+                LiteralField::create('AdvancedTabIntro', $advancedFieldsContent),
                 CompositeField::create([
                     $implementation = TextField::create('Implementation', 'Job Class'),
                     $signature = TextField::create('Signature', 'Job Signature'),
@@ -501,32 +554,36 @@ class QueuedJobDescriptor extends DataObject
                 ]),
                 CompositeField::create([
                     HeaderField::create('AdvancedTabProgressTitle', 'Progression metadata'),
-                    LiteralField::create(
-                        'AdvancedTabProgressIntro',
-                        sprintf(
-                            '<p>%s</p>',
-                            'Job progression mechanism related fields which are used to'
-                            . ' ensure that stalled jobs are paused / resumed.'
-                        )
+                    LiteralField::create('AdvancedTabProgressIntro', $metadataIntroContent),
+                    FieldGroup::create([
+                        $totalSteps = NumericField::create('TotalSteps', 'Steps Total'),
+                        $stepsProcessed = NumericField::create('StepsProcessed', 'Steps Processed'),
+                        $lastProcessCount = NumericField::create('LastProcessedCount', 'Steps Processed (previous)'),
+                        $resumeCount = NumericField::create('ResumeCounts', 'Resume Count'),
+                    ]),
+                    ToggleCompositeField::create(
+                        'AdvancedTabProgressInfo',
+                        'More details',
+                        [
+                            $progressTabDetailsField = LiteralField::create('AdvancedTabProgressDetails', ''),
+                        ]
                     ),
-                    $totalSteps = NumericField::create('TotalSteps', 'Steps Total'),
-                    $stepsProcessed = NumericField::create('StepsProcessed', 'Steps Processed'),
-                    $lastProcessCount = NumericField::create('LastProcessedCount', 'Steps Processed (previous)'),
-                    $resumeCount = NumericField::create('ResumeCounts', 'Resume Count'),
                 ]),
                 CompositeField::create([
                     HeaderField::create('AdvancedTabLockTitle', 'Lock metadata'),
-                    LiteralField::create(
-                        'AdvancedTabLockTitleIntro',
-                        sprintf(
-                            '<p>%s</p>',
-                            'Job locking mechanism related fields which are used to'
-                            . ' ensure that every job gets executed only once at any given time.'
-                        )
+                    LiteralField::create('AdvancedTabLockTitleIntro', $jobLockIntroContent),
+                    FieldGroup::create([
+                        $worker = TextField::create('Worker', 'Worker Signature'),
+                        $workerCount = NumericField::create('WorkerCount', 'Worker Count'),
+                        $expiry = DatetimeField::create('Expiry', 'Lock Expiry'),
+                    ]),
+                    ToggleCompositeField::create(
+                        'AdvancedTabLockInfo',
+                        'More details',
+                        [
+                            $jobLockDetailsField = LiteralField::create('AdvancedTabLockDetails', ''),
+                        ]
                     ),
-                    $worker = TextField::create('Worker', 'Worker Signature'),
-                    $workerCount = NumericField::create('WorkerCount', 'Worker Count'),
-                    $expiry = DatetimeField::create('Expiry', 'Lock Expiry'),
                 ]),
             ]);
 
@@ -547,15 +604,14 @@ class QueuedJobDescriptor extends DataObject
             );
 
             $signature->setDescription(
-                'Usualy derived from the job data, prevents redundant jobs from being created to some degree.'
+                'Usually derived from the job data, prevents redundant jobs from being created to some degree.'
             );
 
-            $resumeCount->setDescription(
-                sprintf(
-                    'Number of times this job stalled and was resumed (limit of %d time(s)).',
-                    QueuedJobService::singleton()->config()->get('stall_threshold')
-                )
+            $resumeCountDescription = sprintf(
+                'Number of times this job stalled and was resumed (limit of %d time(s)).',
+                QueuedJobService::singleton()->config()->get('stall_threshold')
             );
+            $resumeCount->setDescription($resumeCountDescription);
 
             $expiry->setDescription(
                 sprintf(
@@ -563,6 +619,21 @@ class QueuedJobDescriptor extends DataObject
                     $this->getWorkerExpiry()
                 )
             );
+
+            $progressTabDetailsContent = $this->createSummaryListFromFields([
+                $totalSteps,
+                $stepsProcessed,
+                $lastProcessCount,
+                $resumeCount,
+            ]);
+            $progressTabDetailsField->setContent($progressTabDetailsContent);
+
+            $jobLockDetailsContent = $this->createSummaryListFromFields([
+                $worker,
+                $workerCount,
+                $expiry,
+            ]);
+            $jobLockDetailsField->setContent($jobLockDetailsContent);
 
             if (strlen($this->SavedJobMessages ?? '')) {
                 $fields->addFieldToTab('Root.Messages', LiteralField::create('Messages', $this->getMessages()));
@@ -637,5 +708,23 @@ class QueuedJobDescriptor extends DataObject
         $fields->push($this->buildJobStatusField()->setEmptyString(''));
         $fields->push($this->buildJobTypeField()->setEmptyString(''));
         return $fields;
+    }
+
+    /**
+     * Collect field names and descriptions from fields and consolidate them into a summary
+     * This is intended to be used in cases where @see FieldGroup is used which doesn't show field descriptions
+     *
+     * @param array $fields
+     * @return string
+     */
+    private function createSummaryListFromFields(array $fields): string
+    {
+        $items = array_map(function (FormField $field) {
+            return sprintf('<li><b>%s</b> - %s</li>', $field->Title(), $field->getDescription());
+        }, $fields);
+
+        $list = implode(PHP_EOL, $items);
+
+        return sprintf('<ul>%s</ul>', $list);
     }
 }
