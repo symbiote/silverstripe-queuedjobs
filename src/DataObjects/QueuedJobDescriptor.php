@@ -424,14 +424,13 @@ class QueuedJobDescriptor extends DataObject
                 'WorkerCount',
             ]);
 
-//            public const string TYPE_GOOD = 'good'; // green
-//            public const string TYPE_NOTICE = 'notice'; // blue
-//            public const string TYPE_WARNING = 'warning'; //orange
-//            public const string TYPE_ERROR = 'error'; //red
-//            public const string TYPE_PLAIN = ''; // transparent
-//
-//            public const string CATEGORY_MESSAGE = 'message';
-//            public const string CATEGORY_ALERT = 'alert';
+            $progressBarContent = sprintf(
+                '<p>%3$0.2f%% completed</p><p><progress value="%1$d" max="%2$d">%3$0.2f%%</progress></p>',
+                $this->StepsProcessed,
+                $this->TotalSteps,
+                $this->TotalSteps > 0 ? ($this->StepsProcessed / $this->TotalSteps) * 100 : 0
+            );
+
             $timelineHeadingContent = <<<'HTML'
 <p class="alert warning">
 It is recommended to avoid editing these fields as they are managed by the Queue Runner / Service.
@@ -441,15 +440,7 @@ HTML;
             $fields->addFieldsToTab('Root.Main', [
                 CompositeField::create([
                     HeaderField::create('ProgressReportHeading', 'Progress'),
-                    LiteralField::create(
-                        'JobProgressReportIntro',
-                        sprintf(
-                            '<p>%3$0.2f%% completed</p><p><progress value="%1$d" max="%2$d">%3$0.2f%%</progress></p>',
-                            $this->StepsProcessed,
-                            $this->TotalSteps,
-                            $this->TotalSteps > 0 ? ($this->StepsProcessed / $this->TotalSteps) * 100 : 0
-                        )
-                    ),
+                    LiteralField::create('JobProgressReportIntro', $progressBarContent),
                 ]),
                 CompositeField::create([
                     HeaderField::create('OverviewHeading', 'Overview'),
@@ -545,12 +536,21 @@ HTML;
 
             // Advanced
             $fields->addFieldsToTab('Root.Advanced', [
-                HeaderField::create('AdvancedTabTitle', 'Advanced fields', 1),
-                LiteralField::create('AdvancedTabIntro', $advancedFieldsContent),
                 CompositeField::create([
-                    $implementation = TextField::create('Implementation', 'Job Class'),
-                    $signature = TextField::create('Signature', 'Job Signature'),
+                    HeaderField::create('AdvancedTabTitle', 'Advanced fields', 1),
+                    LiteralField::create('AdvancedTabIntro', $advancedFieldsContent),
                     $notifiedBroken = CheckboxField::create('NotifiedBroken', 'Broken job notification sent'),
+                    FieldGroup::create([
+                        $implementation = TextField::create('Implementation', 'Job Class'),
+                        $signature = TextField::create('Signature', 'Job Signature'),
+                    ]),
+                    ToggleCompositeField::create(
+                        'AdvancedTabInfo',
+                        'More details',
+                        [
+                            $advancedTabDetailsField = LiteralField::create('AdvancedTabDetails', ''),
+                        ]
+                    ),
                 ]),
                 CompositeField::create([
                     HeaderField::create('AdvancedTabProgressTitle', 'Progression metadata'),
@@ -634,6 +634,12 @@ HTML;
                 $expiry,
             ]);
             $jobLockDetailsField->setContent($jobLockDetailsContent);
+
+            $advancedTabDetailsContent = $this->createSummaryListFromFields([
+                $implementation,
+                $signature,
+            ]);
+            $advancedTabDetailsField->setContent($advancedTabDetailsContent);
 
             if (strlen($this->SavedJobMessages ?? '')) {
                 $fields->addFieldToTab('Root.Messages', LiteralField::create('Messages', $this->getMessages()));
