@@ -425,15 +425,14 @@ class QueuedJobDescriptor extends DataObject
             ]);
 
             // Display override to remove the left margin to address a systemic issue with CompositeField
-            // TODO remove this patch after https://github.com/silverstripe/silverstripe-framework/issues/11857 is fixed
             $cssOverrideContent = <<<'HTML'
-<style>
-.composite,
-.composite > .form__field-holder {
-  margin-left:0 !important;
-}
-</style>
-HTML;
+            <style>
+            .composite,
+            .composite > .form__field-holder {
+              margin-left:0 !important;
+            }
+            </style>
+            HTML;
 
             $progressBarContent = sprintf(
                 '<p>%3$0.2f%% completed</p><p><progress value="%1$d" max="%2$d">%3$0.2f%%</progress></p>',
