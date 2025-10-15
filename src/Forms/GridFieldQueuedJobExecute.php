@@ -23,9 +23,9 @@ class GridFieldQueuedJobExecute extends AbstractGridFieldComponent implements
      * @var array
      */
     protected $icons = [
-        'execute' => 'font-icon-block-media',
-        'pause'   => 'font-icon-cancel-circled',
-        'resume'  => 'font-icon-sync',
+        'execute' => 'block-media',
+        'pause'   => 'cancel-circled',
+        'resume'  => 'sync',
     ];
 
     /**
@@ -144,10 +144,13 @@ class GridFieldQueuedJobExecute extends AbstractGridFieldComponent implements
 
         $field
             ->addExtraClass('gridfield-button-job' . $this->action)
-            ->addExtraClass($icon)
             ->addExtraClass('btn--icon-md btn--no-text grid-field__icon-action')
             ->setAttribute('title', $title)
+            ->setAttribute('aria-label', $title)
             ->setDescription($title);
+
+        // Convert legacy classes into icon references for better accessibility
+        $field->setIcon(preg_replace('/^font-icon-/', '', $icon));
 
         return $field->Field();
     }
