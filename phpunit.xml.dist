@@ -12,4 +12,7 @@
             </exclude>
         </whitelist>
     </filter>
+    <php>
+        <const name="UNIT_TESTS_EXECUTION" value="true"/>
+    </php>
 </phpunit>
