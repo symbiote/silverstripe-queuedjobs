@@ -47,6 +47,7 @@ use Symbiote\QueuedJobs\Services\QueuedJobService;
  * @property int $StepsProcessed Number of completed steps
  * @property int $LastProcessedCount Number at which StepsProcessed was last checked for stalled jobs
  * @property int $ResumeCounts Number of times this job has been resumed
+ * @property int $RetryCount Number of times this job has been retried
  * @property string $SavedJobData serialised data for the job to use as storage
  * @property string $SavedJobMessages List of messages saved for this job
  * @property string $JobStatus Status of this job
@@ -83,6 +84,7 @@ class QueuedJobDescriptor extends DataObject
         'StepsProcessed' => 'Int',
         'LastProcessedCount' => 'Int(-1)', // -1 means never checked, 0 means checked but no work is done
         'ResumeCounts' => 'Int',
+        'RetryCount' => 'Int',
         'SavedJobData' => 'Text',
         'SavedJobMessages' => 'Text',
         'JobStatus' => 'Varchar(16)',
@@ -412,6 +414,7 @@ class QueuedJobDescriptor extends DataObject
                 'LastProcessedCount',
                 'NotifiedBroken',
                 'ResumeCounts',
+                'RetryCount',
                 'RunAs',
                 'RunAsID',
                 'SavedJobData',
@@ -571,6 +574,7 @@ HTML;
                         $stepsProcessed = NumericField::create('StepsProcessed', 'Steps Processed'),
                         $lastProcessCount = NumericField::create('LastProcessedCount', 'Steps Processed (previous)'),
                         $resumeCount = NumericField::create('ResumeCounts', 'Resume Count'),
+                        $retryCount = NumericField::create('RetryCount', 'Retry Count'),
                     ]),
                     ToggleCompositeField::create(
                         'AdvancedTabProgressInfo',
@@ -623,6 +627,14 @@ HTML;
                 QueuedJobService::singleton()->config()->get('stall_threshold')
             );
             $resumeCount->setDescription($resumeCountDescription);
+
+            $retryConfig = (array) Config::inst()->get($this->Implementation, 'broken_status_retry');
+            $retryCount->setDescription(
+                sprintf(
+                    'Number of times this job broke and was retried (limit of %d time(s)).',
+                    count($retryConfig)
+                )
+            );
 
             $expiry->setDescription(
                 sprintf(

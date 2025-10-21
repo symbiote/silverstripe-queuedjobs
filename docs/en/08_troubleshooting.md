@@ -95,3 +95,117 @@ _-: php: command not found
 This restriction is a security feature coming with Plesk 10.
 On round about page 150 of the plesk Administrator Guide you will find a solution to enable scheduled tasks which use the command line. (But the latest Guide for 10.3.1 mentions `/usr/local/psa/admin/bin/server_pref -u -crontab-secure-shell "/bin/sh"` although "server_pref" doesnt exit.
 Since we are using a dedicated server for only one customer, we defined the crons under "Server Management"->"Tools & Utilities"->"Scheduled Tasks"->"root". The security restrictions of plesk are not involved then.
+
+## Broken jobs
+
+Sometimes, jobs break without having any issues with their implementation but rather an external factor is the root cause, for example database table lock may prevent a DB write.
+Most common scenario is "publish" action related jobs such as scheduled publish feature which may experience DB deadlocks on the versioned table as this can be frequently accessed.
+
+For this scenario it's recommended to configure automatic job retries.
+Configuration has some flexibility on number of retries and the timing of the retry attempts.
+
+### Basic configuration
+
+This configuration is recommended as a good starting point when trying to set up automatic retries.
+
+* `max_retry_attempts` - number of retry attempts, this allows to control how many times a broken job is retried
+* `initial_retry_delay` - minimal waiting time before the retry attempt is executed, this helps spread retry attempts apart from each other
+
+This configuration is applied to your job class.
+
+### Advanced configuration
+
+In case you have specific scenarios that can't be quite covered by basic configuration you can use the advanced configuration which provides more control over the automated job retries.
+
+Use the sample configuration below as a starting point and adjust as needed.
+This code snippet need to be placed into your job class.
+
+* `retry_falloff_multiplier` provides the capability to increase the retry period with each retry attempt, defaults to `1`
+* `retry_falloff_multiplier_variance` acts as a modifier for `retry_falloff_multiplier`, needs to be always lower value compared to `retry_falloff_multiplier`, this allows you to break up clusters of broken jobs which can prevent load spikes and DB deadlocks from forming, defaults to `0`
+
+**Examples**
+
+```php
+// Linear retry pattern
+private static int $max_retry_attempts = 4;
+private static int $initial_retry_delay = 600;
+private static float $retry_falloff_multiplier = 1;
+private static float $retry_falloff_multiplier_variance = 0;
+
+// First retry attempt - Retry after 10 minutes
+// Second retry attempt - Retry after 10 minutes
+// Third retry attempt - Retry after 10 minutes
+// Fourth retry attempt - Retry after 10 minutes
+```
+
+```php
+// Exponental retry pattern
+private static int $max_retry_attempts = 4;
+private static int $initial_retry_delay = 600;
+private static float $retry_falloff_multiplier = 2;
+private static float $retry_falloff_multiplier_variance = 0;
+
+// First retry attempt - Retry after 10 minutes
+// Second retry attempt - Retry after 20 minutes
+// Third retry attempt - Retry after 40 minutes
+// Fourth retry attempt - Retry after 80 minutes
+```
+
+```php
+// Retry pattern with spread
+private static int $max_retry_attempts = 4;
+private static int $initial_retry_delay = 600;
+private static float $retry_falloff_multiplier = 1;
+private static float $retry_falloff_multiplier_variance = 0.2;
+
+// First retry attempt - Retry after 8 to 12 minutes
+// Second retry attempt - Retry after 6.4 to 14.4 minutes
+// Third retry attempt - Retry after 5.1 to 27.4 minutes
+// Fourth retry attempt - Retry after 4 to 38.4 minutes
+```
+
+#### Cluster breaking configuration
+
+This configuration is recommended for dealing with clusters of broken jobs.
+A fixed retry delay typically doesn't help as all jobs will likely be retried in roughly the same time which will repeat the situation that caused the initial cluster to form.
+This scenario is best handled by introducing random delay which spreads the jobs and thus eliminates the cluster.
+It's recommended to refine this configuration in case you have multiple types of jobs that have significantly different priority.
+Higher priority jobs should have lower offset and spread compared to lower priority jobs to minimise waiting times to process high priority jobs.
+
+PHP config
+
+```php
+private static int $max_retry_attempts = 5;
+private static int $initial_retry_delay = 600;
+private static float $retry_falloff_multiplier = 1.2;
+private static float $retry_falloff_multiplier_variance = 0.2;
+
+// First retry attempt - Retry after 10 to 19.6 minutes
+// Second retry attempt - Retry after 10 to 27.4 minutes
+// Third retry attempt - Retry after 10 to 38.4 minutes
+// Fourth retry attempt - Retry after 10 to 53.7 minutes
+// Fifth retry attempt - Retry after 10 to 75.2 minutes
+```
+
+Global configuration is available on the `QueuedJobService` class:
+
+* `job_retry_sentinel` - this represents separation of job retry and job processing mechanism to avoid potential edge cases, defaults to 1 minute
+* `job_retry_limit` - how many broken jobs can be retries per a single execution of `runQueue()`
+* `job_retry_status` - defines the job status condition when searching for jobs eligible for a retry, defaults to `Broken`
+
+Overall, it's recommended to keep the broken job retries configuration applied to only those jobs that needed it.
+Incorrectly configured broken jobs retry may cause queue job processing delays.
+
+**Example scenario**
+
+We have a "Scheduled publish job" which is high priority, and we want to get it executed as close to the scheduled time as possible.
+This job must not be executed after certain period of time, let's say four hours, as it could lead to unintentionally publishing draft content which was produced while job was waiting for a retry.
+
+We have a "CDN flush job" which is low priority, and we want to get it executed ideally as soon as possible but having it delayed even for days is not a big deal.
+It's still worthwhile executing let's say even after two days of waiting as the CDN cache expiry is six days.
+
+Both of these job types are aiming to avoid clustering.
+For "Scheduled publish job" we want to avoid clustering around DB deadlocks.
+For "CDN flush job" we want to avoid clustering around CDN API downtimes.
+
+These two jobs need "Cluster breaking configuration" but they need to use different time periods to reflect the priority of processing of these jobs.

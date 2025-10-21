@@ -67,6 +67,35 @@ class QueuedJobService
     private static $stall_threshold = 3;
 
     /**
+     * How early broken jobs will become eligible for automated retry processing
+     *
+     * @config
+     * @var int
+     */
+    private static int $job_retry_sentinel = 1;
+
+    /**
+     * How many jobs are eligible to be automatically retried per one health check
+     *
+     * @config
+     * @var int
+     */
+    private static int $job_retry_limit = 10;
+
+    /**
+     * Defines the job status transformation for job retries
+     *
+     * @config
+     * @var array
+     */
+    private static array $job_retry_status = [
+        // Broken jobs will be retried from the start
+        QueuedJob::STATUS_BROKEN => QueuedJob::STATUS_NEW,
+        // Paused jobs will be retried from the point of failure
+        QueuedJob::STATUS_PAUSED => QueuedJob::STATUS_WAIT,
+    ];
+
+    /**
      * How much ram will we allow before pausing and releasing the memory?
      *
      * For instance, set to 268435456 (256MB) to pause this process if used memory exceeds
@@ -493,6 +522,9 @@ class QueuedJobService
             $job->write();
         }
 
+        // Attempt to automatically retry broken jobs before reporting them
+        $this->retryEligibleJobs($queue);
+
         // finally, find the list of broken jobs and send an email if there's some found
         // make sure that we report broken job only once
         $brokenJobs = QueuedJobDescriptor::get()->filter([
@@ -538,6 +570,239 @@ class QueuedJobService
         $query->execute();
 
         return $result;
+    }
+
+    /**
+     * Find any eligible jobs that qualify for an automated job retry and schedule their retry
+     *
+     * @throws ValidationException
+     */
+    protected function retryEligibleJobs(int $queueType): void
+    {
+        // Find any broken jobs that qualify for an automated job retry
+        $jobRetrySentinel = (int) $this->config()->get('job_retry_sentinel');
+        $jobRetryLimit = (int) $this->config()->get('job_retry_limit');
+        $jobRetryStatus = (array) $this->config()->get('job_retry_status');
+        $jobStatusMap = [];
+
+        foreach ($jobRetryStatus as $retryStatus => $targetStatus) {
+            // Skip any disabled status conditions
+            if (!$targetStatus) {
+                continue;
+            }
+
+            $jobStatusMap[$retryStatus] = $targetStatus;
+        }
+
+        $jobStatusConditions = array_keys($jobStatusMap);
+
+        // We don't have any job status transformation configured
+        if (count($jobStatusConditions) === 0) {
+            return;
+        }
+
+        $now = DBDatetime::now();
+
+        $lastEditedSentinel = $now
+            ->modify(sprintf('-%d minutes', $jobRetrySentinel))
+            ->Rfc2822();
+
+        $autoRetryJobs = QueuedJobDescriptor::get()
+            ->filter([
+                // Automatic retry only supports broken jobs currently but this could be expanded to paused jobs as well
+                'JobStatus' => $jobStatusMap,
+                // Make sure to avoid retrying jobs that are being processed very recently to avoid edge cases
+                'LastEdited:LessThan' => $lastEditedSentinel,
+                // We only want to process jobs in the current queue
+                'JobType' => $queueType,
+            ])
+            // Oldest jobs first
+            ->sort('ID', 'ASC');
+
+        // Provide an option to customise the list of jobs that are eligible for a job retry
+        $this->extend('updateRetryJobsList', $autoRetryJobs);
+
+        $jobConfigs = [];
+        $jobClasses = $autoRetryJobs->columnUnique('Implementation');
+
+        foreach ($jobClasses as $jobClass) {
+            // Skip invalid job data (orphaned data)
+            if (!class_exists($jobClass)) {
+                continue;
+            }
+
+            $maxRetryAttempts = (int) Config::inst()->get($jobClass, 'max_retry_attempts');
+
+            if (!$maxRetryAttempts) {
+                continue;
+            }
+
+            $initialRetryDelay = (int) Config::inst()->get($jobClass, 'initial_retry_delay');
+            $retryFalloffMultiplier = (float) Config::inst()->get($jobClass, 'retry_falloff_multiplier');
+            $retryFalloffMultiplierVariance = (float) Config::inst()->get($jobClass, 'retry_falloff_multiplier_variance');
+
+            // Sanitise values so we don't have to deal with edge cases
+            $initialRetryDelay = max(0, $initialRetryDelay);
+            $retryFalloffMultiplier = max(1, $retryFalloffMultiplier);
+            $retryFalloffMultiplierVariance = max(0, $retryFalloffMultiplierVariance);
+
+            $jobConfigs[$jobClass] = [
+                $maxRetryAttempts,
+                $initialRetryDelay,
+                $retryFalloffMultiplier,
+                $retryFalloffMultiplierVariance,
+            ];
+        }
+
+        // We couldn't find any job candidates to retry
+        if (!$jobConfigs) {
+            return;
+        }
+
+        $retryJobIDs = [];
+        $remainingLimit = $jobRetryLimit;
+
+        foreach ($jobConfigs as $jobClass => $retryConfig) {
+            // We've reached the number of jobs we are allowed to retry in this health check run
+            if ($remainingLimit <= 0) {
+                break;
+            }
+
+            [
+                $maxRetryAttempts,
+            ] = $retryConfig;
+
+            $jobIDs = $autoRetryJobs
+                ->filter([
+                    'Implementation' => $jobClass,
+                    'RetryCount:LessThan' => $maxRetryAttempts,
+                ])
+                ->limit($remainingLimit)
+                ->column('ID');
+
+            // Add the found jobs to our list so we can retry these jobs
+            $retryJobIDs = array_merge($retryJobIDs, $jobIDs);
+
+            // Subtract found jobs from the remaining limit
+            $remainingLimit -= count($jobIDs);
+        }
+
+        // We couldn't find any jobs to retry
+        if (!$retryJobIDs) {
+            return;
+        }
+
+        $jobsToRetry = $autoRetryJobs->byIDs($retryJobIDs);
+
+        /** @var QueuedJobDescriptor $jobDescriptor */
+        foreach ($jobsToRetry as $jobDescriptor) {
+            $jobClass = $jobDescriptor->Implementation;
+            $retryConfig = array_key_exists($jobClass, $jobConfigs)
+                ? $jobConfigs[$jobClass]
+                : [];
+
+            // Couldn't find a retry config for this job (possible edge case in parallel processing)
+            if (!$retryConfig) {
+                continue;
+            }
+
+            [
+                $maxRetryAttempts,
+                $initialRetryDelay,
+                $retryFalloffMultiplier,
+                $retryFalloffMultiplierVariance,
+            ] = $retryConfig;
+
+            // Determine the config key that is currently active
+            $retryCount = max(0, $jobDescriptor->RetryCount);
+
+            // We have reached the maximum retry attempts for this job
+            if ($retryCount >= $maxRetryAttempts) {
+                continue;
+            }
+
+            /** @var QueuedJob $job */
+            $job = Injector::inst()->create($jobClass);
+
+            // Invalid implementation (possible edge case of invalid data)
+            if (!$job instanceof QueuedJob) {
+                continue;
+            }
+
+            if ($initialRetryDelay > 0) {
+                // Initial delay is configured - calculate the eal delay value for this retry attempt
+
+                // We will use initial delay as our starting value
+                $delay = $initialRetryDelay;
+
+                // Calculate multiplier factoring in spread
+                $multiplier = $this->getJobRetryDelayMultiplier($retryFalloffMultiplier, $retryFalloffMultiplierVariance);
+
+                // Apply multiplier to total delay, factor in number of retries
+                $delay *= pow($multiplier, $retryCount);
+                $delay = (int) floor($delay);
+
+            } else {
+                // Initial delay is missing - retry right away
+                $delay = 0;
+            }
+
+            $dateMessageSegment = 'immediately';
+
+            // Add a delay if configured, so we wouldn't retry the job immediately, but with some spread
+            // this lowers the chance of multiple jobs accessing the same data, thus preventing conflicts
+            if ($delay > 0) {
+                $scheduledTime = $now->getTimestamp() + $delay;
+                $jobDescriptor->StartAfter = $scheduledTime;
+
+                $formattedDate = DBDatetime::create_field('Datetime', $scheduledTime);
+                $dateMessageSegment = sprintf('after %s', $formattedDate->Rfc2822());
+            }
+
+            // Capture exception in the messages of the broken job for better debug options
+            $message = sprintf('Automatic job retry - job will retry %s', $dateMessageSegment);
+
+            $this->copyDescriptorToJob($jobDescriptor, $job);
+
+            // Mark our retry attempt
+            $jobDescriptor->RetryCount += 1;
+            $jobDescriptor->JobStatus = QueuedJob::STATUS_NEW;
+
+            // Release the job lock, so it could be picked up again as well as expiry
+            $this->releaseJobLock($jobDescriptor);
+            $jobDescriptor->Expiry = null;
+
+            // This extension hook is useful not only to customise the message but also to integrate
+            // with another logging solution such as Graylog which provides the capability
+            // to see number of job retries over time as a visual chart
+            $this->extend('updateAutoRetryJobMessage', $jobDescriptor, $job, $message);
+
+            $job->addMessage($message);
+            $this->copyJobToDescriptor($job, $jobDescriptor);
+            $jobDescriptor->write();
+        }
+    }
+
+    /**
+     * Generate a randomised multiplier variance
+     */
+    protected function getJobRetryDelayMultiplier(float $multiplier, float $variance): float
+    {
+        // Variance is not in use or invalid
+        if (!$variance || $variance >= $multiplier) {
+            return $multiplier;
+        }
+
+        // Conver to integers for simpler calculation
+        $baseValue = (int) floor($multiplier * 100);
+        $offsetValue = (int) floor($variance * 100);
+
+        // This needs to be wrapped inside a separate non-private method so we can override it in
+        // situations such as tests as randomisation is not desirable in those cases
+        $multiplierKey = mt_rand($baseValue - $offsetValue, $baseValue - $offsetValue);
+
+        // Convert the final value back to float
+        return $multiplierKey / 100;
     }
 
     /**
@@ -923,8 +1188,7 @@ class QueuedJobService
                             $job->process();
                         } catch (Throwable $e) {
                             $logger->error($e->getMessage(), ['exception' => $e]);
-                            $this->markJobAsBroken($jobDescriptor);
-                            $this->extend('updateJobDescriptorAndJobOnException', $jobDescriptor, $job, $e);
+                            $this->processBrokenJobOnException($jobDescriptor, $job, $e);;
                         }
 
                         ob_end_flush();
@@ -1080,9 +1344,21 @@ class QueuedJobService
             $e->getMessage(),
             ['exception' => $e]
         );
+        $this->processBrokenJobOnException($jobDescriptor, $job, $e);
+        $jobDescriptor->write();
+    }
+
+    protected function processBrokenJobOnException(
+        QueuedJobDescriptor $jobDescriptor,
+        QueuedJob $job,
+        Throwable $e
+    ): void {
+        // Capture exception in the messages of the broken job for better debug options
+        $message = sprintf('%s : %s', $e::class, $e->getMessage());
+        $job->addMessage($message);
+
         $this->markJobAsBroken($jobDescriptor);
         $this->extend('updateJobDescriptorAndJobOnException', $jobDescriptor, $job, $e);
-        $jobDescriptor->write();
     }
 
     /**
