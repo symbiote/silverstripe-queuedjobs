@@ -610,7 +610,7 @@ class QueuedJobService
         $autoRetryJobs = QueuedJobDescriptor::get()
             ->filter([
                 // Automatic retry only supports broken jobs currently but this could be expanded to paused jobs as well
-                'JobStatus' => $jobStatusMap,
+                'JobStatus' => $jobStatusConditions,
                 // Make sure to avoid retrying jobs that are being processed very recently to avoid edge cases
                 'LastEdited:LessThan' => $lastEditedSentinel,
                 // We only want to process jobs in the current queue
@@ -766,7 +766,9 @@ class QueuedJobService
 
             // Mark our retry attempt
             $jobDescriptor->RetryCount += 1;
-            $jobDescriptor->JobStatus = QueuedJob::STATUS_NEW;
+
+            // Change the job status according to our map configuration
+            $jobDescriptor->JobStatus = $jobStatusMap[$jobDescriptor->JobStatus];
 
             // Release the job lock, so it could be picked up again as well as expiry
             $this->releaseJobLock($jobDescriptor);
