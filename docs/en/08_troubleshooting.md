@@ -125,41 +125,6 @@ This code snippet need to be placed into your job class.
 
 **Examples**
 
-```php
-// Linear retry pattern
-private static int $max_retry_attempts = 4;
-private static int $initial_retry_delay = 600;
-private static float $retry_falloff_multiplier = 1;
-private static float $retry_falloff_multiplier_variance = 0;
-
-// First retry attempt - Retry after 10 minutes
-// Second retry attempt - Retry after 10 minutes
-// Third retry attempt - Retry after 10 minutes
-// Fourth retry attempt - Retry after 10 minutes
-
-// Exponental retry pattern
-private static int $max_retry_attempts = 4;
-private static int $initial_retry_delay = 600;
-private static float $retry_falloff_multiplier = 2;
-private static float $retry_falloff_multiplier_variance = 0;
-
-// First retry attempt - Retry after 10 minutes
-// Second retry attempt - Retry after 20 minutes
-// Third retry attempt - Retry after 40 minutes
-// Fourth retry attempt - Retry after 80 minutes
-
-// Retry pattern with spread
-private static int $max_retry_attempts = 4;
-private static int $initial_retry_delay = 600;
-private static float $retry_falloff_multiplier = 1;
-private static float $retry_falloff_multiplier_variance = 0.2;
-
-// First retry attempt - Retry after 8 to 12 minutes
-// Second retry attempt - Retry after 6.4 to 14.4 minutes
-// Third retry attempt - Retry after 5.1 to 27.4 minutes
-// Fourth retry attempt - Retry after 4 to 38.4 minutes
-```
-
 #### Cluster breaking configuration
 
 This configuration is recommended for dealing with clusters of broken jobs.
@@ -170,18 +135,7 @@ Higher priority jobs should have lower offset and spread compared to lower prior
 
 PHP config
 
-```php
-private static int $max_retry_attempts = 5;
-private static int $initial_retry_delay = 600;
-private static float $retry_falloff_multiplier = 1.2;
-private static float $retry_falloff_multiplier_variance = 0.2;
 
-// First retry attempt - Retry after 10 to 19.6 minutes
-// Second retry attempt - Retry after 10 to 27.4 minutes
-// Third retry attempt - Retry after 10 to 38.4 minutes
-// Fourth retry attempt - Retry after 10 to 53.7 minutes
-// Fifth retry attempt - Retry after 10 to 75.2 minutes
-```
 
 Global configuration is available on the `QueuedJobService` class:
 
