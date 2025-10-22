@@ -35,7 +35,7 @@ class QueueTestJob extends AbstractQueuedJob
     public function setup(): void
     {
         $this->times = [];
-        $this->totalSteps = self::TOTAL_STEPS;
+        $this->totalSteps = QueueTestJob::TOTAL_STEPS;
     }
 
     /**
