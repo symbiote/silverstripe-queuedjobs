@@ -27,6 +27,7 @@ class QueueTestTask extends BuildTask
     public function getOptions(): array
     {
         $options = parent::getOptions();
+
         $queueTypes = QueuedJobDescriptor::singleton()->getJobTypeValues();
 
         $options[] = new InputOption(

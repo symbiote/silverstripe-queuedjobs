@@ -80,7 +80,7 @@ class QueuedJobService
      * @config
      * @var int
      */
-    private static int $job_retry_limit = 10;
+    private static int $job_retry_limit = 0;
 
     /**
      * Defines the job status transformation for job retries
@@ -584,6 +584,11 @@ class QueuedJobService
         $jobRetryLimit = (int) $this->config()->get('job_retry_limit');
         $jobRetryStatus = (array) $this->config()->get('job_retry_status');
         $jobStatusMap = [];
+
+        // We have no capacity configured to perform job retries
+        if ($jobRetryLimit === 0) {
+            return;
+        }
 
         foreach ($jobRetryStatus as $retryStatus => $targetStatus) {
             // Skip any disabled status conditions
