@@ -95,3 +95,11 @@ _-: php: command not found
 This restriction is a security feature coming with Plesk 10.
 On round about page 150 of the plesk Administrator Guide you will find a solution to enable scheduled tasks which use the command line. (But the latest Guide for 10.3.1 mentions `/usr/local/psa/admin/bin/server_pref -u -crontab-secure-shell "/bin/sh"` although "server_pref" doesnt exit.
 Since we are using a dedicated server for only one customer, we defined the crons under "Server Management"->"Tools & Utilities"->"Scheduled Tasks"->"root". The security restrictions of plesk are not involved then.
+
+## Broken jobs
+
+Sometimes, jobs break without having any issues with their implementation but rather an external factor is the root cause, for example database table lock may prevent a DB write.
+Most common scenario is "publish" action related jobs such as scheduled publish feature which may experience DB deadlocks on the versioned table as this can be frequently accessed.
+
+For this scenario it's recommended to configure automatic job retries.
+Configuration has some flexibility on number of retries and the timing of the retry attempts.
