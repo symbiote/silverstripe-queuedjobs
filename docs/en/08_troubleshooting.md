@@ -107,13 +107,3 @@ Configuration has some flexibility on number of retries and the timing of the re
 ### Basic configuration
 
 This configuration is recommended as a good starting point when trying to set up automatic retries.
-
-**max_retry_attempts**
-
-Number of retry attempts, this allows to control how many times a broken job is retried.
-
-**initial_retry_delay**
-
-Minimal waiting time before the retry attempt is executed, this helps spread retry attempts apart from each other.
-
-This configuration is applied to your job class.
