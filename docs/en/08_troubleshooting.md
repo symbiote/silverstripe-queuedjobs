@@ -108,9 +108,8 @@ Configuration has some flexibility on number of retries and the timing of the re
 
 This configuration is recommended as a good starting point when trying to set up automatic retries.
 
-max_retry_attempts - number of retry attempts, this allows to control how many times a broken job is retried
-
-initial_retry_delay - minimal waiting time before the retry attempt is executed, this helps spread retry attempts apart from each other
+* `max_retry_attempts` - number of retry attempts, this allows to control how many times a broken job is retried
+* `initial_retry_delay` - minimal waiting time before the retry attempt is executed, this helps spread retry attempts apart from each other
 
 This configuration is applied to your job class.
 
@@ -121,9 +120,45 @@ In case you have specific scenarios that can't be quite covered by basic configu
 Use the sample configuration below as a starting point and adjust as needed.
 This code snippet need to be placed into your job class.
 
-retry_falloff_multiplier - provides the capability to increase the retry period with each retry attempt, defaults to `1`
+* `retry_falloff_multiplier` provides the capability to increase the retry period with each retry attempt, defaults to `1`
+* `retry_falloff_multiplier_variance` acts as a modifier for `retry_falloff_multiplier`, needs to be always lower value compared to `retry_falloff_multiplier`, this allows you to break up clusters of broken jobs which can prevent load spikes and DB deadlocks from forming, defaults to `0`
 
-retry_falloff_multiplier_variance - acts as a modifier for `retry_falloff_multiplier`, needs to be always lower value compared to `retry_falloff_multiplier`, this allows you to break up clusters of broken jobs which can prevent load spikes and DB deadlocks from forming, defaults to `0`
+**Examples**
+
+```php
+// Linear retry pattern
+private static int $max_retry_attempts = 4;
+private static int $initial_retry_delay = 600;
+private static float $retry_falloff_multiplier = 1;
+private static float $retry_falloff_multiplier_variance = 0;
+
+// First retry attempt - Retry after 10 minutes
+// Second retry attempt - Retry after 10 minutes
+// Third retry attempt - Retry after 10 minutes
+// Fourth retry attempt - Retry after 10 minutes
+
+// Exponental retry pattern
+private static int $max_retry_attempts = 4;
+private static int $initial_retry_delay = 600;
+private static float $retry_falloff_multiplier = 2;
+private static float $retry_falloff_multiplier_variance = 0;
+
+// First retry attempt - Retry after 10 minutes
+// Second retry attempt - Retry after 20 minutes
+// Third retry attempt - Retry after 40 minutes
+// Fourth retry attempt - Retry after 80 minutes
+
+// Retry pattern with spread
+private static int $max_retry_attempts = 4;
+private static int $initial_retry_delay = 600;
+private static float $retry_falloff_multiplier = 1;
+private static float $retry_falloff_multiplier_variance = 0.2;
+
+// First retry attempt - Retry after 8 to 12 minutes
+// Second retry attempt - Retry after 6.4 to 14.4 minutes
+// Third retry attempt - Retry after 5.1 to 27.4 minutes
+// Fourth retry attempt - Retry after 4 to 38.4 minutes
+```
 
 #### Cluster breaking configuration
 
@@ -135,18 +170,29 @@ Higher priority jobs should have lower offset and spread compared to lower prior
 
 PHP config
 
+```php
+private static int $max_retry_attempts = 5;
+private static int $initial_retry_delay = 600;
+private static float $retry_falloff_multiplier = 1.2;
+private static float $retry_falloff_multiplier_variance = 0.2;
+
+// First retry attempt - Retry after 10 to 19.6 minutes
+// Second retry attempt - Retry after 10 to 27.4 minutes
+// Third retry attempt - Retry after 10 to 38.4 minutes
+// Fourth retry attempt - Retry after 10 to 53.7 minutes
+// Fifth retry attempt - Retry after 10 to 75.2 minutes
+```
+
 Global configuration is available on the `QueuedJobService` class:
 
-job_retry_sentinel - this represents separation of job retry and job processing mechanism to avoid potential edge cases, defaults to 1 minute
-
-job_retry_limit - how many broken jobs can be retries per a single execution of `runQueue()`, set to `0` to disable job retries, defaults to `0` (globally disabled), recommended safe value is `10`
-
-job_retry_status - defines the job status transformation map, this allows to customise how the job statuses change during a job retry, defaults to `New` for `Broken` jobs and `Waiting` for `Paused` jobs
+* `job_retry_sentinel` - this represents separation of job retry and job processing mechanism to avoid potential edge cases, defaults to 1 minute
+* `job_retry_limit` - how many broken jobs can be retries per a single execution of `runQueue()`, set to `0` to disable job retries, defaults to `0` (globally disabled), recommneded safe value is `10`
+* `job_retry_status` - defines the job status transformation map, this allow to customise how the job statuses change during a job retry, defaults to `New` for `Broken` jobs and `Waiting` for `Paused` jobs
 
 Overall, it's recommended to keep the broken job retries configuration applied to only those jobs that needed it.
 Incorrectly configured broken jobs retry may cause queue job processing delays.
 
-Example scenario
+**Example scenario**
 
 We have a "Scheduled publish job" which is high priority, and we want to get it executed as close to the scheduled time as possible.
 This job must not be executed after certain period of time, let's say four hours, as it could lead to unintentionally publishing draft content which was produced while job was waiting for a retry.
@@ -159,4 +205,3 @@ For "Scheduled publish job" we want to avoid clustering around DB deadlocks.
 For "CDN flush job" we want to avoid clustering around CDN API downtimes.
 
 These two jobs need "Cluster breaking configuration" but they need to use different time periods to reflect the priority of processing of these jobs.
-
