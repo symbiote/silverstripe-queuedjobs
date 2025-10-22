@@ -137,7 +137,7 @@ private static float $retry_falloff_multiplier_variance = 0;
 // Third retry attempt - Retry after 10 minutes
 // Fourth retry attempt - Retry after 10 minutes
 
-// Exponental retry pattern
+// Exponential retry pattern
 private static int $max_retry_attempts = 4;
 private static int $initial_retry_delay = 600;
 private static float $retry_falloff_multiplier = 2;
@@ -186,8 +186,8 @@ private static float $retry_falloff_multiplier_variance = 0.2;
 Global configuration is available on the `QueuedJobService` class:
 
 * `job_retry_sentinel` - this represents separation of job retry and job processing mechanism to avoid potential edge cases, defaults to 1 minute
-* `job_retry_limit` - how many broken jobs can be retries per a single execution of `runQueue()`, set to `0` to disable job retries, defaults to `0` (globally disabled), recommneded safe value is `10`
-* `job_retry_status` - defines the job status transformation map, this allow to customise how the job statuses change during a job retry, defaults to `New` for `Broken` jobs and `Waiting` for `Paused` jobs
+* `job_retry_limit` - how many broken jobs can be retries per a single execution of `runQueue()`, set to `0` to disable job retries, defaults to `0` (globally disabled), recommended safe value is `10`
+* `job_retry_status` - defines the job status transformation map, this allows to customise how the job statuses change during a job retry, defaults to `New` for `Broken` jobs and `Waiting` for `Paused` jobs
 
 Overall, it's recommended to keep the broken job retries configuration applied to only those jobs that needed it.
 Incorrectly configured broken jobs retry may cause queue job processing delays.
