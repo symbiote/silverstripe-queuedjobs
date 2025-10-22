@@ -644,7 +644,10 @@ class QueuedJobService
 
             $initialRetryDelay = (int) Config::inst()->get($jobClass, 'initial_retry_delay');
             $retryFalloffMultiplier = (float) Config::inst()->get($jobClass, 'retry_falloff_multiplier');
-            $retryFalloffMultiplierVariance = (float) Config::inst()->get($jobClass, 'retry_falloff_multiplier_variance');
+            $retryFalloffMultiplierVariance = (float) Config::inst()->get(
+                $jobClass,
+                'retry_falloff_multiplier_variance'
+            );
 
             // Sanitise values so we don't have to deal with edge cases
             $initialRetryDelay = max(0, $initialRetryDelay);
@@ -741,12 +744,14 @@ class QueuedJobService
                 $delay = $initialRetryDelay;
 
                 // Calculate multiplier factoring in spread
-                $multiplier = $this->getJobRetryDelayMultiplier($retryFalloffMultiplier, $retryFalloffMultiplierVariance);
+                $multiplier = $this->getJobRetryDelayMultiplier(
+                    $retryFalloffMultiplier,
+                    $retryFalloffMultiplierVariance
+                );
 
                 // Apply multiplier to total delay, factor in number of retries
                 $delay *= pow($multiplier, $retryCount);
                 $delay = (int) floor($delay);
-
             } else {
                 // Initial delay is missing - retry right away
                 $delay = 0;
@@ -1195,7 +1200,7 @@ class QueuedJobService
                             $job->process();
                         } catch (Throwable $e) {
                             $logger->error($e->getMessage(), ['exception' => $e]);
-                            $this->processBrokenJobOnException($jobDescriptor, $job, $e);;
+                            $this->processBrokenJobOnException($jobDescriptor, $job, $e);
                         }
 
                         ob_end_flush();

@@ -9,7 +9,6 @@ use SilverStripe\Core\Injector\Injectable;
  */
 class QueueTestService
 {
-
     use Injectable;
 
     public function isUnitTestExecutionActive(): bool
@@ -26,5 +25,4 @@ class QueueTestService
 
         sleep($seconds);
     }
-
 }

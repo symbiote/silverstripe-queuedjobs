@@ -136,9 +136,7 @@ private static float $retry_falloff_multiplier_variance = 0;
 // Second retry attempt - Retry after 10 minutes
 // Third retry attempt - Retry after 10 minutes
 // Fourth retry attempt - Retry after 10 minutes
-```
 
-```php
 // Exponental retry pattern
 private static int $max_retry_attempts = 4;
 private static int $initial_retry_delay = 600;
@@ -149,9 +147,7 @@ private static float $retry_falloff_multiplier_variance = 0;
 // Second retry attempt - Retry after 20 minutes
 // Third retry attempt - Retry after 40 minutes
 // Fourth retry attempt - Retry after 80 minutes
-```
 
-```php
 // Retry pattern with spread
 private static int $max_retry_attempts = 4;
 private static int $initial_retry_delay = 600;
