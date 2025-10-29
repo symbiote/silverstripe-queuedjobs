@@ -67,7 +67,7 @@ class QueuedJobService
     private static $stall_threshold = 3;
 
     /**
-     * How early broken jobs will become eligible for automated retry processing
+     * How early broken jobs will become eligible for automated retry processing (minutes)
      *
      * @config
      * @var int
@@ -76,6 +76,7 @@ class QueuedJobService
 
     /**
      * How many jobs are eligible to be automatically retried per one health check
+     * Setting this to 0 disables the job retry feature
      *
      * @config
      * @var int
@@ -84,6 +85,7 @@ class QueuedJobService
 
     /**
      * Defines the job status transformation for job retries
+     * Set rule value to "null" to disable it
      *
      * @config
      * @var array
@@ -580,13 +582,13 @@ class QueuedJobService
     protected function retryEligibleJobs(int $queueType): void
     {
         // Find any broken jobs that qualify for an automated job retry
-        $jobRetrySentinel = (int) $this->config()->get('job_retry_sentinel');
-        $jobRetryLimit = (int) $this->config()->get('job_retry_limit');
-        $jobRetryStatus = (array) $this->config()->get('job_retry_status');
+        $jobRetrySentinel = (int) static::config()->get('job_retry_sentinel');
+        $jobRetryLimit = (int) static::config()->get('job_retry_limit');
+        $jobRetryStatus = (array) static::config()->get('job_retry_status');
         $jobStatusMap = [];
 
-        // We have no capacity configured to perform job retries
-        if ($jobRetryLimit === 0) {
+        // Job retries feature is disabled
+        if ($jobRetryLimit <= 0) {
             return;
         }
 
@@ -607,7 +609,6 @@ class QueuedJobService
         }
 
         $now = DBDatetime::now();
-
         $lastEditedSentinel = $now
             ->modify(sprintf('-%d minutes', $jobRetrySentinel))
             ->Rfc2822();
@@ -738,7 +739,7 @@ class QueuedJobService
             }
 
             if ($initialRetryDelay > 0) {
-                // Initial delay is configured - calculate the eal delay value for this retry attempt
+                // Initial delay is configured - calculate the real delay value for this retry attempt
 
                 // We will use initial delay as our starting value
                 $delay = $initialRetryDelay;
