@@ -41,7 +41,7 @@ class QueuedJobsRetriesTest extends SapphireTest
     }
 
     #[DataProvider('jobRetryLimitCasesProvider')]
-    public function testJobRetryLimit(int $limit): void
+    public function testJobRetryLimit(int $limit, int $expected): void
     {
         QueuedJobService::config()
             ->set('job_retry_limit', $limit)
@@ -49,6 +49,10 @@ class QueuedJobsRetriesTest extends SapphireTest
                 QueuedJob::STATUS_BROKEN => QueuedJob::STATUS_NEW,
             ]);
 
+        $this->createMockJob(QueuedJob::STATUS_BROKEN, QueuedJob::QUEUED);
+        $this->createMockJob(QueuedJob::STATUS_BROKEN, QueuedJob::QUEUED);
+        $this->createMockJob(QueuedJob::STATUS_BROKEN, QueuedJob::QUEUED);
+        $this->createMockJob(QueuedJob::STATUS_BROKEN, QueuedJob::QUEUED);
         $this->createMockJob(QueuedJob::STATUS_BROKEN, QueuedJob::QUEUED);
 
         // Move the clock forward to bypass the sentinel limit
@@ -61,7 +65,7 @@ class QueuedJobsRetriesTest extends SapphireTest
         ]);
 
         $this->assertCount(
-            $limit,
+            $expected,
             $retriedJobs,
             'We expect a specific number of retried jobs based on configured retry limit'
         );
@@ -72,9 +76,15 @@ class QueuedJobsRetriesTest extends SapphireTest
         return [
             'job retries disabled' => [
                 0,
+                0,
             ],
-            'job retries enabled' => [
+            'job retries enabled (small limit)' => [
                 1,
+                1,
+            ],
+            'job retries enabled (large limit)' => [
+                10,
+                5,
             ],
         ];
     }
