@@ -126,7 +126,11 @@ This code snippet need to be placed into your job class.
 **Examples**
 
 ```php
-class QueueTestJob extends AbstractQueuedJob
+namespace App\Jobs;
+
+use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
+
+class MyJob extends AbstractQueuedJob
 {
     // Linear retry pattern
     private static int $max_retry_attempts = 4;
@@ -174,7 +178,11 @@ Higher priority jobs should have lower offset and spread compared to lower prior
 PHP config
 
 ```php
-class QueueTestJob extends AbstractQueuedJob
+namespace App\Jobs;
+
+use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
+
+class MyJob extends AbstractQueuedJob
 {
     private static int $max_retry_attempts = 5;
     private static int $initial_retry_delay = 600;
