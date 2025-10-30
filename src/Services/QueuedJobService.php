@@ -524,7 +524,8 @@ class QueuedJobService
             $job->write();
         }
 
-        // Attempt to automatically retry broken jobs before reporting them
+        // Attempt to automatically retry eligible jobs before reporting any broken jobs
+        // as some of these jobs might be switched from broken state
         $this->retryEligibleJobs($queue);
 
         // finally, find the list of broken jobs and send an email if there's some found
