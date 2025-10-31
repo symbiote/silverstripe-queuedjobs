@@ -1646,6 +1646,7 @@ class QueuedJobService
 
             $maxRetryAttempts = (int) Config::inst()->get($jobClass, 'max_retry_attempts');
 
+            // Job is not configured to be retried
             if (!$maxRetryAttempts) {
                 continue;
             }
@@ -1819,7 +1820,7 @@ class QueuedJobService
 
         // This needs to be wrapped inside a separate non-private method so we can override it in
         // situations such as tests as randomisation is not desirable in those cases
-        $multiplierKey = $this->getJobRetryRandomMultiplierKey($baseValue, $offsetValue);
+        $multiplierKey = $this->getRandomKeyFromRange($baseValue - $offsetValue, $baseValue + $offsetValue);
 
         // Convert the final value back to float
         return $multiplierKey / 100;
@@ -1829,9 +1830,9 @@ class QueuedJobService
      * This functionality needs to be in a separate method so it can be overridden in unit tests
      * where randomisation is not desirable
      */
-    protected function getJobRetryRandomMultiplierKey(int $baseValue, int $offsetValue): int
+    protected function getRandomKeyFromRange(int $min, int $max): int
     {
-        return mt_rand($baseValue - $offsetValue, $baseValue + $offsetValue);
+        return mt_rand($min, $max);
     }
 
     /**

@@ -14,6 +14,10 @@ use Symbiote\QueuedJobs\Services\QueuedJobService;
 
 class QueuedJobsRetriesTest extends SapphireTest
 {
+
+    public const string RANGE_TYPE_MIN = 'min';
+    public const string RANGE_TYPE_MAX = 'max';
+
     /**
      * @var bool
      */
@@ -395,25 +399,23 @@ class QueuedJobsRetriesTest extends SapphireTest
     public function testRetryFalloffMultiplierVariance(
         float $variance,
         int $jobAttempts,
-        bool $negativeOffset,
+        string $rangeType,
         string $expected
     ): void {
         // Register a non-randomised service so we can have reliable tests running
         $service = new class extends QueuedJobService {
-            public bool $negativeOffset = false;
+            public string $type = QueuedJobsRetriesTest::RANGE_TYPE_MIN;
 
-            protected function getJobRetryRandomMultiplierKey(int $baseValue, int $offsetValue): int
+            protected function getRandomKeyFromRange(int $min, int $max): int
             {
                 // This returns just the extreme values so we can have somewhat representative tests
-                if ($this->negativeOffset) {
-                    return $baseValue - $offsetValue;
-                }
-
-                return $baseValue + $offsetValue;
+                return $this->type === QueuedJobsRetriesTest::RANGE_TYPE_MIN
+                    ? $min
+                    : $max;
             }
         };
 
-        $service->negativeOffset = $negativeOffset;
+        $service->type = $rangeType;
 
         Injector::inst()->registerService($service, QueuedJobService::class);
 
@@ -450,55 +452,55 @@ class QueuedJobsRetriesTest extends SapphireTest
             'no variance (first attempt)' => [
                 0,
                 0,
-                false,
+                QueuedJobsRetriesTest::RANGE_TYPE_MIN,
                 '2020-01-01 02:00:00',
             ],
             'no variance (second attempt)' => [
                 0,
                 1,
-                false,
+                QueuedJobsRetriesTest::RANGE_TYPE_MIN,
                 '2020-01-01 02:00:00',
             ],
             'no variance (third attempt)' => [
                 0,
                 2,
-                false,
+                QueuedJobsRetriesTest::RANGE_TYPE_MIN,
                 '2020-01-01 02:00:00',
             ],
             'with variance (first attempt, negative offset)' => [
                 0.2,
                 0,
-                true,
+                QueuedJobsRetriesTest::RANGE_TYPE_MIN,
                 '2020-01-01 02:00:00',
             ],
             'no variance (second attempt, negative offset)' => [
                 0.2,
                 1,
-                true,
+                QueuedJobsRetriesTest::RANGE_TYPE_MIN,
                 '2020-01-01 01:48:00',
             ],
             'no variance (third attempt, negative offset)' => [
                 0.2,
                 2,
-                true,
+                QueuedJobsRetriesTest::RANGE_TYPE_MIN,
                 '2020-01-01 01:38:24',
             ],
             'with variance (first attempt, positive offset)' => [
                 0.2,
                 0,
-                false,
+                QueuedJobsRetriesTest::RANGE_TYPE_MAX,
                 '2020-01-01 02:00:00',
             ],
             'no variance (second attempt, positive offset)' => [
                 0.2,
                 1,
-                false,
+                QueuedJobsRetriesTest::RANGE_TYPE_MAX,
                 '2020-01-01 02:12:00',
             ],
             'no variance (third attempt, positive offset)' => [
                 0.2,
                 2,
-                false,
+                QueuedJobsRetriesTest::RANGE_TYPE_MAX,
                 '2020-01-01 02:26:24',
             ],
         ];
