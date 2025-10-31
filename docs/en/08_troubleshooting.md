@@ -123,7 +123,7 @@ This code snippet need to be placed into your job class.
 - `retry_falloff_multiplier` provides the capability to increase the retry period with each retry attempt, defaults to `1`
 - `retry_falloff_multiplier_variance` acts as a modifier for `retry_falloff_multiplier`, needs to be always lower value compared to `retry_falloff_multiplier`, this allows you to break up clusters of broken jobs which can prevent load spikes and DB deadlocks from forming, defaults to `0`
 
-**Examples**
+These examples show you how it works:
 
 ```php
 namespace App\Jobs;
