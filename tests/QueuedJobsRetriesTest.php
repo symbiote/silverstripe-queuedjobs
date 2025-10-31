@@ -14,7 +14,6 @@ use Symbiote\QueuedJobs\Services\QueuedJobService;
 
 class QueuedJobsRetriesTest extends SapphireTest
 {
-
     public const string RANGE_TYPE_MIN = 'min';
     public const string RANGE_TYPE_MAX = 'max';
 
