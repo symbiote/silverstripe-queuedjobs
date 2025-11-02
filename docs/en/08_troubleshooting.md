@@ -101,7 +101,7 @@ Since we are using a dedicated server for only one customer, we defined the cron
 Sometimes, jobs break without having any issues with their implementation but rather an external factor is the root cause, for example database table lock may prevent a DB write.
 Most common scenario is "publish" action related jobs such as scheduled publish feature which may experience DB deadlocks on the versioned table as this can be frequently accessed.
 In other cases, a job can get paused by a queue runner due to lack of server resources at a particular time.
-Paused jobs can usually be safely resumed, continuing from the last completed step at a later time. 
+Paused jobs can usually be safely resumed, continuing from the last completed step at a later time.
 
 For these scenarios it's recommended to configure automatic job retries.
 Configuration has some flexibility on number of retries and the timing of the retry attempts.

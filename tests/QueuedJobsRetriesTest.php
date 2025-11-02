@@ -77,6 +77,10 @@ class QueuedJobsRetriesTest extends SapphireTest
     public static function jobRetryLimitCasesProvider(): array
     {
         return [
+            'job retries invalid value' => [
+                -1,
+                0,
+            ],
             'job retries disabled' => [
                 0,
                 0,
@@ -118,6 +122,10 @@ class QueuedJobsRetriesTest extends SapphireTest
     public static function jobRetrySentinelCasesProvider(): array
     {
         return [
+            'invalid  sentinel' => [
+                -1,
+                1,
+            ],
             'no sentinel' => [
                 0,
                 1,
@@ -176,6 +184,12 @@ class QueuedJobsRetriesTest extends SapphireTest
         return [
             'no retry status' => [
                 [],
+                null,
+            ],
+            'invalid retry status' => [
+                [
+                    QueuedJob::STATUS_BROKEN => 'invalid-status',
+                ],
                 null,
             ],
             'paused status only' => [
@@ -270,6 +284,11 @@ class QueuedJobsRetriesTest extends SapphireTest
                 0,
                 0,
             ],
+            'invalid value on job level' => [
+                -1,
+                0,
+                0,
+            ],
             'enabled on job level (valid retry)' => [
                 0,
                 1,
@@ -312,6 +331,10 @@ class QueuedJobsRetriesTest extends SapphireTest
         return [
             'no retry delay (start immediately)' => [
                 0,
+                null,
+            ],
+            'invalid retry delay' => [
+                -1,
                 null,
             ],
             'short retry delay' => [
@@ -363,6 +386,11 @@ class QueuedJobsRetriesTest extends SapphireTest
         return [
             'no multiplier (first attempt)' => [
                 1,
+                0,
+                '2020-01-01 01:01:00',
+            ],
+            'invalid multiplier' => [
+                -1,
                 0,
                 '2020-01-01 01:01:00',
             ],
@@ -448,6 +476,12 @@ class QueuedJobsRetriesTest extends SapphireTest
     public static function retryFalloffMultiplierVarianceCasesProvider(): array
     {
         return [
+            'invalid variance' => [
+                -1,
+                0,
+                QueuedJobsRetriesTest::RANGE_TYPE_MIN,
+                '2020-01-01 02:00:00',
+            ],
             'no variance (first attempt)' => [
                 0,
                 0,

@@ -1590,16 +1590,25 @@ class QueuedJobService
         $jobRetrySentinel = (int) static::config()->get('job_retry_sentinel');
         $jobRetryLimit = (int) static::config()->get('job_retry_limit');
         $jobRetryStatus = (array) static::config()->get('job_retry_status');
+
         $jobStatusMap = [];
+        $jobRetrySentinel = max(0, $jobRetrySentinel);
 
         // Job retries feature is disabled
         if ($jobRetryLimit <= 0) {
             return;
         }
 
+        $validJobStatuses = QueuedJobDescriptor::singleton()->getJobStatusValues();
+
         foreach ($jobRetryStatus as $retryStatus => $targetStatus) {
             // Skip any disabled status conditions
             if (!$targetStatus) {
+                continue;
+            }
+
+            // Skip any invalid status conditions
+            if (!in_array($targetStatus, $validJobStatuses)) {
                 continue;
             }
 
@@ -1647,7 +1656,7 @@ class QueuedJobService
             $maxRetryAttempts = (int) Config::inst()->get($jobClass, 'max_retry_attempts');
 
             // Job is not configured to be retried
-            if (!$maxRetryAttempts) {
+            if ($maxRetryAttempts <= 0) {
                 continue;
             }
 
