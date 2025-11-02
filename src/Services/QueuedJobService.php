@@ -1622,7 +1622,7 @@ class QueuedJobService
 
         $autoRetryJobs = QueuedJobDescriptor::get()
             ->filter([
-                // Automatic retry only supports broken jobs currently but this could be expanded to paused jobs as well
+                // Automatic retry is applied to only configured jobs statuses
                 'JobStatus' => $jobStatusConditions,
                 // Make sure to avoid retrying jobs that are being processed very recently to avoid edge cases
                 'LastEdited:LessThan' => $lastEditedSentinel,
@@ -1820,7 +1820,7 @@ class QueuedJobService
 
         // This needs to be wrapped inside a separate non-private method so we can override it in
         // situations such as tests as randomisation is not desirable in those cases
-        $multiplierKey = $this->getRandomKeyFromRange($baseValue - $offsetValue, $baseValue + $offsetValue);
+        $multiplierKey = $this->getRandomValueFromRange($baseValue - $offsetValue, $baseValue + $offsetValue);
 
         // Convert the final value back to float
         return $multiplierKey / 100;
@@ -1830,7 +1830,7 @@ class QueuedJobService
      * This functionality needs to be in a separate method so it can be overridden in unit tests
      * where randomisation is not desirable
      */
-    protected function getRandomKeyFromRange(int $min, int $max): int
+    protected function getRandomValueFromRange(int $min, int $max): int
     {
         return mt_rand($min, $max);
     }

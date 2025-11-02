@@ -405,7 +405,7 @@ class QueuedJobsRetriesTest extends SapphireTest
         $service = new class extends QueuedJobService {
             public string $type = QueuedJobsRetriesTest::RANGE_TYPE_MIN;
 
-            protected function getRandomKeyFromRange(int $min, int $max): int
+            protected function getRandomValueFromRange(int $min, int $max): int
             {
                 // This returns just the extreme values so we can have somewhat representative tests
                 return $this->type === QueuedJobsRetriesTest::RANGE_TYPE_MIN

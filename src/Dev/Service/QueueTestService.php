@@ -18,7 +18,7 @@ class QueueTestService
 
     public function sleep(int $seconds): void
     {
-        // We never want to execute sleep() during a test run as it only slows our test suit execution
+        // We never want to execute sleep() during a test run as it only slows our test suite execution
         if ($this->isUnitTestExecutionActive()) {
             return;
         }
