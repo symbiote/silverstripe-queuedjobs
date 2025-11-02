@@ -96,19 +96,21 @@ This restriction is a security feature coming with Plesk 10.
 On round about page 150 of the plesk Administrator Guide you will find a solution to enable scheduled tasks which use the command line. (But the latest Guide for 10.3.1 mentions `/usr/local/psa/admin/bin/server_pref -u -crontab-secure-shell "/bin/sh"` although "server_pref" doesnt exit.
 Since we are using a dedicated server for only one customer, we defined the crons under "Server Management"->"Tools & Utilities"->"Scheduled Tasks"->"root". The security restrictions of plesk are not involved then.
 
-## Broken jobs
+## Stuck jobs
 
 Sometimes, jobs break without having any issues with their implementation but rather an external factor is the root cause, for example database table lock may prevent a DB write.
 Most common scenario is "publish" action related jobs such as scheduled publish feature which may experience DB deadlocks on the versioned table as this can be frequently accessed.
+In other cases, a job can get paused by a queue runner due to lack of server resources at a particular time.
+Paused jobs can usually be safely resumed, continuing from the last completed step at a later time. 
 
-For this scenario it's recommended to configure automatic job retries.
+For these scenarios it's recommended to configure automatic job retries.
 Configuration has some flexibility on number of retries and the timing of the retry attempts.
 
 ### Basic configuration
 
 This configuration is recommended as a good starting point when trying to set up automatic retries.
 
-- `max_retry_attempts` - number of retry attempts, this allows to control how many times a broken job is retried
+- `max_retry_attempts` - number of retry attempts, this allows to control how many times a stuck job is retried
 - `initial_retry_delay` - minimal waiting time in seconds before the retry attempt is executed, this helps spread retry attempts apart from each other
 
 This configuration is applied to your job class.
@@ -121,7 +123,7 @@ Use the sample configuration below as a starting point and adjust as needed.
 This code snippet needs to be placed into your job class.
 
 - `retry_falloff_multiplier` provides the capability to increase the retry period with each retry attempt, defaults to `1`
-- `retry_falloff_multiplier_variance` acts as a modifier for `retry_falloff_multiplier`, needs to be always a lower value compared to `retry_falloff_multiplier`, this allows you to break up clusters of broken jobs which can prevent load spikes and DB deadlocks from forming, defaults to `0`
+- `retry_falloff_multiplier_variance` acts as a modifier for `retry_falloff_multiplier`, needs to be always a lower value compared to `retry_falloff_multiplier`, this allows you to break up clusters of stuck jobs which can prevent load spikes and DB deadlocks from forming, defaults to `0`
 
 These examples show you how it works:
 
@@ -169,7 +171,7 @@ class MyJob extends AbstractQueuedJob
 
 #### Cluster breaking configuration
 
-This configuration is recommended for dealing with clusters of broken jobs.
+This configuration is recommended for dealing with clusters of stuck jobs.
 A fixed retry delay typically doesn't help as all jobs will likely be retried in roughly the same time which will repeat the situation that caused the initial cluster to form.
 This scenario is best handled by introducing random delay which spreads the jobs and thus eliminates the cluster.
 It's recommended to refine this configuration in case you have multiple types of jobs that have significantly different priority.
@@ -198,13 +200,13 @@ class MyJob extends AbstractQueuedJob
 Global configuration is available on the `QueuedJobService` class:
 
 - `job_retry_sentinel` represents separation of job retries and job processing mechanism to avoid potential edge cases, defaults to 1 minute
-- `job_retry_limit` how many broken jobs can be retried per a single execution of `runQueue()`, set to `0` to disable job retries, defaults to `0` (globally disabled), recommended safe value is `10`
+- `job_retry_limit` how many stuck jobs can be retried per a single execution of `runQueue()`, set to `0` to disable job retries, defaults to `0` (globally disabled), recommended safe value is `10`
 - `job_retry_status` defines the job status transformation map, this allows to customise how the job statuses change during a job retry, defaults to `New` for `Broken` jobs and `Waiting` for `Paused` jobs
 
-Overall, it's recommended to keep the broken job retries configuration applied to only those jobs that needed it.
-Incorrectly configured broken jobs retry may cause processing delays.
+Overall, it's recommended to keep the stuck job retries configuration applied to only those jobs that needed it.
+Incorrectly configured stuck jobs retry may cause processing delays.
 
-Example use cases where different configuration for broken job retry might be helpful:
+Example use cases where different configuration for stuck job retry might be helpful:
 
 We have a "Scheduled publish job" which is high priority, and we want to get it executed as close to the scheduled time as possible.
 This job must not be executed after certain period of time, let's say four hours, as it could lead to unintentionally publishing draft content which was produced while job was waiting for a retry.

@@ -67,7 +67,7 @@ class QueuedJobService
     private static $stall_threshold = 3;
 
     /**
-     * How early broken jobs will become eligible for automated retry processing (minutes)
+     * How early stuck jobs will become eligible for automated retry processing (minutes)
      *
      * @config
      * @var int
@@ -1778,7 +1778,7 @@ class QueuedJobService
                 $dateMessageSegment = sprintf('after %s', $formattedDate->Rfc2822());
             }
 
-            // Capture exception in the messages of the broken job for better debug options
+            // Capture exception in the messages of the stuck job for better debug options
             $message = sprintf('Automatic job retry - job will retry %s', $dateMessageSegment);
 
             $this->copyDescriptorToJob($jobDescriptor, $job);
