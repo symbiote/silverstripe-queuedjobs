@@ -237,7 +237,7 @@ We have a "CDN flush job" which is low priority, and we want to get it executed 
 It's still worthwhile executing let's say even after two days of waiting as the CDN cache expiry is six days.
 
 Both of these job types are aiming to avoid clustering.
-For "Scheduled publish job" we want to avoid clustering around DB deadlocks.
+For "Scheduled publish job" we want to avoid clustering around database deadlocks.
 For "CDN flush job" we want to avoid clustering around CDN API downtimes.
 
 These two jobs need "Cluster breaking configuration" but they need to use different time periods to reflect the priority of processing of these jobs.
