@@ -15,6 +15,14 @@ use Symfony\Component\Console\Input\InputOption;
 
 /**
  * Intended to support local development but also debugging and refining queue settings in general
+ * such as Queue runner settings and job retries related configuration
+ * Refining configuration on a local environment has it's limits
+ * This is due to potentially notable infrastructure difference between individual environments
+ * Local environment usually doesn't have any scheduled tasks (Cron jobs)
+ * Test environment might only have a single web-server running the queue processing
+ * Production environment can have multiple webservers running the queue processing
+ * Use this dev task to create a batch of jobs to refine queue settings on any environment
+ * The test jobs are safe to execute as there they cause no side effect such as update of any site content
  */
 class QueueTestTask extends BuildTask
 {

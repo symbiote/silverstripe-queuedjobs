@@ -98,7 +98,11 @@ Since we are using a dedicated server for only one customer, we defined the cron
 
 ## Stuck jobs
 
+Stuck jobs are any jobs that get stuck in an unexpected state due to external factors such as server resource bottlenecks.
+The most frequent instances of this are related to `Broken` and `Paused` job states.
+
 Sometimes, jobs break without having any issues with their implementation but rather an external factor is the root cause, for example a database table lock may prevent a database write.
+
 A common example is a scheduled "publish" feature which may experience database deadlocks on the versioned table as this can be frequently accessed.
 In other cases, a job can get paused by a queue runner due to lack of server resources at a particular time.
 Paused jobs can usually be safely resumed, continuing from the last completed step at a later time.
@@ -113,8 +117,8 @@ The configuration includes defining the number of retries and the timing of the 
 
 This configuration is recommended as a good starting point when trying to set up automatic retries.
 
-- `max_retry_attempts` - number of retry attempts. This allows control over how many times a stuck job is retried
-- `initial_retry_delay` - the minimum waiting time in seconds between each retry attempt.
+- [`AbstractQueuedJob.max_retry_attempts`](api:Symbiote\QueuedJobs\Services\AbstractQueuedJob->max_retry_attempts) - number of retry attempts. This allows control over how many times a stuck job is retried
+- [`AbstractQueuedJob.initial_retry_delay`](api:Symbiote\QueuedJobs\Services\AbstractQueuedJob->initial_retry_delay) - the minimum waiting time in seconds between each retry attempt.
 
 This configuration is applied to your job class. For example to retry 4 times, with 10 minutes between each retry:
 
@@ -139,7 +143,7 @@ Use the sample configuration below as a starting point and adjust as needed.
 This code snippet needs to be placed into your job class.
 
 - [`AbstractQueuedJob.retry_falloff_multiplier`](api:Symbiote\QueuedJobs\Services\AbstractQueuedJob->retry_falloff_multiplier) provides the capability to increase the retry period with each retry attempt, defaults to `1`
-- [`AbstractQueuedJob.retry_falloff_multiplier_variance`](api:Symbiote\QueuedJobs\Services\AbstractQueuedJob->retry_falloff_multiplier) acts as a modifier for `retry_falloff_multiplier`, needs to be always a lower value compared to `retry_falloff_multiplier`, this allows you to break up clusters of stuck jobs which can prevent load spikes and DB deadlocks from forming, defaults to `0`
+- [`AbstractQueuedJob.retry_falloff_multiplier_variance`](api:Symbiote\QueuedJobs\Services\AbstractQueuedJob->retry_falloff_multiplier) acts as a modifier for `retry_falloff_multiplier`. It needs to always be a lower value compared to `retry_falloff_multiplier`. This allows you to break up clusters of stuck jobs which can prevent load spikes and database deadlocks from forming, defaults to `0`
 
 These examples show you how it works:
 
@@ -151,37 +155,34 @@ use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
 class MyJob extends AbstractQueuedJob
 {
     // Linear retry pattern
+    // First retry attempt - Retry after 10 minutes
+    // Second retry attempt - Retry after 10 minutes
+    // Third retry attempt - Retry after 10 minutes
+    // Fourth retry attempt - Retry after 10 minutes
     private static int $max_retry_attempts = 4;
     private static int $initial_retry_delay = 600;
     private static float $retry_falloff_multiplier = 1;
     private static float $retry_falloff_multiplier_variance = 0;
 
-    // First retry attempt - Retry after 10 minutes
-    // Second retry attempt - Retry after 10 minutes
-    // Third retry attempt - Retry after 10 minutes
-    // Fourth retry attempt - Retry after 10 minutes
-
     // Exponential retry pattern
+    // First retry attempt - Retry after 10 minutes
+    // Second retry attempt - Retry after 20 minutes
+    // Third retry attempt - Retry after 40 minutes
+    // Fourth retry attempt - Retry after 80 minutes
     private static int $max_retry_attempts = 4;
     private static int $initial_retry_delay = 600;
     private static float $retry_falloff_multiplier = 2;
     private static float $retry_falloff_multiplier_variance = 0;
 
-    // First retry attempt - Retry after 10 minutes
-    // Second retry attempt - Retry after 20 minutes
-    // Third retry attempt - Retry after 40 minutes
-    // Fourth retry attempt - Retry after 80 minutes
-
     // Retry pattern with spread
-    private static int $max_retry_attempts = 4;
-    private static int $initial_retry_delay = 600;
-    private static float $retry_falloff_multiplier = 1;
-    private static float $retry_falloff_multiplier_variance = 0.2;
-
     // First retry attempt - Retry after 8 to 12 minutes
     // Second retry attempt - Retry after 6.4 to 14.4 minutes
     // Third retry attempt - Retry after 5.1 to 27.4 minutes
     // Fourth retry attempt - Retry after 4 to 38.4 minutes
+    private static int $max_retry_attempts = 4;
+    private static int $initial_retry_delay = 600;
+    private static float $retry_falloff_multiplier = 1;
+    private static float $retry_falloff_multiplier_variance = 0.2;
 }
 ```
 
@@ -191,7 +192,7 @@ This configuration is recommended for dealing with clusters of stuck jobs.
 A fixed retry delay typically doesn't help as all jobs will likely be retried at roughly the same time which will repeat the situation that caused the initial cluster to form - and therefore increase the chance of the job getting stuck again.
 
 This scenario is best handled by introducing random delay which spreads the jobs and thus eliminates the cluster.
-It's recommended to refine this configuration in case you have multiple types of jobs that have significantly different priority.
+You might want to refine this configuration over multiple iterations - i.e. if multiple jobs are still getting stuck and failing around the same time, you might want to increase the retry_falloff_multiplier_variance to break up the cluster.
 Higher priority jobs should have lower offset and spread compared to lower priority jobs to minimise waiting times to process high priority jobs.
 
 ```php
@@ -201,18 +202,20 @@ use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
 
 class MyJob extends AbstractQueuedJob
 {
-    private static int $max_retry_attempts = 5;
-    private static int $initial_retry_delay = 600;
-    private static float $retry_falloff_multiplier = 1.2;
-    private static float $retry_falloff_multiplier_variance = 0.2;
-
     // First retry attempt - Retry after 10 to 19.6 minutes
     // Second retry attempt - Retry after 10 to 27.4 minutes
     // Third retry attempt - Retry after 10 to 38.4 minutes
     // Fourth retry attempt - Retry after 10 to 53.7 minutes
     // Fifth retry attempt - Retry after 10 to 75.2 minutes
+    private static int $max_retry_attempts = 5;
+    private static int $initial_retry_delay = 600;
+    private static float $retry_falloff_multiplier = 1.2;
+    private static float $retry_falloff_multiplier_variance = 0.2;
+
 }
 ```
+
+#### Global settings
 
 Global configuration is available on the `QueuedJobService` class:
 
@@ -222,6 +225,8 @@ Global configuration is available on the `QueuedJobService` class:
 
 Overall, it's recommended to keep the stuck job retries configuration applied to only those jobs that needed it.
 Incorrectly configured stuck jobs retry may cause processing delays.
+
+#### Real world configuration examples
 
 Example use cases where different configuration for stuck job retry might be helpful:
 
