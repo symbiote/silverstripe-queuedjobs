@@ -138,8 +138,8 @@ In case you have specific scenarios that can't be quite covered by basic configu
 Use the sample configuration below as a starting point and adjust as needed.
 This code snippet needs to be placed into your job class.
 
-- `retry_falloff_multiplier` provides the capability to increase the retry period with each retry attempt, defaults to `1`
-- `retry_falloff_multiplier_variance` acts as a modifier for `retry_falloff_multiplier`, needs to be always a lower value compared to `retry_falloff_multiplier`, this allows you to break up clusters of stuck jobs which can prevent load spikes and DB deadlocks from forming, defaults to `0`
+- [`AbstractQueuedJob.retry_falloff_multiplier`](api:Symbiote\QueuedJobs\Services\AbstractQueuedJob->retry_falloff_multiplier) provides the capability to increase the retry period with each retry attempt, defaults to `1`
+- [`AbstractQueuedJob.retry_falloff_multiplier_variance`](api:Symbiote\QueuedJobs\Services\AbstractQueuedJob->retry_falloff_multiplier) acts as a modifier for `retry_falloff_multiplier`, needs to be always a lower value compared to `retry_falloff_multiplier`, this allows you to break up clusters of stuck jobs which can prevent load spikes and DB deadlocks from forming, defaults to `0`
 
 These examples show you how it works:
 
