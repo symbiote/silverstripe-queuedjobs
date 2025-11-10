@@ -231,7 +231,7 @@ Incorrectly configured stuck jobs retry may cause processing delays.
 Example use cases where different configuration for stuck job retry might be helpful:
 
 We have a "Scheduled publish job" which is high priority, and we want to get it executed as close to the scheduled time as possible.
-This job must not be executed after certain period of time, let's say four hours, as it could lead to unintentionally publishing draft content which was produced while job was waiting for a retry.
+This job must not be executed after a certain period of time, let's say four hours, as it could lead to unintentionally publishing draft content which was produced while job was waiting for a retry.
 
 We have a "CDN flush job" which is low priority, and we want to get it executed ideally as soon as possible but having it delayed even for days is not a big deal.
 It's still worthwhile executing let's say even after two days of waiting as the CDN cache expiry is six days.
