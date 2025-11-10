@@ -68,29 +68,21 @@ class QueuedJobService
 
     /**
      * How early stuck jobs will become eligible for automated retry processing (minutes)
-     *
-     * @config
-     * @var int
      */
-    private static int $job_retry_sentinel = 1;
+    private static int $job_retry_buffer = 1;
 
     /**
-     * How many jobs are eligible to be automatically retried per one health check
+     * How many jobs can be automatically retried per health check
      * Setting this to 0 disables the job retry feature
-     *
-     * @config
-     * @var int
      */
     private static int $job_retry_limit = 0;
 
     /**
-     * Defines the job status transformation for job retries
-     * Set rule value to "null" to disable it
-     *
-     * @config
-     * @var array
+     * Map of stuck job statuses to new status when retrying the job.
+     * For example a "broken" job should be turned into a "new" job for it to be retried correctly.
+     * Set the value to "null" for any given stuck job status to disable retries for that status.
      */
-    private static array $job_retry_status = [
+    private static array $job_retry_status_map = [
         // Broken jobs will be retried from the start
         QueuedJob::STATUS_BROKEN => QueuedJob::STATUS_NEW,
         // Paused jobs will be retried from the point of failure
@@ -524,9 +516,9 @@ class QueuedJobService
             $job->write();
         }
 
-        // Attempt to automatically retry eligible jobs before reporting any broken jobs
+        // Mark eligible jobs to be retried before reporting any broken jobs
         // as some of these jobs might be switched from broken state
-        $this->retryEligibleJobs($queue);
+        $this->markEligibleJobsForRetry($queue);
 
         // finally, find the list of broken jobs and send an email if there's some found
         // make sure that we report broken job only once
@@ -1584,15 +1576,15 @@ class QueuedJobService
      *
      * @throws ValidationException
      */
-    protected function retryEligibleJobs(int $queueType): void
+    protected function markEligibleJobsForRetry(int $queueType): void
     {
         // Find any broken jobs that qualify for an automated job retry
-        $jobRetrySentinel = (int) static::config()->get('job_retry_sentinel');
+        $jobRetryBuffer = (int) static::config()->get('job_retry_buffer');
         $jobRetryLimit = (int) static::config()->get('job_retry_limit');
-        $jobRetryStatus = (array) static::config()->get('job_retry_status');
+        $jobRetryStatusMap = (array) static::config()->get('job_retry_status_map');
 
-        $jobStatusMap = [];
-        $jobRetrySentinel = max(0, $jobRetrySentinel);
+        $jobValidStatusMap = [];
+        $jobRetryBuffer = max(0, $jobRetryBuffer);
 
         // Job retries feature is disabled
         if ($jobRetryLimit <= 0) {
@@ -1601,7 +1593,7 @@ class QueuedJobService
 
         $validJobStatuses = QueuedJobDescriptor::singleton()->getJobStatusValues();
 
-        foreach ($jobRetryStatus as $retryStatus => $targetStatus) {
+        foreach ($jobRetryStatusMap as $retryStatus => $targetStatus) {
             // Skip any disabled status conditions
             if (!$targetStatus) {
                 continue;
@@ -1609,40 +1601,46 @@ class QueuedJobService
 
             // Skip any invalid status conditions
             if (!in_array($targetStatus, $validJobStatuses)) {
+                $this->getLogger()->info(
+                    'Invalid job status found in "job_retry_status_map"',
+                    [
+                        'file' => __FILE__,
+                        'line' => __LINE__,
+                    ]
+                );
+
                 continue;
             }
 
-            $jobStatusMap[$retryStatus] = $targetStatus;
+            $jobValidStatusMap[$retryStatus] = $targetStatus;
         }
 
-        $jobStatusConditions = array_keys($jobStatusMap);
+        $failedJobStatuses = array_keys($jobValidStatusMap);
 
         // We don't have any job status transformation configured
-        if (count($jobStatusConditions) === 0) {
+        if (count($failedJobStatuses) === 0) {
             return;
         }
 
         $now = DBDatetime::now();
-        $lastEditedSentinel = $now
+        $lastEditedBuffer = $now
             // This is important to set otherwise it will break unit tests due to how the date mock works
             ->setImmutable(true)
-            ->modify(sprintf('-%d minutes', $jobRetrySentinel))
+            ->modify(sprintf('-%d minutes', $jobRetryBuffer))
             ->Rfc2822();
 
         $autoRetryJobs = QueuedJobDescriptor::get()
             ->filter([
-                // Automatic retry is applied to only configured jobs statuses
-                'JobStatus' => $jobStatusConditions,
-                // Make sure to avoid retrying jobs that are being processed very recently to avoid edge cases
-                'LastEdited:LessThan' => $lastEditedSentinel,
-                // We only want to process jobs in the current queue
+                'JobStatus' => $failedJobStatuses,
+                // Make sure to avoid retrying jobs that have been processed very recently to avoid edge cases
+                'LastEdited:LessThan' => $lastEditedBuffer,
                 'JobType' => $queueType,
             ])
             // Oldest jobs first
-            ->sort('ID', 'ASC');
+            ->sort('Created', 'ASC');
 
         // Provide an option to customise the list of jobs that are eligible for a job retry
-        $this->extend('updateRetryJobsList', $autoRetryJobs);
+        $this->extend('updateAutoRetryJobs', $autoRetryJobs);
 
         $jobConfigs = [];
         $jobClasses = $autoRetryJobs->columnUnique('Implementation');
@@ -1739,10 +1737,12 @@ class QueuedJobService
                 $retryFalloffMultiplierVariance,
             ] = $retryConfig;
 
-            // Determine the config key that is currently active
+            // Determine the maximum retry count for this job
             $retryCount = max(0, $jobDescriptor->RetryCount);
 
             // We have reached the maximum retry attempts for this job
+            // (possibly retried in a parallel process after the initial query),
+            // so it should remain in its current state
             if ($retryCount >= $maxRetryAttempts) {
                 continue;
             }
@@ -1756,9 +1756,6 @@ class QueuedJobService
             }
 
             if ($initialRetryDelay > 0) {
-                // Initial delay is configured - calculate the real delay value for this retry attempt
-
-                // We will use initial delay as our starting value
                 $delay = $initialRetryDelay;
 
                 // Calculate multiplier factoring in spread
@@ -1771,7 +1768,6 @@ class QueuedJobService
                 $delay *= pow($multiplier, $retryCount);
                 $delay = (int) floor($delay);
             } else {
-                // Initial delay is missing - retry right away
                 $delay = 0;
             }
 
@@ -1796,7 +1792,8 @@ class QueuedJobService
             $jobDescriptor->RetryCount += 1;
 
             // Change the job status according to our map configuration
-            $jobDescriptor->JobStatus = $jobStatusMap[$jobDescriptor->JobStatus];
+            // This will allow the job to be picked up again for processing so the job gets retried
+            $jobDescriptor->JobStatus = $jobValidStatusMap[$jobDescriptor->JobStatus];
 
             // Release the job lock, so it could be picked up again as well as expiry
             $this->releaseJobLock($jobDescriptor);
@@ -1814,7 +1811,7 @@ class QueuedJobService
     }
 
     /**
-     * Generate a randomised multiplier variance
+     * Generate a randomised multiplier based on variance
      */
     protected function getJobRetryDelayMultiplier(float $multiplier, float $variance): float
     {
@@ -1827,8 +1824,6 @@ class QueuedJobService
         $baseValue = (int) floor($multiplier * 100);
         $offsetValue = (int) floor($variance * 100);
 
-        // This needs to be wrapped inside a separate non-private method so we can override it in
-        // situations such as tests as randomisation is not desirable in those cases
         $multiplierKey = $this->getRandomValueFromRange($baseValue - $offsetValue, $baseValue + $offsetValue);
 
         // Convert the final value back to float
@@ -1838,6 +1833,7 @@ class QueuedJobService
     /**
      * This functionality needs to be in a separate method so it can be overridden in unit tests
      * where randomisation is not desirable
+     * @internal
      */
     protected function getRandomValueFromRange(int $min, int $max): int
     {

@@ -633,13 +633,19 @@ HTML;
             if ($jobRetryLimit > 0) {
                 $maxRetryAttempts = (int) Config::inst()->get($this->Implementation, 'max_retry_attempts');
                 $retryInfo = $maxRetryAttempts > 0
-                    ? sprintf('this job has %d retry attempt(s)', $maxRetryAttempts)
-                    : 'retries are disabled for this job';
+                    ? _t(__CLASS__ . '.RETRY_COUNT_JOB_ENABLED', 'retries are enabled for this job')
+                    : _t(__CLASS__ . '.RETRY_COUNT_JOB_DISABLED', 'retries are disabled for this job');
             } else {
-                $retryInfo = 'retries are globally disabled';
+                $retryInfo = _t(__CLASS__ . '.RETRY_COUNT_GLOBAL_DISABLED', 'retries are globally disabled');
             }
 
-            $retryCountDescription = sprintf('Number of times this job broke and was retried, %s.', $retryInfo);
+            $retryCountDescription = _t(
+                __CLASS__ . '.RETRY_COUNT_DESCRIPTION',
+                'Number of times this job broke and was retried, {info}.',
+                [
+                    'info' => $retryInfo,
+                ]
+            );
             $retryCount->setDescription($retryCountDescription);
 
             $expiry->setDescription(

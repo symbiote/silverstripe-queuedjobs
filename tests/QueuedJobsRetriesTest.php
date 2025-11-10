@@ -31,8 +31,8 @@ class QueuedJobsRetriesTest extends SapphireTest
             ->set('use_shutdown_function', false)
             // Set defaults for job retry related config
             ->set('job_retry_limit', 1)
-            ->set('job_retry_sentinel', 1)
-            ->set('job_retry_status', [
+            ->set('job_retry_buffer', 1)
+            ->set('job_retry_status_map', [
                 QueuedJob::STATUS_BROKEN => QueuedJob::STATUS_NEW,
                 QueuedJob::STATUS_PAUSED => QueuedJob::STATUS_WAIT,
             ]);
@@ -48,7 +48,7 @@ class QueuedJobsRetriesTest extends SapphireTest
     {
         QueuedJobService::config()
             ->set('job_retry_limit', $limit)
-            ->set('job_retry_status', [
+            ->set('job_retry_status_map', [
                 QueuedJob::STATUS_BROKEN => QueuedJob::STATUS_NEW,
             ]);
 
@@ -58,7 +58,7 @@ class QueuedJobsRetriesTest extends SapphireTest
         $this->createMockJob(QueuedJob::STATUS_BROKEN, QueuedJob::QUEUED);
         $this->createMockJob(QueuedJob::STATUS_BROKEN, QueuedJob::QUEUED);
 
-        // Move the clock forward to bypass the sentinel limit
+        // Move the clock forward to bypass the buffer limit
         DBDatetime::set_mock_now('2020-01-01 01:00:00');
 
         QueuedJobService::singleton()->checkJobHealth(QueuedJob::QUEUED);
@@ -96,14 +96,14 @@ class QueuedJobsRetriesTest extends SapphireTest
         ];
     }
 
-    #[DataProvider('jobRetrySentinelCasesProvider')]
-    public function testJobRetrySentinel(int $sentinel, int $expected): void
+    #[DataProvider('jobRetryBufferCasesProvider')]
+    public function testJobRetryBuffer(int $buffer, int $expected): void
     {
-        QueuedJobService::config()->set('job_retry_sentinel', $sentinel);
+        QueuedJobService::config()->set('job_retry_buffer', $buffer);
 
         $this->createMockJob(QueuedJob::STATUS_BROKEN, QueuedJob::QUEUED);
 
-        // Move the clock forward to bypass the sentinel limit
+        // Move the clock forward to bypass the buffer limit
         DBDatetime::set_mock_now('2020-01-01 01:00:00');
 
         QueuedJobService::singleton()->checkJobHealth(QueuedJob::QUEUED);
@@ -115,26 +115,26 @@ class QueuedJobsRetriesTest extends SapphireTest
         $this->assertCount(
             $expected,
             $retriedJobs,
-            'We expect a specific number of retried jobs based on configured retry sentinel'
+            'We expect a specific number of retried jobs based on configured retry buffer'
         );
     }
 
-    public static function jobRetrySentinelCasesProvider(): array
+    public static function jobRetryBufferCasesProvider(): array
     {
         return [
-            'invalid  sentinel' => [
+            'invalid buffer' => [
                 -1,
                 1,
             ],
-            'no sentinel' => [
+            'no buffer' => [
                 0,
                 1,
             ],
-            'small sentinel limit (shorter than hour)' => [
+            'small buffer limit (shorter than hour)' => [
                 10,
                 1,
             ],
-            'large sentinel limit (longer than hour)' => [
+            'large buffer limit (longer than hour)' => [
                 100,
                 0,
             ],
@@ -144,11 +144,11 @@ class QueuedJobsRetriesTest extends SapphireTest
     #[DataProvider('jobRetryStatusCasesProvider')]
     public function testJobRetryStatus(array $status, ?string $expected): void
     {
-        QueuedJobService::config()->set('job_retry_status', $status);
+        QueuedJobService::config()->set('job_retry_status_map', $status);
 
         $this->createMockJob(QueuedJob::STATUS_BROKEN, QueuedJob::QUEUED);
 
-        // Move the clock forward to bypass the sentinel limit
+        // Move the clock forward to bypass the buffer limit
         DBDatetime::set_mock_now('2020-01-01 01:00:00');
 
         QueuedJobService::singleton()->checkJobHealth(QueuedJob::QUEUED);
@@ -218,7 +218,7 @@ class QueuedJobsRetriesTest extends SapphireTest
     {
         $this->createMockJob(QueuedJob::STATUS_BROKEN, $jobType);
 
-        // Move the clock forward to bypass the sentinel limit
+        // Move the clock forward to bypass the buffer limit
         DBDatetime::set_mock_now('2020-01-01 01:00:00');
 
         QueuedJobService::singleton()->checkJobHealth($queueType);
@@ -260,7 +260,7 @@ class QueuedJobsRetriesTest extends SapphireTest
         $jobDescriptor->RetryCount = $jobAttempts;
         $jobDescriptor->write();
 
-        // Move the clock forward to bypass the sentinel limit
+        // Move the clock forward to bypass the buffer limit
         DBDatetime::set_mock_now('2020-01-01 01:00:00');
 
         QueuedJobService::singleton()->checkJobHealth(QueuedJob::QUEUED);
@@ -272,7 +272,7 @@ class QueuedJobsRetriesTest extends SapphireTest
         $this->assertCount(
             $expected,
             $retriedJobs,
-            'We expect a specific number of retried jobs based on configured retry sentinel'
+            'We expect a specific number of retried jobs based on configured retry buffer'
         );
     }
 
@@ -309,7 +309,7 @@ class QueuedJobsRetriesTest extends SapphireTest
 
         $this->createMockJob(QueuedJob::STATUS_BROKEN, QueuedJob::QUEUED);
 
-        // Move the clock forward to bypass the sentinel limit
+        // Move the clock forward to bypass the buffer limit
         DBDatetime::set_mock_now('2020-01-01 01:00:00');
 
         QueuedJobService::singleton()->checkJobHealth(QueuedJob::QUEUED);
@@ -364,7 +364,7 @@ class QueuedJobsRetriesTest extends SapphireTest
         $jobDescriptor->RetryCount = $jobAttempts;
         $jobDescriptor->write();
 
-        // Move the clock forward to bypass the sentinel limit
+        // Move the clock forward to bypass the buffer limit
         DBDatetime::set_mock_now('2020-01-01 01:00:00');
 
         QueuedJobService::singleton()->checkJobHealth(QueuedJob::QUEUED);
@@ -456,7 +456,7 @@ class QueuedJobsRetriesTest extends SapphireTest
         $jobDescriptor->RetryCount = $jobAttempts;
         $jobDescriptor->write();
 
-        // Move the clock forward to bypass the sentinel limit
+        // Move the clock forward to bypass the buffer limit
         DBDatetime::set_mock_now('2020-01-01 01:00:00');
 
         QueuedJobService::singleton()->checkJobHealth(QueuedJob::QUEUED);
