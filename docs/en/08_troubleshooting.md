@@ -104,7 +104,7 @@ In other cases, a job can get paused by a queue runner due to lack of server res
 Paused jobs can usually be safely resumed, continuing from the last completed step at a later time.
 
 For these scenarios it's recommended to configure automatic job retries.
-Configuration has some flexibility on number of retries and the timing of the retry attempts.
+The configuration includes defining the number of retries and the timing of the retry attempts.
 
 ### Basic configuration
 
