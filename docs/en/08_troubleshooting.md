@@ -116,7 +116,20 @@ This configuration is recommended as a good starting point when trying to set up
 - `max_retry_attempts` - number of retry attempts. This allows control over how many times a stuck job is retried
 - `initial_retry_delay` - the minimum waiting time in seconds between each retry attempt.
 
-This configuration is applied to your job class.
+This configuration is applied to your job class. For example to retry 4 times, with 10 minutes between each retry:
+
+```php
+namespace App\Jobs;
+
+use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
+
+class MyJob extends AbstractQueuedJob
+{
+    private static int $max_retry_attempts = 4;
+    private static int $initial_retry_delay = 600;
+    // ...
+}
+```
 
 ### Advanced configuration
 
