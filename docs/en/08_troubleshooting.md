@@ -113,7 +113,7 @@ The configuration includes defining the number of retries and the timing of the 
 
 This configuration is recommended as a good starting point when trying to set up automatic retries.
 
-- `max_retry_attempts` - number of retry attempts, this allows to control how many times a stuck job is retried
+- `max_retry_attempts` - number of retry attempts. This allows control over how many times a stuck job is retried
 - `initial_retry_delay` - minimal waiting time in seconds before the retry attempt is executed, this helps spread retry attempts apart from each other
 
 This configuration is applied to your job class.
