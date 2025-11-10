@@ -106,6 +106,9 @@ Paused jobs can usually be safely resumed, continuing from the last completed st
 For these scenarios it's recommended to configure automatic job retries.
 The configuration includes defining the number of retries and the timing of the retry attempts.
 
+> [!NOTE]
+> The examples below set the configuration in PHP code, but like all configuration properties you can set this configuration in YAML if you need to - for example to retry jobs provided in a module.
+
 ### Basic configuration
 
 This configuration is recommended as a good starting point when trying to set up automatic retries.
