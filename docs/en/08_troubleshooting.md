@@ -211,7 +211,6 @@ class MyJob extends AbstractQueuedJob
     private static int $initial_retry_delay = 600;
     private static float $retry_falloff_multiplier = 1.2;
     private static float $retry_falloff_multiplier_variance = 0.2;
-
 }
 ```
 

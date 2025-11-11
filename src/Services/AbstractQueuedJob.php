@@ -23,6 +23,34 @@ use Symbiote\QueuedJobs\Interfaces\UserContextInterface;
 abstract class AbstractQueuedJob implements QueuedJob, UserContextInterface
 {
     /**
+     * Number of retry attempts
+     * This allows control over how many times a stuck job is retried
+     * The value has to be a non-negative integer
+     */
+    private static int $max_retry_attempts = 0;
+
+    /**
+     * The minimum waiting time in seconds between each retry attempt.
+     * The value has to be a non-negative integer
+     */
+    private static int $initial_retry_delay = 0;
+
+    /**
+     * Provides the capability to increase the retry period with each retry attempt
+     * The value has to be a greater or equal to 1
+     */
+    private static float $retry_falloff_multiplier = 1;
+
+    /**
+     * Acts as a modifier for `retry_falloff_multiplier`
+     * It needs to always be a lower value compared to `retry_falloff_multiplier`
+     * This allows you to break up clusters of stuck jobs which can prevent load spikes
+     * and database deadlocks from forming
+     * The value has to be a greater or equal to 0
+     */
+    private static float $retry_falloff_multiplier_variance = 0;
+
+    /**
      * @var stdClass
      */
     protected $jobData;
