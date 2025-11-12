@@ -76,7 +76,7 @@ class QueuedJobService
      * How many jobs can be automatically retried per health check
      * Setting this to 0 disables the job retry feature
      */
-    private static int $job_retry_limit = 0;
+    private static int $job_retry_limit = 10;
 
     /**
      * Map of stuck job statuses to new status when retrying the job.
