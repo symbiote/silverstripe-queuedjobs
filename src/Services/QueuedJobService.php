@@ -10,19 +10,20 @@ use Monolog\Logger;
 use Psr\Log\LoggerInterface;
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
+use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Convert;
 use SilverStripe\Core\Extensible;
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Core\Injector\Injector;
+use SilverStripe\Core\Validation\ValidationException;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
 use SilverStripe\ORM\FieldType\DBDatetime;
 use SilverStripe\ORM\FieldType\DBField;
 use SilverStripe\ORM\Queries\SQLUpdate;
-use SilverStripe\Core\Validation\ValidationException;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\Security;
 use SilverStripe\Subsites\Model\Subsite;
@@ -1567,10 +1568,16 @@ class QueuedJobService
      */
     protected function markEligibleJobsForRetry(int $queueType): void
     {
+        $jobConfigs = $this->getJobRetryConfig();
+
+        // Job retries feature is not available on any of the available jobs
+        if (!$jobConfigs) {
+            return;
+        }
+
         // Find any broken jobs that qualify for an automated job retry
         $jobRetryBuffer = (int) static::config()->get('job_retry_buffer');
         $jobRetryLimit = (int) static::config()->get('job_retry_limit');
-        $jobRetryStatusMap = (array) static::config()->get('job_retry_status_map');
 
         if ($jobRetryBuffer < 0) {
             $this->getLogger()->info(
@@ -1589,36 +1596,27 @@ class QueuedJobService
             return;
         }
 
-        $validJobStatuses = QueuedJobDescriptor::singleton()->getJobStatusValues();
-        $jobValidStatusMap = [];
-
-        foreach ($jobRetryStatusMap as $retryStatus => $targetStatus) {
-            // Skip any disabled status conditions
-            if (!$targetStatus) {
-                continue;
-            }
-
-            // Skip any invalid status conditions
-            if (!in_array($targetStatus, $validJobStatuses)) {
-                $this->getLogger()->info(
-                    'Invalid job status found in "job_retry_status_map"',
-                    [
-                        'file' => __FILE__,
-                        'line' => __LINE__,
-                    ]
-                );
-
-                continue;
-            }
-
-            $jobValidStatusMap[$retryStatus] = $targetStatus;
-        }
-
+        $jobValidStatusMap = $this->getJobRetryStatusMap();
         $failedJobStatuses = array_keys($jobValidStatusMap);
 
         // We don't have any job status transformation configured
         if (count($failedJobStatuses) === 0) {
             return;
+        }
+
+        $retryCountConditions = [];
+
+        // Create search conditions for each job type
+        foreach ($jobConfigs as $jobClass => $jobConfig) {
+            [
+                $maxRetryAttempts,
+            ] = $jobConfig;
+
+            $retryCountConditions[] = [
+                '"Implementation" = ? AND "RetryCount" < ?' => [
+                    $jobClass,
+                    $maxRetryAttempts,
+                ]];
         }
 
         $now = DBDatetime::now();
@@ -1635,123 +1633,20 @@ class QueuedJobService
                 'LastEdited:LessThan' => $lastEditedBuffer,
                 'JobType' => $queueType,
             ])
+            // Limit the search to only jobs that have retried enabled and are within their individual limits
+            ->whereAny($retryCountConditions)
             ->sort([
                 // Jobs that haven't been retried for the longest
                 'LastEdited' => 'ASC',
                 'RetryCount' => 'ASC',
-            ]);
+            ])
+            ->limit($jobRetryLimit);
 
         // Provide an option to customise the list of jobs that are eligible for a job retry
         $this->extend('updateAutoRetryJobs', $autoRetryJobs);
 
-        $jobConfigs = [];
-        $jobClasses = $autoRetryJobs->columnUnique('Implementation');
-
-        foreach ($jobClasses as $jobClass) {
-            // Skip invalid job data (orphaned data)
-            if (!class_exists($jobClass)) {
-                continue;
-            }
-
-            $maxRetryAttempts = (int) Config::inst()->get($jobClass, 'max_retry_attempts');
-
-            // Job is not configured to be retried
-            if ($maxRetryAttempts <= 0) {
-                continue;
-            }
-
-            $initialRetryDelay = (int) Config::inst()->get($jobClass, 'initial_retry_delay');
-            $retryFalloffMultiplier = (float) Config::inst()->get($jobClass, 'retry_falloff_multiplier');
-            $retryFalloffMultiplierVariance = (float) Config::inst()->get(
-                $jobClass,
-                'retry_falloff_multiplier_variance'
-            );
-
-            if ($initialRetryDelay < 0) {
-                $this->getLogger()->info(
-                    'Invalid value for "initial_retry_delay"',
-                    [
-                        'file' => __FILE__,
-                        'line' => __LINE__,
-                    ]
-                );
-            }
-
-            if ($retryFalloffMultiplier < 1) {
-                $this->getLogger()->info(
-                    'Invalid value for "retry_falloff_multiplier"',
-                    [
-                        'file' => __FILE__,
-                        'line' => __LINE__,
-                    ]
-                );
-            }
-
-            if ($retryFalloffMultiplierVariance < 0) {
-                $this->getLogger()->info(
-                    'Invalid value for "retry_falloff_multiplier_variance"',
-                    [
-                        'file' => __FILE__,
-                        'line' => __LINE__,
-                    ]
-                );
-            }
-
-            // Sanitise values so we don't have to deal with edge cases
-            $initialRetryDelay = max(0, $initialRetryDelay);
-            $retryFalloffMultiplier = max(1, $retryFalloffMultiplier);
-            $retryFalloffMultiplierVariance = max(0, $retryFalloffMultiplierVariance);
-
-            $jobConfigs[$jobClass] = [
-                $maxRetryAttempts,
-                $initialRetryDelay,
-                $retryFalloffMultiplier,
-                $retryFalloffMultiplierVariance,
-            ];
-        }
-
-        // We couldn't find any job candidates to retry
-        if (!$jobConfigs) {
-            return;
-        }
-
-        $retryJobIDs = [];
-        $remainingLimit = $jobRetryLimit;
-
-        foreach ($jobConfigs as $jobClass => $retryConfig) {
-            // We've reached the number of jobs we are allowed to retry in this health check run
-            if ($remainingLimit <= 0) {
-                break;
-            }
-
-            [
-                $maxRetryAttempts,
-            ] = $retryConfig;
-
-            $jobIDs = $autoRetryJobs
-                ->filter([
-                    'Implementation' => $jobClass,
-                    'RetryCount:LessThan' => $maxRetryAttempts,
-                ])
-                ->limit($remainingLimit)
-                ->column('ID');
-
-            // Add the found jobs to our list so we can retry these jobs
-            $retryJobIDs = array_merge($retryJobIDs, $jobIDs);
-
-            // Subtract found jobs from the remaining limit
-            $remainingLimit -= count($jobIDs);
-        }
-
-        // We couldn't find any jobs to retry
-        if (!$retryJobIDs) {
-            return;
-        }
-
-        $jobsToRetry = $autoRetryJobs->byIDs($retryJobIDs);
-
         /** @var QueuedJobDescriptor $jobDescriptor */
-        foreach ($jobsToRetry as $jobDescriptor) {
+        foreach ($autoRetryJobs as $jobDescriptor) {
             $jobClass = $jobDescriptor->Implementation;
             $retryConfig = array_key_exists($jobClass, $jobConfigs)
                 ? $jobConfigs[$jobClass]
@@ -1771,13 +1666,6 @@ class QueuedJobService
 
             // Determine the maximum retry count for this job
             $retryCount = max(0, $jobDescriptor->RetryCount);
-
-            // We have reached the maximum retry attempts for this job
-            // (possibly retried in a parallel process after the initial query),
-            // so it should remain in its current state
-            if ($retryCount >= $maxRetryAttempts) {
-                continue;
-            }
 
             /** @var QueuedJob $job */
             $job = Injector::inst()->create($jobClass);
@@ -1896,6 +1784,122 @@ class QueuedJobService
     {
         $descriptor->JobStatus = QueuedJob::STATUS_BROKEN;
         $this->releaseJobLock($descriptor);
+    }
+
+    /**
+     * Get job retry config for all job retry enabled jobs
+     */
+    private function getJobRetryConfig(): array
+    {
+        // Collect all jobs types and determine which ones can be retried
+        $hierarchyBasedClasses = ClassInfo::subclassesFor(AbstractQueuedJob::class);
+        $interfaceBaseClasses = ClassInfo::implementorsOf(QueuedJob::class);
+
+        $hierarchyBasedClasses = array_values($hierarchyBasedClasses);
+        $interfaceBaseClasses = array_values($interfaceBaseClasses);
+
+        $classes = array_merge($hierarchyBasedClasses, $interfaceBaseClasses);
+        $classes = array_unique($classes);
+        $jobConfig = [];
+
+        foreach ($classes as $jobClass) {
+            // Skip abstract class as we don't expect any instances of this job type in the queue
+            if ($jobClass === AbstractQueuedJob::class) {
+                continue;
+            }
+
+            $maxRetryAttempts = (int) Config::inst()->get($jobClass, 'max_retry_attempts');
+
+            // Job is not configured to be retried
+            if ($maxRetryAttempts <= 0) {
+                continue;
+            }
+
+            $initialRetryDelay = (int) Config::inst()->get($jobClass, 'initial_retry_delay');
+            $retryFalloffMultiplier = (float) Config::inst()->get($jobClass, 'retry_falloff_multiplier');
+            $retryFalloffMultiplierVariance = (float) Config::inst()->get(
+                $jobClass,
+                'retry_falloff_multiplier_variance'
+            );
+
+            if ($initialRetryDelay < 0) {
+                $this->getLogger()->info(
+                    'Invalid value for "initial_retry_delay"',
+                    [
+                        'file' => __FILE__,
+                        'line' => __LINE__,
+                    ]
+                );
+            }
+
+            if ($retryFalloffMultiplier < 1) {
+                $this->getLogger()->info(
+                    'Invalid value for "retry_falloff_multiplier"',
+                    [
+                        'file' => __FILE__,
+                        'line' => __LINE__,
+                    ]
+                );
+            }
+
+            if ($retryFalloffMultiplierVariance < 0) {
+                $this->getLogger()->info(
+                    'Invalid value for "retry_falloff_multiplier_variance"',
+                    [
+                        'file' => __FILE__,
+                        'line' => __LINE__,
+                    ]
+                );
+            }
+
+            // Sanitise values so we don't have to deal with edge cases
+            $initialRetryDelay = max(0, $initialRetryDelay);
+            $retryFalloffMultiplier = max(1, $retryFalloffMultiplier);
+            $retryFalloffMultiplierVariance = max(0, $retryFalloffMultiplierVariance);
+
+            $jobConfig[$jobClass] = [
+                $maxRetryAttempts,
+                $initialRetryDelay,
+                $retryFalloffMultiplier,
+                $retryFalloffMultiplierVariance,
+            ];
+        }
+
+        return $jobConfig;
+    }
+
+    /**
+     * Get a valid transformation map for job retry statuses
+     */
+    private function getJobRetryStatusMap(): array
+    {
+        $jobRetryStatusMap = (array) static::config()->get('job_retry_status_map');
+        $validJobStatuses = QueuedJobDescriptor::singleton()->getJobStatusValues();
+        $jobValidStatusMap = [];
+
+        foreach ($jobRetryStatusMap as $retryStatus => $targetStatus) {
+            // Skip any disabled status conditions
+            if (!$targetStatus) {
+                continue;
+            }
+
+            // Skip any invalid status conditions
+            if (!in_array($targetStatus, $validJobStatuses)) {
+                $this->getLogger()->info(
+                    'Invalid job status found in "job_retry_status_map"',
+                    [
+                        'file' => __FILE__,
+                        'line' => __LINE__,
+                    ]
+                );
+
+                continue;
+            }
+
+            $jobValidStatusMap[$retryStatus] = $targetStatus;
+        }
+
+        return $jobValidStatusMap;
     }
 
     /**
