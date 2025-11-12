@@ -992,7 +992,8 @@ class QueuedJobService
                                     [
                                         'attempts' => $stallCount,
                                     ]
-                                ): _t(
+                                )
+                                : _t(
                                     __CLASS__ . '.JOB_STALLED',
                                     'Job stalled after {attempts} attempts - please check',
                                     [
