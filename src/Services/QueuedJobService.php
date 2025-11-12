@@ -662,6 +662,9 @@ class QueuedJobService
     {
         $this->releaseJobLock($stalledJob);
 
+        $jobConfigs = $this->getJobRetryConfig();
+        $hasRetries = array_key_exists($stalledJob->Implementation, $jobConfigs);
+
         if ($stalledJob->ResumeCounts < static::config()->get('stall_threshold')) {
             $stalledJob->restart();
             $logLevel = 'warning';
@@ -674,11 +677,24 @@ class QueuedJobService
         } else {
             $stalledJob->pause();
             $logLevel = 'error';
-            $message = _t(
-                __CLASS__ . '.STALLED_JOB_MSG',
-                'A job named {name} (#{id}) appears to have stalled. It has been paused, please login to check it',
-                ['name' => $stalledJob->JobTitle, 'id' => $stalledJob->ID]
-            );
+            $message = $hasRetries
+                ? _t(
+                    __CLASS__ . '.STALLED_JOB_MSG_WITH_RETRIES',
+                    'A job named {name} (#{id}) appears to have stalled. It has been paused, '
+                    . 'but will be automatically retried later',
+                    [
+                        'name' => $stalledJob->JobTitle,
+                        'id' => $stalledJob->ID,
+                    ]
+                )
+                : _t(
+                    __CLASS__ . '.STALLED_JOB_MSG',
+                    'A job named {name} (#{id}) appears to have stalled. It has been paused, please login to check it',
+                    [
+                        'name' => $stalledJob->JobTitle,
+                        'id' => $stalledJob->ID,
+                    ]
+                );
         }
 
         $this->getLogger()->log(
@@ -905,6 +921,8 @@ class QueuedJobService
                     }
                 }
 
+                $jobConfigs = $this->getJobRetryConfig();
+
                 // while not finished
                 while (!$job->jobFinished() && !$broken) {
                     // see that we haven't been set to 'paused' or otherwise by another process
@@ -963,13 +981,25 @@ class QueuedJobService
                             $stallCount++;
                         }
 
+                        $hasRetries = array_key_exists($jobDescriptor->Implementation, $jobConfigs);
+
                         if ($stallCount > static::config()->get('stall_threshold')) {
                             $broken = true;
-                            $logger->error(_t(
-                                __CLASS__ . '.JOB_STALLED',
-                                'Job stalled after {attempts} attempts - please check',
-                                ['attempts' => $stallCount]
-                            ));
+                            $message = $hasRetries
+                                ? _t(
+                                    __CLASS__ . '.JOB_STALLED_WITH_RETRIES',
+                                    'Job stalled after {attempts} attempts, but will be automatically retried later',
+                                    [
+                                        'attempts' => $stallCount,
+                                    ]
+                                ): _t(
+                                    __CLASS__ . '.JOB_STALLED',
+                                    'Job stalled after {attempts} attempts - please check',
+                                    [
+                                        'attempts' => $stallCount,
+                                    ]
+                                );
+                            $logger->error($message);
                             $this->markJobAsBroken($jobDescriptor);
                         }
 
