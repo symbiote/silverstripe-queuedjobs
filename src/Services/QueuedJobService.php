@@ -661,9 +661,7 @@ class QueuedJobService
     protected function restartStalledJob($stalledJob)
     {
         $this->releaseJobLock($stalledJob);
-
-        $jobConfigs = $this->getJobRetryConfig();
-        $hasRetries = array_key_exists($stalledJob->Implementation, $jobConfigs);
+        $hasRetries = $this->isEligibleForJobRetry($stalledJob);
 
         if ($stalledJob->ResumeCounts < static::config()->get('stall_threshold')) {
             $stalledJob->restart();
@@ -921,8 +919,6 @@ class QueuedJobService
                     }
                 }
 
-                $jobConfigs = $this->getJobRetryConfig();
-
                 // while not finished
                 while (!$job->jobFinished() && !$broken) {
                     // see that we haven't been set to 'paused' or otherwise by another process
@@ -981,7 +977,7 @@ class QueuedJobService
                             $stallCount++;
                         }
 
-                        $hasRetries = array_key_exists($jobDescriptor->Implementation, $jobConfigs);
+                        $hasRetries = $this->isEligibleForJobRetry($jobDescriptor);
 
                         if ($stallCount > static::config()->get('stall_threshold')) {
                             $broken = true;
@@ -1931,6 +1927,26 @@ class QueuedJobService
         }
 
         return $jobValidStatusMap;
+    }
+
+    /**
+     * Determine if a job is eligible for a job retry
+     */
+    private function isEligibleForJobRetry(QueuedJobDescriptor $jobDescriptor): bool
+    {
+        $jobConfigs = $this->getJobRetryConfig();
+
+        if (!array_key_exists($jobDescriptor->Implementation, $jobConfigs)) {
+            return false;
+        }
+
+        $jobConfig = $jobConfigs[$jobDescriptor->Implementation];
+
+        [
+            $maxRetryAttempts,
+        ] = $jobConfig;
+
+        return $jobDescriptor->RetryCount < $maxRetryAttempts;
     }
 
     /**
