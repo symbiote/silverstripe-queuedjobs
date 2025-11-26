@@ -74,8 +74,6 @@ class QJUtils
             $val = 'NULL';
         } elseif (is_int($val)) {
             $val = (int) $val;
-        } elseif (is_double($val)) {
-            $val = (double) $val;
         } elseif (is_float($val)) {
             $val = (float) $val;
         } else {
