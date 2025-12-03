@@ -723,8 +723,6 @@ class QueuedJobsTest extends SapphireTest
 
         $class = new ReflectionClass(QueuedJobService::class);
         $method = $class->getMethod('grabMutex');
-        $method->setAccessible(true);
-
         // attempt to claim lock on descriptor
         $result = $method->invokeArgs(QueuedJobService::singleton(), [$descriptor]);
 
