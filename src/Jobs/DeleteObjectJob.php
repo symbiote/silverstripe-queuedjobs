@@ -13,7 +13,6 @@ use Symbiote\QueuedJobs\Services\QueuedJob;
  *
  * @author marcus@symbiote.com.au
  * @license BSD License http://silverstripe.org/bsd-license/
- * @skipUpgrade
  */
 class DeleteObjectJob extends AbstractQueuedJob
 {
