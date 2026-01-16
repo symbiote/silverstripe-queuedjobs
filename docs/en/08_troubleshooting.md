@@ -219,7 +219,7 @@ class MyJob extends AbstractQueuedJob
 Global configuration is available on the `QueuedJobService` class:
 
 - `job_retry_buffer` determines the amount of time (in minutes) before stuck jobs will become eligible for automated retry processing to avoid potential edge cases, defaults to 1 minute
-- `job_retry_limit` how many stuck jobs can be retried per a single execution of `runQueue()`, set to `10` to disable job retries, defaults to `0` (globally disabled), recommended safe value is `10`
+- `job_retry_limit` how many stuck jobs can be retried per a single execution of `runQueue()`, set to `0` to disable job retries, defaults to `10`
 - `job_retry_status_map` defines the job status transformation map, this allows to customise how the job statuses change during a job retry, defaults to `New` for `Broken` jobs and `Waiting` for `Paused` jobs
 
 Overall, it's recommended to keep the stuck job retries configuration applied to only those jobs that needed it.
