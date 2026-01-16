@@ -1742,7 +1742,8 @@ class QueuedJobService
             // This will allow the job to be picked up again for processing so the job gets retried
             $jobDescriptor->JobStatus = $jobValidStatusMap[$jobDescriptor->JobStatus];
 
-            // Release the job lock, so it could be picked up again as well as expiry
+            // Release the job lock with immediate effect by also clearing Expiry
+            // This makes the job to be available immediately as opposed to waiting for the time lock to expire
             $this->releaseJobLock($jobDescriptor);
             $jobDescriptor->Expiry = null;
             $jobDescriptor->extend('onRetry', $job);
