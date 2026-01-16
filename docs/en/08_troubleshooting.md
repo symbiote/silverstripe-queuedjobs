@@ -227,7 +227,7 @@ Global configuration is available on the `QueuedJobService` class:
 
 This example shows you how status map works:
 
-```yaml
+```yml
 Symbiote\QueuedJobs\Services\QueuedJobService:
   retry_job_status_map:
     'Broken': 'New' # Set broken jobs to new state to start over
