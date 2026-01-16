@@ -192,7 +192,7 @@ This configuration is recommended for dealing with clusters of stuck jobs.
 A fixed retry delay typically doesn't help as all jobs will likely be retried at roughly the same time which will repeat the situation that caused the initial cluster to form - and therefore increase the chance of the job getting stuck again.
 
 This scenario is best handled by introducing random delay which spreads the jobs and thus eliminates the cluster.
-You might want to refine this configuration over multiple iterations - i.e. if multiple jobs are still getting stuck and failing around the same time, you might want to increase the retry_falloff_multiplier_variance to break up the cluster.
+You might want to refine this configuration over multiple iterations - i.e. if multiple jobs are still getting stuck and failing around the same time, you might want to increase the `retry_falloff_multiplier_variance` to break up the cluster.
 Higher priority jobs should have lower offset and spread compared to lower priority jobs to minimise waiting times to process high priority jobs.
 
 ```php
