@@ -27,13 +27,13 @@ abstract class AbstractQueuedJob implements QueuedJob, UserContextInterface
      * This allows control over how many times a stuck job is retried
      * The value has to be a non-negative integer
      */
-    private static int $max_retry_attempts = 0;
+    private static int $retry_max_attempts = 0;
 
     /**
      * The minimum waiting time in seconds between each retry attempt.
      * The value has to be a non-negative integer
      */
-    private static int $initial_retry_delay = 0;
+    private static int $retry_initial_delay = 0;
 
     /**
      * Provides the capability to increase the retry period with each retry attempt

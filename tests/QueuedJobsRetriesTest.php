@@ -30,15 +30,15 @@ class QueuedJobsRetriesTest extends SapphireTest
             // Disable the immediate queue processing to avoid unexpected issues
             ->set('use_shutdown_function', false)
             // Set defaults for job retry related config
-            ->set('job_retry_limit', 1)
-            ->set('job_retry_buffer', 1)
-            ->set('job_retry_status_map', [
+            ->set('retry_job_limit', 1)
+            ->set('retry_job_buffer', 1)
+            ->set('retry_job_status_map', [
                 QueuedJob::STATUS_BROKEN => QueuedJob::STATUS_NEW,
                 QueuedJob::STATUS_PAUSED => QueuedJob::STATUS_WAIT,
             ]);
 
         // Enable job retries for this specific job
-        Config::modify()->set(QueueTestJob::class, 'max_retry_attempts', 1);
+        Config::modify()->set(QueueTestJob::class, 'retry_max_attempts', 1);
 
         DBDatetime::set_mock_now('2020-01-01 00:00:00');
     }
@@ -47,8 +47,8 @@ class QueuedJobsRetriesTest extends SapphireTest
     public function testJobRetryLimit(int $limit, int $expected): void
     {
         QueuedJobService::config()
-            ->set('job_retry_limit', $limit)
-            ->set('job_retry_status_map', [
+            ->set('retry_job_limit', $limit)
+            ->set('retry_job_status_map', [
                 QueuedJob::STATUS_BROKEN => QueuedJob::STATUS_NEW,
             ]);
 
@@ -99,7 +99,7 @@ class QueuedJobsRetriesTest extends SapphireTest
     #[DataProvider('jobRetryBufferCasesProvider')]
     public function testJobRetryBuffer(int $buffer, int $expected): void
     {
-        QueuedJobService::config()->set('job_retry_buffer', $buffer);
+        QueuedJobService::config()->set('retry_job_buffer', $buffer);
 
         $this->createMockJob(QueuedJob::STATUS_BROKEN, QueuedJob::QUEUED);
 
@@ -144,7 +144,7 @@ class QueuedJobsRetriesTest extends SapphireTest
     #[DataProvider('jobRetryStatusCasesProvider')]
     public function testJobRetryStatus(array $status, ?string $expected): void
     {
-        QueuedJobService::config()->set('job_retry_status_map', $status);
+        QueuedJobService::config()->set('retry_job_status_map', $status);
 
         $this->createMockJob(QueuedJob::STATUS_BROKEN, QueuedJob::QUEUED);
 
@@ -254,7 +254,7 @@ class QueuedJobsRetriesTest extends SapphireTest
     #[DataProvider('maxRetryAttemptsCasesProvider')]
     public function testMaxRetryAttempts(int $jobAttempts, int $maxAttempts, int $expected): void
     {
-        Config::modify()->set(QueueTestJob::class, 'max_retry_attempts', $maxAttempts);
+        Config::modify()->set(QueueTestJob::class, 'retry_max_attempts', $maxAttempts);
 
         $jobDescriptor = $this->createMockJob(QueuedJob::STATUS_BROKEN, QueuedJob::QUEUED);
         $jobDescriptor->RetryCount = $jobAttempts;
@@ -305,7 +305,7 @@ class QueuedJobsRetriesTest extends SapphireTest
     #[DataProvider('initialRetryDelayCasesProvider')]
     public function testInitialRetryDelay(int $delay, ?string $expected): void
     {
-        Config::modify()->set(QueueTestJob::class, 'initial_retry_delay', $delay);
+        Config::modify()->set(QueueTestJob::class, 'retry_initial_delay', $delay);
 
         $this->createMockJob(QueuedJob::STATUS_BROKEN, QueuedJob::QUEUED);
 
@@ -356,8 +356,8 @@ class QueuedJobsRetriesTest extends SapphireTest
     public function testRetryFalloffMultiplier(int $multiplier, int $jobAttempts, string $expected): void
     {
         Config::modify()
-            ->set(QueueTestJob::class, 'initial_retry_delay', 60)
-            ->set(QueueTestJob::class, 'max_retry_attempts', 3)
+            ->set(QueueTestJob::class, 'retry_initial_delay', 60)
+            ->set(QueueTestJob::class, 'retry_max_attempts', 3)
             ->set(QueueTestJob::class, 'retry_falloff_multiplier', $multiplier);
 
         $jobDescriptor = $this->createMockJob(QueuedJob::STATUS_BROKEN, QueuedJob::QUEUED);
@@ -447,8 +447,8 @@ class QueuedJobsRetriesTest extends SapphireTest
         Injector::inst()->registerService($service, QueuedJobService::class);
 
         Config::modify()
-            ->set(QueueTestJob::class, 'initial_retry_delay', 3600)
-            ->set(QueueTestJob::class, 'max_retry_attempts', 3)
+            ->set(QueueTestJob::class, 'retry_initial_delay', 3600)
+            ->set(QueueTestJob::class, 'retry_max_attempts', 3)
             ->set(QueueTestJob::class, 'retry_falloff_multiplier', 1)
             ->set(QueueTestJob::class, 'retry_falloff_multiplier_variance', $variance);
 

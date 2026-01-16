@@ -628,10 +628,10 @@ HTML;
             );
             $resumeCount->setDescription($resumeCountDescription);
 
-            $jobRetryLimit = (int) QueuedJobService::config()->get('job_retry_limit');
+            $jobRetryLimit = (int) QueuedJobService::config()->get('retry_job_limit');
 
             if ($jobRetryLimit > 0) {
-                $maxRetryAttempts = (int) Config::inst()->get($this->Implementation, 'max_retry_attempts');
+                $maxRetryAttempts = (int) Config::inst()->get($this->Implementation, 'retry_max_attempts');
                 $retryInfo = $maxRetryAttempts > 0
                     ? _t(__CLASS__ . '.RETRY_COUNT_JOB_ENABLED', 'retries are enabled for this job')
                     : _t(__CLASS__ . '.RETRY_COUNT_JOB_DISABLED', 'retries are disabled for this job');

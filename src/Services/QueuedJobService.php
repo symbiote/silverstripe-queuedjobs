@@ -70,20 +70,20 @@ class QueuedJobService
     /**
      * How early stuck jobs will become eligible for automated retry processing (minutes)
      */
-    private static int $job_retry_buffer = 1;
+    private static int $retry_job_buffer = 1;
 
     /**
      * How many jobs can be automatically retried per health check
      * Setting this to 0 disables the job retry feature
      */
-    private static int $job_retry_limit = 10;
+    private static int $retry_job_limit = 10;
 
     /**
      * Map of stuck job statuses to new status when retrying the job.
      * For example a "broken" job should be turned into a "new" job for it to be retried correctly.
      * Set the value to `null` for any given stuck job status to disable retries for that status.
      */
-    private static array $job_retry_status_map = [
+    private static array $retry_job_status_map = [
         // Broken jobs will be retried from the start
         QueuedJob::STATUS_BROKEN => QueuedJob::STATUS_NEW,
         // Paused jobs will be retried from the point of failure
@@ -1603,12 +1603,12 @@ class QueuedJobService
         }
 
         // Find any broken jobs that qualify for an automated job retry
-        $jobRetryBuffer = (int) static::config()->get('job_retry_buffer');
-        $jobRetryLimit = (int) static::config()->get('job_retry_limit');
+        $jobRetryBuffer = (int) static::config()->get('retry_job_buffer');
+        $jobRetryLimit = (int) static::config()->get('retry_job_limit');
 
         if ($jobRetryBuffer < 0) {
-            $this->getLogger()->info(
-                'Invalid value for "job_retry_buffer"',
+            $this->getLogger()->warning(
+                'Invalid value for "retry_job_buffer"',
                 [
                     'file' => __FILE__,
                     'line' => __LINE__,
@@ -1646,10 +1646,9 @@ class QueuedJobService
                 ]];
         }
 
-        $now = DBDatetime::now();
+        // Make "now" immutable so the call to `modify()` doesn't affect it, since we reuse this later on in this method
+        $now = DBDatetime::now()->setImmutable(true);
         $lastEditedBuffer = $now
-            // This is important to set otherwise it will break unit tests due to how the date mock works
-            ->setImmutable(true)
             ->modify(sprintf('-%d minutes', $jobRetryBuffer))
             ->Rfc2822();
 
@@ -1761,7 +1760,7 @@ class QueuedJobService
     {
         // Variance is not in use or invalid
         if (!$variance || $variance >= $multiplier) {
-            $this->getLogger()->info(
+            $this->getLogger()->warning(
                 'Invalid "retry_falloff_multiplier_variance"',
                 [
                     'file' => __FILE__,
@@ -1835,14 +1834,14 @@ class QueuedJobService
                 continue;
             }
 
-            $maxRetryAttempts = (int) Config::inst()->get($jobClass, 'max_retry_attempts');
+            $maxRetryAttempts = (int) Config::inst()->get($jobClass, 'retry_max_attempts');
 
             // Job is not configured to be retried
             if ($maxRetryAttempts <= 0) {
                 continue;
             }
 
-            $initialRetryDelay = (int) Config::inst()->get($jobClass, 'initial_retry_delay');
+            $initialRetryDelay = (int) Config::inst()->get($jobClass, 'retry_initial_delay');
             $retryFalloffMultiplier = (float) Config::inst()->get($jobClass, 'retry_falloff_multiplier');
             $retryFalloffMultiplierVariance = (float) Config::inst()->get(
                 $jobClass,
@@ -1850,8 +1849,8 @@ class QueuedJobService
             );
 
             if ($initialRetryDelay < 0) {
-                $this->getLogger()->info(
-                    'Invalid value for "initial_retry_delay"',
+                $this->getLogger()->warning(
+                    'Invalid value for "retry_initial_delay"',
                     [
                         'file' => __FILE__,
                         'line' => __LINE__,
@@ -1860,7 +1859,7 @@ class QueuedJobService
             }
 
             if ($retryFalloffMultiplier < 1) {
-                $this->getLogger()->info(
+                $this->getLogger()->warning(
                     'Invalid value for "retry_falloff_multiplier"',
                     [
                         'file' => __FILE__,
@@ -1870,7 +1869,7 @@ class QueuedJobService
             }
 
             if ($retryFalloffMultiplierVariance < 0) {
-                $this->getLogger()->info(
+                $this->getLogger()->warning(
                     'Invalid value for "retry_falloff_multiplier_variance"',
                     [
                         'file' => __FILE__,
@@ -1900,7 +1899,7 @@ class QueuedJobService
      */
     private function getJobRetryStatusMap(): array
     {
-        $jobRetryStatusMap = (array) static::config()->get('job_retry_status_map');
+        $jobRetryStatusMap = (array) static::config()->get('retry_job_status_map');
         $validJobStatuses = QueuedJobDescriptor::singleton()->getJobStatusValues();
         $jobValidStatusMap = [];
 
@@ -1912,8 +1911,8 @@ class QueuedJobService
 
             // Skip any invalid status conditions
             if (!in_array($targetStatus, $validJobStatuses)) {
-                $this->getLogger()->info(
-                    'Invalid job status found in "job_retry_status_map"',
+                $this->getLogger()->warning(
+                    'Invalid job status found in "retry_job_status_map"',
                     [
                         'file' => __FILE__,
                         'line' => __LINE__,

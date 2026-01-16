@@ -117,8 +117,8 @@ The configuration includes defining the number of retries and the timing of the 
 
 This configuration is recommended as a good starting point when trying to set up automatic retries.
 
-- [`AbstractQueuedJob.max_retry_attempts`](api:Symbiote\QueuedJobs\Services\AbstractQueuedJob->max_retry_attempts) - number of retry attempts. This allows control over how many times a stuck job is retried
-- [`AbstractQueuedJob.initial_retry_delay`](api:Symbiote\QueuedJobs\Services\AbstractQueuedJob->initial_retry_delay) - the minimum waiting time in seconds between each retry attempt.
+- [`AbstractQueuedJob.retry_max_attempts`](api:Symbiote\QueuedJobs\Services\AbstractQueuedJob->retry_max_attempts) - number of retry attempts. This allows control over how many times a stuck job is retried
+- [`AbstractQueuedJob.retry_initial_delay`](api:Symbiote\QueuedJobs\Services\AbstractQueuedJob->retry_initial_delay) - the minimum waiting time in seconds between each retry attempt.
 
 This configuration is applied to your job class. For example to retry 4 times, with 10 minutes between each retry:
 
@@ -129,11 +129,14 @@ use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
 
 class MyJob extends AbstractQueuedJob
 {
-    private static int $max_retry_attempts = 4;
-    private static int $initial_retry_delay = 600;
+    private static int $retry_max_attempts = 4;
+    private static int $retry_initial_delay = 600;
     // ...
 }
 ```
+
+Overall, it's recommended to keep the stuck job retries configuration applied to only those jobs that needed it.
+Incorrectly configured stuck jobs retry may cause processing delays.
 
 ### Advanced configuration
 
@@ -159,8 +162,8 @@ class MyJob extends AbstractQueuedJob
     // Second retry attempt - Retry after 10 minutes
     // Third retry attempt - Retry after 10 minutes
     // Fourth retry attempt - Retry after 10 minutes
-    private static int $max_retry_attempts = 4;
-    private static int $initial_retry_delay = 600;
+    private static int $retry_max_attempts = 4;
+    private static int $retry_initial_delay = 600;
     private static float $retry_falloff_multiplier = 1;
     private static float $retry_falloff_multiplier_variance = 0;
 
@@ -169,8 +172,8 @@ class MyJob extends AbstractQueuedJob
     // Second retry attempt - Retry after 20 minutes
     // Third retry attempt - Retry after 40 minutes
     // Fourth retry attempt - Retry after 80 minutes
-    private static int $max_retry_attempts = 4;
-    private static int $initial_retry_delay = 600;
+    private static int $retry_max_attempts = 4;
+    private static int $retry_initial_delay = 600;
     private static float $retry_falloff_multiplier = 2;
     private static float $retry_falloff_multiplier_variance = 0;
 
@@ -179,8 +182,8 @@ class MyJob extends AbstractQueuedJob
     // Second retry attempt - Retry after 6.4 to 14.4 minutes
     // Third retry attempt - Retry after 5.1 to 27.4 minutes
     // Fourth retry attempt - Retry after 4 to 38.4 minutes
-    private static int $max_retry_attempts = 4;
-    private static int $initial_retry_delay = 600;
+    private static int $retry_max_attempts = 4;
+    private static int $retry_initial_delay = 600;
     private static float $retry_falloff_multiplier = 1;
     private static float $retry_falloff_multiplier_variance = 0.2;
 }
@@ -207,8 +210,8 @@ class MyJob extends AbstractQueuedJob
     // Third retry attempt - Retry after 10 to 38.4 minutes
     // Fourth retry attempt - Retry after 10 to 53.7 minutes
     // Fifth retry attempt - Retry after 10 to 75.2 minutes
-    private static int $max_retry_attempts = 5;
-    private static int $initial_retry_delay = 600;
+    private static int $retry_max_attempts = 5;
+    private static int $retry_initial_delay = 600;
     private static float $retry_falloff_multiplier = 1.2;
     private static float $retry_falloff_multiplier_variance = 0.2;
 }
@@ -218,12 +221,19 @@ class MyJob extends AbstractQueuedJob
 
 Global configuration is available on the `QueuedJobService` class:
 
-- `job_retry_buffer` determines the amount of time (in minutes) before stuck jobs will become eligible for automated retry processing to avoid potential edge cases, defaults to 1 minute
-- `job_retry_limit` how many stuck jobs can be retried per a single execution of `runQueue()`, set to `0` to disable job retries, defaults to `10`
-- `job_retry_status_map` defines the job status transformation map, this allows to customise how the job statuses change during a job retry, defaults to `New` for `Broken` jobs and `Waiting` for `Paused` jobs
+- [`QueuedJobService.retry_job_buffer`](api:Symbiote\QueuedJobs\Services\QueuedJobService->retry_job_buffer) determines the amount of time (in minutes) before stuck jobs will become eligible for automated retry processing to avoid potential edge cases, defaults to 1 minute
+- [`QueuedJobService.retry_job_limit`](api:Symbiote\QueuedJobs\Services\QueuedJobService->retry_job_limit) how many stuck jobs can be retried per a single execution of `runQueue()`, set to `0` to disable job retries, defaults to `10`
+  [`QueuedJobService.retry_job_status_map`](api:Symbiote\QueuedJobs\Services\QueuedJobService->retry_job_status_map) defines the job status transformation map, this allows to customise how the job statuses change during a job retry, defaults to `New` for `Broken` jobs and `Waiting` for `Paused` jobs
 
-Overall, it's recommended to keep the stuck job retries configuration applied to only those jobs that needed it.
-Incorrectly configured stuck jobs retry may cause processing delays.
+This example shows you how status map works:
+
+```yaml
+Symbiote\QueuedJobs\Services\QueuedJobService:
+  retry_job_status_map:
+    'Broken': 'New' # Set broken jobs to new state to start over
+    'Paused': 'Waiting' # Set paused jobs to waiting state to resume from where they left off
+    'Cancelled': null # Do nothing with cancelled jobs, used to override default configuration
+```
 
 #### Real world configuration examples
 
