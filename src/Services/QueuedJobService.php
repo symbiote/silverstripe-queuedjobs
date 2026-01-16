@@ -1591,7 +1591,7 @@ class QueuedJobService
     /**
      * Find any eligible jobs that qualify for an automated job retry and schedule their retry
      *
-     * @throws ValidationException
+     * @throws ValidationException if validation fails during call to write()
      */
     protected function markEligibleJobsForRetry(int $queueType): void
     {
