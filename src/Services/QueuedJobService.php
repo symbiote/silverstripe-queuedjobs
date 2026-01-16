@@ -81,7 +81,7 @@ class QueuedJobService
     /**
      * Map of stuck job statuses to new status when retrying the job.
      * For example a "broken" job should be turned into a "new" job for it to be retried correctly.
-     * Set the value to "null" for any given stuck job status to disable retries for that status.
+     * Set the value to `null` for any given stuck job status to disable retries for that status.
      */
     private static array $job_retry_status_map = [
         // Broken jobs will be retried from the start
