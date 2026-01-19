@@ -122,7 +122,6 @@ class QueuedJobsAdmin extends ModelAdmin
             ->setFieldFormatting($formatting);
 
         // Replace gridfield
-        /** @skipUpgrade */
         $grid = GridField::create(
             'QueuedJobDescriptor',
             '',
@@ -130,7 +129,6 @@ class QueuedJobsAdmin extends ModelAdmin
             $gridFieldConfig
         );
         $grid->setForm($form);
-        /** @skipUpgrade */
         $form->Fields()->replaceField($this->sanitiseClassName(QueuedJobDescriptor::class), $grid);
 
         if (QueuedJobDescriptor::singleton()->canCreate()) {
