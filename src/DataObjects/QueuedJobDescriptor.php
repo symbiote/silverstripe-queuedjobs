@@ -47,6 +47,7 @@ use Symbiote\QueuedJobs\Services\QueuedJobService;
  * @property int $StepsProcessed Number of completed steps
  * @property int $LastProcessedCount Number at which StepsProcessed was last checked for stalled jobs
  * @property int $ResumeCounts Number of times this job has been resumed
+ * @property int $RetryCount Number of times this job has been retried
  * @property string $SavedJobData serialised data for the job to use as storage
  * @property string $SavedJobMessages List of messages saved for this job
  * @property string $JobStatus Status of this job
@@ -83,6 +84,7 @@ class QueuedJobDescriptor extends DataObject
         'StepsProcessed' => 'Int',
         'LastProcessedCount' => 'Int(-1)', // -1 means never checked, 0 means checked but no work is done
         'ResumeCounts' => 'Int',
+        'RetryCount' => 'Int',
         'SavedJobData' => 'Text',
         'SavedJobMessages' => 'Text',
         'JobStatus' => 'Varchar(16)',
@@ -412,6 +414,7 @@ class QueuedJobDescriptor extends DataObject
                 'LastProcessedCount',
                 'NotifiedBroken',
                 'ResumeCounts',
+                'RetryCount',
                 'RunAs',
                 'RunAsID',
                 'SavedJobData',
@@ -571,6 +574,7 @@ HTML;
                         $stepsProcessed = NumericField::create('StepsProcessed', 'Steps Processed'),
                         $lastProcessCount = NumericField::create('LastProcessedCount', 'Steps Processed (previous)'),
                         $resumeCount = NumericField::create('ResumeCounts', 'Resume Count'),
+                        $retryCount = NumericField::create('RetryCount', 'Retry Count'),
                     ]),
                     ToggleCompositeField::create(
                         'AdvancedTabProgressInfo',
@@ -624,6 +628,26 @@ HTML;
             );
             $resumeCount->setDescription($resumeCountDescription);
 
+            $jobRetryLimit = (int) QueuedJobService::config()->get('retry_job_limit');
+
+            if ($jobRetryLimit > 0) {
+                $maxRetryAttempts = (int) Config::inst()->get($this->Implementation, 'retry_max_attempts');
+                $retryInfo = $maxRetryAttempts > 0
+                    ? _t(__CLASS__ . '.RETRY_COUNT_JOB_ENABLED', 'retries are enabled for this job')
+                    : _t(__CLASS__ . '.RETRY_COUNT_JOB_DISABLED', 'retries are disabled for this job');
+            } else {
+                $retryInfo = _t(__CLASS__ . '.RETRY_COUNT_GLOBAL_DISABLED', 'retries are globally disabled');
+            }
+
+            $retryCountDescription = _t(
+                __CLASS__ . '.RETRY_COUNT_DESCRIPTION',
+                'Number of times this job broke and was retried, {info}.',
+                [
+                    'info' => $retryInfo,
+                ]
+            );
+            $retryCount->setDescription($retryCountDescription);
+
             $expiry->setDescription(
                 sprintf(
                     'Specifies when the lock is released (lock expires %d seconds after the job is claimed).',
@@ -636,6 +660,7 @@ HTML;
                 $stepsProcessed,
                 $lastProcessCount,
                 $resumeCount,
+                $retryCount,
             ]);
             $progressTabDetailsField->setContent($progressTabDetailsContent);
 

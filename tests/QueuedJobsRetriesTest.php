@@ -1,0 +1,557 @@
+<?php
+
+namespace Symbiote\QueuedJobs\Tests;
+
+use PHPUnit\Framework\Attributes\DataProvider;
+use SilverStripe\Core\Config\Config;
+use SilverStripe\Core\Injector\Injector;
+use SilverStripe\Dev\SapphireTest;
+use SilverStripe\ORM\FieldType\DBDatetime;
+use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
+use Symbiote\QueuedJobs\Services\QueuedJob;
+use Symbiote\QueuedJobs\Services\QueuedJobService;
+use Symbiote\QueuedJobs\Tests\QueuedJobsTest\TestQueuedJob;
+
+class QueuedJobsRetriesTest extends SapphireTest
+{
+    public const string RANGE_TYPE_MIN = 'min';
+    public const string RANGE_TYPE_MAX = 'max';
+
+    /**
+     * @var bool
+     */
+    protected $usesDatabase = true;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        QueuedJobService::config()
+            // Disable the immediate queue processing to avoid unexpected issues
+            ->set('use_shutdown_function', false)
+            // Set defaults for job retry related config
+            ->set('retry_job_limit', 1)
+            ->set('retry_job_buffer', 1)
+            ->set('retry_job_status_map', [
+                QueuedJob::STATUS_BROKEN => QueuedJob::STATUS_NEW,
+                QueuedJob::STATUS_PAUSED => QueuedJob::STATUS_WAIT,
+            ]);
+
+        // Enable job retries for this specific job
+        Config::modify()->set(TestQueuedJob::class, 'retry_max_attempts', 1);
+
+        DBDatetime::set_mock_now('2020-01-01 00:00:00');
+    }
+
+    #[DataProvider('jobRetryLimitCasesProvider')]
+    public function testJobRetryLimit(int $limit, int $expected): void
+    {
+        QueuedJobService::config()
+            ->set('retry_job_limit', $limit)
+            ->set('retry_job_status_map', [
+                QueuedJob::STATUS_BROKEN => QueuedJob::STATUS_NEW,
+            ]);
+
+        $this->createMockJob(QueuedJob::STATUS_BROKEN, QueuedJob::QUEUED);
+        $this->createMockJob(QueuedJob::STATUS_BROKEN, QueuedJob::QUEUED);
+        $this->createMockJob(QueuedJob::STATUS_BROKEN, QueuedJob::QUEUED);
+        $this->createMockJob(QueuedJob::STATUS_BROKEN, QueuedJob::QUEUED);
+        $this->createMockJob(QueuedJob::STATUS_BROKEN, QueuedJob::QUEUED);
+
+        // Move the clock forward to bypass the buffer limit
+        DBDatetime::set_mock_now('2020-01-01 01:00:00');
+
+        QueuedJobService::singleton()->checkJobHealth(QueuedJob::QUEUED);
+        $retriedJobs = QueuedJobDescriptor::get()->filter([
+            'Implementation' => TestQueuedJob::class,
+            'JobStatus' => QueuedJob::STATUS_NEW,
+        ]);
+
+        $this->assertCount(
+            $expected,
+            $retriedJobs,
+            'We expect a specific number of retried jobs based on configured retry limit'
+        );
+    }
+
+    public static function jobRetryLimitCasesProvider(): array
+    {
+        return [
+            'job retries invalid value' => [
+                -1,
+                0,
+            ],
+            'job retries disabled' => [
+                0,
+                0,
+            ],
+            'job retries enabled (small limit)' => [
+                1,
+                1,
+            ],
+            'job retries enabled (large limit)' => [
+                10,
+                5,
+            ],
+        ];
+    }
+
+    #[DataProvider('jobRetryBufferCasesProvider')]
+    public function testJobRetryBuffer(int $buffer, int $expected): void
+    {
+        QueuedJobService::config()->set('retry_job_buffer', $buffer);
+
+        $this->createMockJob(QueuedJob::STATUS_BROKEN, QueuedJob::QUEUED);
+
+        // Move the clock forward to bypass the buffer limit
+        DBDatetime::set_mock_now('2020-01-01 01:00:00');
+
+        QueuedJobService::singleton()->checkJobHealth(QueuedJob::QUEUED);
+        $retriedJobs = QueuedJobDescriptor::get()->filter([
+            'Implementation' => TestQueuedJob::class,
+            'JobStatus' => QueuedJob::STATUS_NEW,
+        ]);
+
+        $this->assertCount(
+            $expected,
+            $retriedJobs,
+            'We expect a specific number of retried jobs based on configured retry buffer'
+        );
+    }
+
+    public static function jobRetryBufferCasesProvider(): array
+    {
+        return [
+            'invalid buffer' => [
+                -1,
+                1,
+            ],
+            'no buffer' => [
+                0,
+                1,
+            ],
+            'small buffer limit (shorter than hour)' => [
+                10,
+                1,
+            ],
+            'large buffer limit (longer than hour)' => [
+                100,
+                0,
+            ],
+        ];
+    }
+
+    #[DataProvider('jobRetryStatusCasesProvider')]
+    public function testJobRetryStatus(array $status, ?string $expected): void
+    {
+        QueuedJobService::config()->set('retry_job_status_map', $status);
+
+        $this->createMockJob(QueuedJob::STATUS_BROKEN, QueuedJob::QUEUED);
+
+        // Move the clock forward to bypass the buffer limit
+        DBDatetime::set_mock_now('2020-01-01 01:00:00');
+
+        QueuedJobService::singleton()->checkJobHealth(QueuedJob::QUEUED);
+
+        if ($expected) {
+            $retriedJobs = QueuedJobDescriptor::get()->filter([
+                'Implementation' => TestQueuedJob::class,
+                'JobStatus' => $expected,
+            ]);
+
+            $this->assertCount(
+                1,
+                $retriedJobs,
+                'We expect the retried job to be in the status which was configured'
+            );
+
+            return;
+        }
+        $retriedJobs = QueuedJobDescriptor::get()->filter([
+            'Implementation' => TestQueuedJob::class,
+            'JobStatus' => QueuedJob::STATUS_BROKEN,
+        ]);
+
+        $this->assertCount(
+            1,
+            $retriedJobs,
+            'We expect a no retried jobs as the configured conditions did not match'
+        );
+    }
+
+    public static function jobRetryStatusCasesProvider(): array
+    {
+        return [
+            'no retry status' => [
+                [],
+                null,
+            ],
+            'invalid retry status' => [
+                [
+                    QueuedJob::STATUS_BROKEN => 'invalid-status',
+                ],
+                null,
+            ],
+            'paused status only' => [
+                [
+                    QueuedJob::STATUS_PAUSED => QueuedJob::STATUS_WAIT,
+                ],
+                null,
+            ],
+            'broken status only' => [
+                [
+                    QueuedJob::STATUS_BROKEN => QueuedJob::STATUS_NEW,
+                ],
+                QueuedJob::STATUS_NEW,
+            ],
+            'broken status (disabled)' => [
+                [
+                    QueuedJob::STATUS_BROKEN => null,
+                ],
+                null,
+            ],
+        ];
+    }
+
+    #[DataProvider('jobRetryQueueTypeCasesProvider')]
+    public function testJobRetryQueueType(string $queueType, string $jobType, int $expected): void
+    {
+        $this->createMockJob(QueuedJob::STATUS_BROKEN, $jobType);
+
+        // Move the clock forward to bypass the buffer limit
+        DBDatetime::set_mock_now('2020-01-01 01:00:00');
+
+        QueuedJobService::singleton()->checkJobHealth($queueType);
+        $retriedJobs = QueuedJobDescriptor::get()->filter([
+            'Implementation' => TestQueuedJob::class,
+            'JobStatus' => QueuedJob::STATUS_NEW,
+        ]);
+
+        $this->assertCount(
+            $expected,
+            $retriedJobs,
+            'We expect a specific number of retried jobs based on which queue does '
+            . 'the job go into and which queue gets processed'
+        );
+    }
+
+    public static function jobRetryQueueTypeCasesProvider(): array
+    {
+        return [
+            'queue type mismatch' => [
+                QueuedJob::QUEUED,
+                QueuedJob::LARGE,
+                0,
+            ],
+            'queue type match' => [
+                QueuedJob::QUEUED,
+                QueuedJob::QUEUED,
+                1,
+            ],
+        ];
+    }
+
+    #[DataProvider('maxRetryAttemptsCasesProvider')]
+    public function testMaxRetryAttempts(int $jobAttempts, int $maxAttempts, int $expected): void
+    {
+        Config::modify()->set(TestQueuedJob::class, 'retry_max_attempts', $maxAttempts);
+
+        $jobDescriptor = $this->createMockJob(QueuedJob::STATUS_BROKEN, QueuedJob::QUEUED);
+        $jobDescriptor->RetryCount = $jobAttempts;
+        $jobDescriptor->write();
+
+        // Move the clock forward to bypass the buffer limit
+        DBDatetime::set_mock_now('2020-01-01 01:00:00');
+
+        QueuedJobService::singleton()->checkJobHealth(QueuedJob::QUEUED);
+        $retriedJobs = QueuedJobDescriptor::get()->filter([
+            'Implementation' => TestQueuedJob::class,
+            'JobStatus' => QueuedJob::STATUS_NEW,
+        ]);
+
+        $this->assertCount(
+            $expected,
+            $retriedJobs,
+            'We expect a specific number of retried jobs based on configured retry buffer'
+        );
+    }
+
+    public static function maxRetryAttemptsCasesProvider(): array
+    {
+        return [
+            'disabled on job level' => [
+                0,
+                0,
+                0,
+            ],
+            'invalid value on job level' => [
+                -1,
+                0,
+                0,
+            ],
+            'enabled on job level (valid retry)' => [
+                0,
+                1,
+                1,
+            ],
+            'enabled on job level (invalid retry)' => [
+                1,
+                1,
+                0,
+            ],
+        ];
+    }
+
+    #[DataProvider('initialRetryDelayCasesProvider')]
+    public function testInitialRetryDelay(int $delay, ?string $expected): void
+    {
+        Config::modify()->set(TestQueuedJob::class, 'retry_initial_delay', $delay);
+
+        $this->createMockJob(QueuedJob::STATUS_BROKEN, QueuedJob::QUEUED);
+
+        // Move the clock forward to bypass the buffer limit
+        DBDatetime::set_mock_now('2020-01-01 01:00:00');
+
+        QueuedJobService::singleton()->checkJobHealth(QueuedJob::QUEUED);
+        $retriedJobs = QueuedJobDescriptor::get()->filter([
+            'Implementation' => TestQueuedJob::class,
+            'JobStatus' => QueuedJob::STATUS_NEW,
+        ]);
+
+        $this->assertCount(1, $retriedJobs, 'We expect a successful job retry');
+
+        /** @var QueuedJobDescriptor $jobDescriptor */
+        $jobDescriptor = $retriedJobs->first();
+
+        $this->assertEquals($expected, $jobDescriptor->StartAfter, 'We expect a specific retry schedule');
+    }
+
+    public static function initialRetryDelayCasesProvider(): array
+    {
+        return [
+            'no retry delay (start immediately)' => [
+                0,
+                null,
+            ],
+            'invalid retry delay' => [
+                -1,
+                null,
+            ],
+            'short retry delay' => [
+                60,
+                '2020-01-01 01:01:00',
+            ],
+            'long retry delay' => [
+                600,
+                '2020-01-01 01:10:00',
+            ],
+            'very long retry delay' => [
+                3600,
+                '2020-01-01 02:00:00',
+            ],
+        ];
+    }
+
+    #[DataProvider('retryFalloffMultiplierCasesProvider')]
+    public function testRetryFalloffMultiplier(int $multiplier, int $jobAttempts, string $expected): void
+    {
+        Config::modify()
+            ->set(TestQueuedJob::class, 'retry_initial_delay', 60)
+            ->set(TestQueuedJob::class, 'retry_max_attempts', 3)
+            ->set(TestQueuedJob::class, 'retry_falloff_multiplier', $multiplier);
+
+        $jobDescriptor = $this->createMockJob(QueuedJob::STATUS_BROKEN, QueuedJob::QUEUED);
+        $jobDescriptor->RetryCount = $jobAttempts;
+        $jobDescriptor->write();
+
+        // Move the clock forward to bypass the buffer limit
+        DBDatetime::set_mock_now('2020-01-01 01:00:00');
+
+        QueuedJobService::singleton()->checkJobHealth(QueuedJob::QUEUED);
+        $retriedJobs = QueuedJobDescriptor::get()->filter([
+            'Implementation' => TestQueuedJob::class,
+            'JobStatus' => QueuedJob::STATUS_NEW,
+        ]);
+
+        $this->assertCount(1, $retriedJobs, 'We expect a successful job retry');
+
+        /** @var QueuedJobDescriptor $jobDescriptor */
+        $jobDescriptor = $retriedJobs->first();
+
+        $this->assertEquals($expected, $jobDescriptor->StartAfter, 'We expect a specific retry schedule');
+    }
+
+    public static function retryFalloffMultiplierCasesProvider(): array
+    {
+        return [
+            'no multiplier (first attempt)' => [
+                1,
+                0,
+                '2020-01-01 01:01:00',
+            ],
+            'invalid multiplier' => [
+                -1,
+                0,
+                '2020-01-01 01:01:00',
+            ],
+            'no multiplier (second attempt)' => [
+                1,
+                1,
+                '2020-01-01 01:01:00',
+            ],
+            'no multiplier (third attempt)' => [
+                1,
+                2,
+                '2020-01-01 01:01:00',
+            ],
+            'with multiplier (first attempt)' => [
+                2,
+                0,
+                '2020-01-01 01:01:00',
+            ],
+            'with multiplier (second attempt)' => [
+                2,
+                1,
+                '2020-01-01 01:02:00',
+            ],
+            'with multiplier (third attempt)' => [
+                2,
+                2,
+                '2020-01-01 01:04:00',
+            ],
+        ];
+    }
+
+    #[DataProvider('retryFalloffMultiplierVarianceCasesProvider')]
+    public function testRetryFalloffMultiplierVariance(
+        float $variance,
+        int $jobAttempts,
+        string $rangeType,
+        string $expected
+    ): void {
+        // Register a non-randomised service so we can have reliable tests running
+        $service = new class extends QueuedJobService {
+            public string $type = QueuedJobsRetriesTest::RANGE_TYPE_MIN;
+
+            protected function getRandomValueFromRange(int $min, int $max): int
+            {
+                // This returns just the extreme values so we can have somewhat representative tests
+                return $this->type === QueuedJobsRetriesTest::RANGE_TYPE_MIN
+                    ? $min
+                    : $max;
+            }
+        };
+
+        $service->type = $rangeType;
+
+        Injector::inst()->registerService($service, QueuedJobService::class);
+
+        Config::modify()
+            ->set(TestQueuedJob::class, 'retry_initial_delay', 3600)
+            ->set(TestQueuedJob::class, 'retry_max_attempts', 3)
+            ->set(TestQueuedJob::class, 'retry_falloff_multiplier', 1)
+            ->set(TestQueuedJob::class, 'retry_falloff_multiplier_variance', $variance);
+
+        $jobDescriptor = $this->createMockJob(QueuedJob::STATUS_BROKEN, QueuedJob::QUEUED);
+        $jobDescriptor->RetryCount = $jobAttempts;
+        $jobDescriptor->write();
+
+        // Move the clock forward to bypass the buffer limit
+        DBDatetime::set_mock_now('2020-01-01 01:00:00');
+
+        QueuedJobService::singleton()->checkJobHealth(QueuedJob::QUEUED);
+        $retriedJobs = QueuedJobDescriptor::get()->filter([
+            'Implementation' => TestQueuedJob::class,
+            'JobStatus' => QueuedJob::STATUS_NEW,
+        ]);
+
+        $this->assertCount(1, $retriedJobs, 'We expect a successful job retry');
+
+        /** @var QueuedJobDescriptor $jobDescriptor */
+        $jobDescriptor = $retriedJobs->first();
+
+        $this->assertEquals($expected, $jobDescriptor->StartAfter, 'We expect a specific retry schedule');
+    }
+
+    public static function retryFalloffMultiplierVarianceCasesProvider(): array
+    {
+        return [
+            'invalid variance' => [
+                -1,
+                0,
+                QueuedJobsRetriesTest::RANGE_TYPE_MIN,
+                '2020-01-01 02:00:00',
+            ],
+            'no variance (first attempt)' => [
+                0,
+                0,
+                QueuedJobsRetriesTest::RANGE_TYPE_MIN,
+                '2020-01-01 02:00:00',
+            ],
+            'no variance (second attempt)' => [
+                0,
+                1,
+                QueuedJobsRetriesTest::RANGE_TYPE_MIN,
+                '2020-01-01 02:00:00',
+            ],
+            'no variance (third attempt)' => [
+                0,
+                2,
+                QueuedJobsRetriesTest::RANGE_TYPE_MIN,
+                '2020-01-01 02:00:00',
+            ],
+            'with variance (first attempt, negative offset)' => [
+                0.2,
+                0,
+                QueuedJobsRetriesTest::RANGE_TYPE_MIN,
+                '2020-01-01 02:00:00',
+            ],
+            'no variance (second attempt, negative offset)' => [
+                0.2,
+                1,
+                QueuedJobsRetriesTest::RANGE_TYPE_MIN,
+                '2020-01-01 01:48:00',
+            ],
+            'no variance (third attempt, negative offset)' => [
+                0.2,
+                2,
+                QueuedJobsRetriesTest::RANGE_TYPE_MIN,
+                '2020-01-01 01:38:24',
+            ],
+            'with variance (first attempt, positive offset)' => [
+                0.2,
+                0,
+                QueuedJobsRetriesTest::RANGE_TYPE_MAX,
+                '2020-01-01 02:00:00',
+            ],
+            'no variance (second attempt, positive offset)' => [
+                0.2,
+                1,
+                QueuedJobsRetriesTest::RANGE_TYPE_MAX,
+                '2020-01-01 02:12:00',
+            ],
+            'no variance (third attempt, positive offset)' => [
+                0.2,
+                2,
+                QueuedJobsRetriesTest::RANGE_TYPE_MAX,
+                '2020-01-01 02:26:24',
+            ],
+        ];
+    }
+
+    private function createMockJob(string $status, string $queue, bool $skipWrite = false): QueuedJobDescriptor
+    {
+        $jobDescriptor = QueuedJobDescriptor::create();
+        $jobDescriptor->Implementation = TestQueuedJob::class;
+        $jobDescriptor->JobType = $queue;
+        $jobDescriptor->JobStatus = $status;
+
+        if ($skipWrite) {
+            return $jobDescriptor;
+        }
+
+        $jobDescriptor->write();
+
+        return $jobDescriptor;
+    }
+}
