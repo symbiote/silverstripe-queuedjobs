@@ -8,9 +8,9 @@ use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\ORM\FieldType\DBDatetime;
 use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
-use Symbiote\QueuedJobs\Dev\Job\QueueTestJob;
 use Symbiote\QueuedJobs\Services\QueuedJob;
 use Symbiote\QueuedJobs\Services\QueuedJobService;
+use Symbiote\QueuedJobs\Tests\QueuedJobsTest\TestQueuedJob;
 
 class QueuedJobsRetriesTest extends SapphireTest
 {
@@ -38,7 +38,7 @@ class QueuedJobsRetriesTest extends SapphireTest
             ]);
 
         // Enable job retries for this specific job
-        Config::modify()->set(QueueTestJob::class, 'retry_max_attempts', 1);
+        Config::modify()->set(TestQueuedJob::class, 'retry_max_attempts', 1);
 
         DBDatetime::set_mock_now('2020-01-01 00:00:00');
     }
@@ -63,7 +63,7 @@ class QueuedJobsRetriesTest extends SapphireTest
 
         QueuedJobService::singleton()->checkJobHealth(QueuedJob::QUEUED);
         $retriedJobs = QueuedJobDescriptor::get()->filter([
-            'Implementation' => QueueTestJob::class,
+            'Implementation' => TestQueuedJob::class,
             'JobStatus' => QueuedJob::STATUS_NEW,
         ]);
 
@@ -108,7 +108,7 @@ class QueuedJobsRetriesTest extends SapphireTest
 
         QueuedJobService::singleton()->checkJobHealth(QueuedJob::QUEUED);
         $retriedJobs = QueuedJobDescriptor::get()->filter([
-            'Implementation' => QueueTestJob::class,
+            'Implementation' => TestQueuedJob::class,
             'JobStatus' => QueuedJob::STATUS_NEW,
         ]);
 
@@ -155,7 +155,7 @@ class QueuedJobsRetriesTest extends SapphireTest
 
         if ($expected) {
             $retriedJobs = QueuedJobDescriptor::get()->filter([
-                'Implementation' => QueueTestJob::class,
+                'Implementation' => TestQueuedJob::class,
                 'JobStatus' => $expected,
             ]);
 
@@ -168,7 +168,7 @@ class QueuedJobsRetriesTest extends SapphireTest
             return;
         }
         $retriedJobs = QueuedJobDescriptor::get()->filter([
-            'Implementation' => QueueTestJob::class,
+            'Implementation' => TestQueuedJob::class,
             'JobStatus' => QueuedJob::STATUS_BROKEN,
         ]);
 
@@ -223,7 +223,7 @@ class QueuedJobsRetriesTest extends SapphireTest
 
         QueuedJobService::singleton()->checkJobHealth($queueType);
         $retriedJobs = QueuedJobDescriptor::get()->filter([
-            'Implementation' => QueueTestJob::class,
+            'Implementation' => TestQueuedJob::class,
             'JobStatus' => QueuedJob::STATUS_NEW,
         ]);
 
@@ -254,7 +254,7 @@ class QueuedJobsRetriesTest extends SapphireTest
     #[DataProvider('maxRetryAttemptsCasesProvider')]
     public function testMaxRetryAttempts(int $jobAttempts, int $maxAttempts, int $expected): void
     {
-        Config::modify()->set(QueueTestJob::class, 'retry_max_attempts', $maxAttempts);
+        Config::modify()->set(TestQueuedJob::class, 'retry_max_attempts', $maxAttempts);
 
         $jobDescriptor = $this->createMockJob(QueuedJob::STATUS_BROKEN, QueuedJob::QUEUED);
         $jobDescriptor->RetryCount = $jobAttempts;
@@ -265,7 +265,7 @@ class QueuedJobsRetriesTest extends SapphireTest
 
         QueuedJobService::singleton()->checkJobHealth(QueuedJob::QUEUED);
         $retriedJobs = QueuedJobDescriptor::get()->filter([
-            'Implementation' => QueueTestJob::class,
+            'Implementation' => TestQueuedJob::class,
             'JobStatus' => QueuedJob::STATUS_NEW,
         ]);
 
@@ -305,7 +305,7 @@ class QueuedJobsRetriesTest extends SapphireTest
     #[DataProvider('initialRetryDelayCasesProvider')]
     public function testInitialRetryDelay(int $delay, ?string $expected): void
     {
-        Config::modify()->set(QueueTestJob::class, 'retry_initial_delay', $delay);
+        Config::modify()->set(TestQueuedJob::class, 'retry_initial_delay', $delay);
 
         $this->createMockJob(QueuedJob::STATUS_BROKEN, QueuedJob::QUEUED);
 
@@ -314,7 +314,7 @@ class QueuedJobsRetriesTest extends SapphireTest
 
         QueuedJobService::singleton()->checkJobHealth(QueuedJob::QUEUED);
         $retriedJobs = QueuedJobDescriptor::get()->filter([
-            'Implementation' => QueueTestJob::class,
+            'Implementation' => TestQueuedJob::class,
             'JobStatus' => QueuedJob::STATUS_NEW,
         ]);
 
@@ -356,9 +356,9 @@ class QueuedJobsRetriesTest extends SapphireTest
     public function testRetryFalloffMultiplier(int $multiplier, int $jobAttempts, string $expected): void
     {
         Config::modify()
-            ->set(QueueTestJob::class, 'retry_initial_delay', 60)
-            ->set(QueueTestJob::class, 'retry_max_attempts', 3)
-            ->set(QueueTestJob::class, 'retry_falloff_multiplier', $multiplier);
+            ->set(TestQueuedJob::class, 'retry_initial_delay', 60)
+            ->set(TestQueuedJob::class, 'retry_max_attempts', 3)
+            ->set(TestQueuedJob::class, 'retry_falloff_multiplier', $multiplier);
 
         $jobDescriptor = $this->createMockJob(QueuedJob::STATUS_BROKEN, QueuedJob::QUEUED);
         $jobDescriptor->RetryCount = $jobAttempts;
@@ -369,7 +369,7 @@ class QueuedJobsRetriesTest extends SapphireTest
 
         QueuedJobService::singleton()->checkJobHealth(QueuedJob::QUEUED);
         $retriedJobs = QueuedJobDescriptor::get()->filter([
-            'Implementation' => QueueTestJob::class,
+            'Implementation' => TestQueuedJob::class,
             'JobStatus' => QueuedJob::STATUS_NEW,
         ]);
 
@@ -447,10 +447,10 @@ class QueuedJobsRetriesTest extends SapphireTest
         Injector::inst()->registerService($service, QueuedJobService::class);
 
         Config::modify()
-            ->set(QueueTestJob::class, 'retry_initial_delay', 3600)
-            ->set(QueueTestJob::class, 'retry_max_attempts', 3)
-            ->set(QueueTestJob::class, 'retry_falloff_multiplier', 1)
-            ->set(QueueTestJob::class, 'retry_falloff_multiplier_variance', $variance);
+            ->set(TestQueuedJob::class, 'retry_initial_delay', 3600)
+            ->set(TestQueuedJob::class, 'retry_max_attempts', 3)
+            ->set(TestQueuedJob::class, 'retry_falloff_multiplier', 1)
+            ->set(TestQueuedJob::class, 'retry_falloff_multiplier_variance', $variance);
 
         $jobDescriptor = $this->createMockJob(QueuedJob::STATUS_BROKEN, QueuedJob::QUEUED);
         $jobDescriptor->RetryCount = $jobAttempts;
@@ -461,7 +461,7 @@ class QueuedJobsRetriesTest extends SapphireTest
 
         QueuedJobService::singleton()->checkJobHealth(QueuedJob::QUEUED);
         $retriedJobs = QueuedJobDescriptor::get()->filter([
-            'Implementation' => QueueTestJob::class,
+            'Implementation' => TestQueuedJob::class,
             'JobStatus' => QueuedJob::STATUS_NEW,
         ]);
 
@@ -542,7 +542,7 @@ class QueuedJobsRetriesTest extends SapphireTest
     private function createMockJob(string $status, string $queue, bool $skipWrite = false): QueuedJobDescriptor
     {
         $jobDescriptor = QueuedJobDescriptor::create();
-        $jobDescriptor->Implementation = QueueTestJob::class;
+        $jobDescriptor->Implementation = TestQueuedJob::class;
         $jobDescriptor->JobType = $queue;
         $jobDescriptor->JobStatus = $status;
 
