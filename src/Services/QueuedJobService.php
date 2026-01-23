@@ -18,6 +18,8 @@ use SilverStripe\Core\Extensible;
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Core\Validation\ValidationException;
+use SilverStripe\Model\List\ArrayList;
+use SilverStripe\Model\List\SS_List;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
@@ -1589,17 +1591,16 @@ class QueuedJobService
     }
 
     /**
-     * Find any eligible jobs that qualify for an automated job retry and schedule their retry
-     *
-     * @throws ValidationException if validation fails during call to write()
+     * Get a list of jons that are eligible for retry
      */
-    protected function markEligibleJobsForRetry(int $queueType): void
+    protected function getAutoRetryJobsList(int $queueType): SS_List
     {
+        $emptyList = ArrayList::create()->setDataClass(QueuedJobDescriptor::class);
         $jobConfigs = $this->getJobRetryConfig();
 
         // Job retries feature is not available on any of the available jobs
         if (!$jobConfigs) {
-            return;
+            return $emptyList;
         }
 
         // Find any broken jobs that qualify for an automated job retry
@@ -1620,7 +1621,7 @@ class QueuedJobService
 
         // Job retries feature is disabled
         if ($jobRetryLimit <= 0) {
-            return;
+            return $emptyList;
         }
 
         $jobValidStatusMap = $this->getJobRetryStatusMap();
@@ -1628,7 +1629,7 @@ class QueuedJobService
 
         // We don't have any job status transformation configured
         if (count($failedJobStatuses) === 0) {
-            return;
+            return $emptyList;
         }
 
         $retryCountConditions = [];
@@ -1670,6 +1671,29 @@ class QueuedJobService
 
         // Provide an option to customise the list of jobs that are eligible for a job retry
         $this->extend('updateAutoRetryJobs', $autoRetryJobs);
+
+        return $autoRetryJobs;
+    }
+
+    /**
+     * Find any eligible jobs that qualify for an automated job retry and schedule their retry
+     *
+     * @throws ValidationException if validation fails during call to write()
+     */
+    protected function markEligibleJobsForRetry(int $queueType): void
+    {
+        $jobConfigs = $this->getJobRetryConfig();
+
+        // Job retries feature is not available on any of the available jobs
+        if (!$jobConfigs) {
+            return;
+        }
+
+        $jobValidStatusMap = $this->getJobRetryStatusMap();
+        $autoRetryJobs = $this->getAutoRetryJobsList($queueType);
+
+        // Make "now" immutable so the call to `modify()` doesn't affect it, since we reuse this later on in this method
+        $now = DBDatetime::now()->setImmutable(true);
 
         /** @var QueuedJobDescriptor $jobDescriptor */
         foreach ($autoRetryJobs as $jobDescriptor) {
