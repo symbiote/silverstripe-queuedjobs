@@ -75,6 +75,10 @@ en:
     PLURALS:
       one: 'A Queued Job Descriptor'
       other: '{count} Queued Job Descriptors'
+    RETRY_COUNT_DESCRIPTION: 'Number of times this job broke and was retried, {info}.'
+    RETRY_COUNT_GLOBAL_DISABLED: 'retries are globally disabled'
+    RETRY_COUNT_JOB_DISABLED: 'retries are disabled for this job'
+    RETRY_COUNT_JOB_ENABLED: 'retries are enabled for this job'
     SINGULARNAME: 'Queued Job Descriptor'
     TABLE_ADDE: Added
     TABLE_FINISHED: Finished
@@ -99,6 +103,7 @@ en:
     db_LastProcessedCount: 'Last processed count'
     db_NotifiedBroken: 'Notified broken'
     db_ResumeCounts: 'Resume counts'
+    db_RetryCount: 'Retry count'
     db_SavedJobData: 'Saved job data'
     db_SavedJobMessages: 'Saved job messages'
     db_Signature: Signature
@@ -162,9 +167,13 @@ en:
     JOB_EXCEPT: 'Job caused exception {message} in {file} at line {line}'
     JOB_PAUSED: 'Job paused at {time}'
     JOB_STALLED: 'Job stalled after {attempts} attempts - please check'
+    JOB_STALLED_WITH_RETRIES: 'Job stalled after {attempts} attempts, but will be automatically retried later'
     MEMORY_RELEASE: 'Job releasing memory and waiting ({used} used)'
+    RETRY_JOB_MESSAGE_IMMEDIATELY: 'Automatic job retry - job will retry immediately.'
+    RETRY_JOB_MESSAGE_LATER: 'Automatic job retry - job will retry after {info}.'
     STALLED_JOB: 'Stalled job'
     STALLED_JOB_MSG: 'A job named {name} (#{id}) appears to have stalled. It has been paused, please login to check it'
+    STALLED_JOB_MSG_WITH_RETRIES: 'A job named {name} (#{id}) appears to have stalled. It has been paused, but will be automatically retried later'
     STALLED_JOB_RESTART_MSG: 'A job named {name} (#{id}) appears to have stalled. It will be stopped and restarted, please login to make sure it has continued'
     TIME_LIMIT: 'Queue has passed time limit and will restart before continuing'
   Symbiote\QueuedJobs\Tasks\CheckJobHealthTask:
