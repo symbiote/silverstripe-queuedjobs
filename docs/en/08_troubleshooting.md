@@ -39,7 +39,7 @@ and not visible on the command line (see [bug report](https://github.com/asyncph
 
 ## Jobs are executed more than once
 
-A long running job *mSymbiote\QueuedJobs\Services\QueuedJobay* fool the system into thinking it has gone away (ie the job health check fails because
+A long running job *Symbiote\QueuedJobs\Services\QueuedJob* may fool the system into thinking it has gone away (ie the job health check fails because
 `currentStep` hasn't been incremented). To avoid this scenario, you can set `$this->currentStep = -1` in your job's
 constructor, to prevent any health checks detecting the job.
 
