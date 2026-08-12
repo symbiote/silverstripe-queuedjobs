@@ -7,6 +7,7 @@ use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Core\Convert;
+use SilverStripe\Core\Environment;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\BuildTask;
 use SilverStripe\Dev\DebugView;
@@ -148,11 +149,11 @@ class QueuedTaskRunner extends TaskRunner
         $querystring = http_build_query($variables ?? []);
 
         $title = function ($content) {
-            printf(Director::is_cli() ? "%s\n\n" : '<h1>%s</h1>', $content);
+            printf(Environment::isCli() ? "%s\n\n" : '<h1>%s</h1>', $content);
         };
 
         $message = function ($content) {
-            printf(Director::is_cli() ? "%s\n" : '<p>%s</p>', $content);
+            printf(Environment::isCli() ? "%s\n" : '<p>%s</p>', $content);
         };
 
         foreach ($tasks as $task) {

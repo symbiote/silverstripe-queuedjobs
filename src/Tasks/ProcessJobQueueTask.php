@@ -3,7 +3,7 @@
 namespace Symbiote\QueuedJobs\Tasks;
 
 use Monolog\Logger;
-use SilverStripe\Control\Director;
+use SilverStripe\Core\Environment;
 use SilverStripe\Dev\BuildTask;
 use SilverStripe\PolyExecution\PolyOutput;
 use SilverStripe\PolyExecution\PolyOutputLogHandler;
@@ -49,7 +49,7 @@ class ProcessJobQueueTask extends BuildTask
         // Running the task via browser doesn't need this output because you can check the job in the CMS.
         // Note that if we want to output this to the browser in the future, simply removing this condition
         // isn't enough, because it'll end up double-logging in the job messages tab.
-        if (Director::is_cli()) {
+        if (Environment::isCli()) {
             $logger = $service->getLogger();
             if ($logger instanceof Logger) {
                 $logger->pushHandler(PolyOutputLogHandler::create($output));

@@ -2,7 +2,7 @@
 
 namespace Symbiote\QueuedJobs\Tasks;
 
-use SilverStripe\Control\Director;
+use SilverStripe\Core\Environment;
 use SilverStripe\Dev\BuildTask;
 use SilverStripe\PolyExecution\PolyOutput;
 use SilverStripe\ORM\DataObject;
@@ -34,7 +34,7 @@ class DeleteAllJobsTask extends BuildTask
         $jobs = DataObject::get(QueuedJobDescriptor::class);
 
         if (!$input->getOption('confirm')) {
-            if (!Director::is_cli()) {
+            if (!Environment::isCli()) {
                 $confirmText = '?confirm=1 to the URL';
             } else {
                 $confirmText = '--confirm';
