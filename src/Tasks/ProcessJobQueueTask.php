@@ -8,7 +8,6 @@ use SilverStripe\Dev\BuildTask;
 use SilverStripe\PolyExecution\PolyOutput;
 use SilverStripe\PolyExecution\PolyOutputLogHandler;
 use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
-use Symbiote\QueuedJobs\Services\QueuedJob;
 use Symbiote\QueuedJobs\Services\QueuedJobService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -64,11 +63,14 @@ class ProcessJobQueueTask extends BuildTask
 
         // Check if there is a job to run
         $job = $input->getOption('job');
-        if ($job && strpos($job, '-')) {
-            // Run from a single job
-            $parts = explode('-', $job ?? '');
-            $id = $parts[1];
-            $service->runJob($id);
+        if ($job) {
+            // Accepts an ID (e.g. "123"), optionally prefixed with anything up to a dash
+            // which covers a job cache file name (e.g. "queuedjob-123") and a leading dash (e.g. "-123")
+            if (!preg_match('#^(?:.*-)?(\d+)$#', $job, $matches)) {
+                $output->writeln('<error>job must be the ID of a job descriptor</>');
+                return Command::INVALID;
+            }
+            $service->runJob((int) $matches[1]);
             return Command::SUCCESS;
         }
 
