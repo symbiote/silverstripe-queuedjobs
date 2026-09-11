@@ -2,8 +2,8 @@
 
 namespace Symbiote\QueuedJobs\Tasks\Engines;
 
-use SilverStripe\Control\Director;
 use SilverStripe\Core\Convert;
+use SilverStripe\Core\Environment;
 use SilverStripe\ORM\FieldType\DBDatetime;
 use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
 use Symbiote\QueuedJobs\Services\QueuedJobService;
@@ -37,7 +37,7 @@ class BaseRunner
             $prefix = '[' . DBDatetime::now()->Rfc2822() . '] ';
         }
 
-        if (Director::is_cli()) {
+        if (Environment::isCli()) {
             echo $prefix . $line . "\n";
         } else {
             echo Convert::raw2xml($prefix . $line) . "<br>";

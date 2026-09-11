@@ -14,6 +14,7 @@ use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Convert;
+use SilverStripe\Core\Environment;
 use SilverStripe\Core\Extensible;
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Core\Injector\Injector;
@@ -239,7 +240,7 @@ class QueuedJobService
      */
     public function __construct()
     {
-        if (!$this->config()->get('use_shutdown_function') || !Director::is_cli()) {
+        if (!$this->config()->get('use_shutdown_function') || !Environment::isCli()) {
             return;
         }
 
